@@ -1,0 +1,7 @@
+*.o
+*.DSYM
+debug.out
+d.out
+
+
+webserv
