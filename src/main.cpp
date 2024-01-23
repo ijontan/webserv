@@ -10,7 +10,7 @@ int main(int argc, char const *argv[])
 {
     struct sockaddr_storage their_addr;
     socklen_t addr_size;
-    struct addrinfo hints, *res;
+    struct addrinfo hints, *servInfo, *p;
     int sockFd, newFd;
 
     if (argc != 2)
@@ -24,27 +24,35 @@ int main(int argc, char const *argv[])
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE;
 
-    if (getaddrinfo(NULL, argv[1], &hints, &res) != 0)
+    if (getaddrinfo(NULL, argv[1], &hints, &servInfo) != 0)
     {
         std::cerr << "getaddrinfo error" << std::endl;
         return 2;
     }
-
-    sockFd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
-
-    int reuse = 1;
-    if (setsockopt(sockFd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(int)) == -1)
+    for (p = servInfo; p != NULL; p = p->ai_next)
     {
-        std::cerr << "Error setting socket options" << std::endl;
-        close(sockFd); // Don't forget to close the socket in case of an error
-        return 1;
-    }
+        if ((sockFd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1)
+        {
+            std::cerr << "socket error" << std::endl;
+            continue;
+        }
 
-    if (bind(sockFd, res->ai_addr, res->ai_addrlen))
-    {
-        std::cerr << "bind error" << std::endl;
-        return 3;
+        if (setsockopt(sockFd, SOL_SOCKET, SO_REUSEADDR, &sockFd, sizeof(int)) == -1)
+        {
+            std::cerr << "Error setting socket options" << std::endl;
+            close(sockFd); // Don't forget to close the socket in case of an error
+            return 1;
+        }
+
+        if (bind(sockFd, p->ai_addr, p->ai_addrlen) == -1)
+        {
+            close(sockFd);
+            std::cerr << "bind error" << std::endl;
+            continue;
+        }
+        break;
     }
+    freeaddrinfo(servInfo); // free the linked list
     while (1)
     {
         if (listen(sockFd, 10))
@@ -65,6 +73,5 @@ int main(int argc, char const *argv[])
         std::cout << "got message from " << newFd << ": " << str << std::endl;
         close(newFd);
     }
-    freeaddrinfo(res); // free the linked list
     return 0;
 }
