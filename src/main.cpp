@@ -4,6 +4,7 @@
 #include <string.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <unistd.h>
 
 int main(int argc, char const *argv[])
 {
@@ -25,33 +26,45 @@ int main(int argc, char const *argv[])
 
     if (getaddrinfo(NULL, argv[1], &hints, &res) != 0)
     {
-        // fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(errno));
+        std::cerr << "getaddrinfo error" << std::endl;
         return 2;
     }
 
     sockFd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
 
+    int reuse = 1;
+    if (setsockopt(sockFd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(int)) == -1)
+    {
+        std::cerr << "Error setting socket options" << std::endl;
+        close(sockFd); // Don't forget to close the socket in case of an error
+        return 1;
+    }
+
     if (bind(sockFd, res->ai_addr, res->ai_addrlen))
     {
-        printf("bind error\n");
+        std::cerr << "bind error" << std::endl;
         return 3;
     }
-
-    if (listen(sockFd, 10))
+    while (1)
     {
-        printf("listen error\n");
-        return 4;
-    }
-    addr_size = sizeof(their_addr);
-    newFd = accept(sockFd, (struct sockaddr *)&their_addr, &addr_size);
+        if (listen(sockFd, 10))
+        {
+            std::cerr << "listen error" << std::endl;
+            return 4;
+        }
+        addr_size = sizeof(their_addr);
+        newFd = accept(sockFd, (struct sockaddr *)&their_addr, &addr_size);
 
-    char buff[20];
-    while (recv(newFd, buff, 20, 0) > 0)
-    {
-        printf("server: got connection from %s\n", buff);
-        send(newFd, "Hello, world!", 13, 0);
+        std::string str = "";
+        char buff[20];
+        while (recv(newFd, buff, 20, 0) > 0)
+        {
+            str += buff;
+            memset(buff, 0, 20);
+        }
+        std::cout << "got message from " << newFd << ": " << str << std::endl;
+        close(newFd);
     }
     freeaddrinfo(res); // free the linked list
-    (void)newFd;
     return 0;
 }
