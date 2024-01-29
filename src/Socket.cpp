@@ -24,7 +24,7 @@ void Socket::initSocket()
 	if (getaddrinfo(NULL, port.c_str(), &hints, &servInfo) != 0)
 	{
 		std::cerr << "getaddrinfo error" << std::endl;
-		return;
+		throw "getaddrinfo error";
 	}
 	for (p = servInfo; p != NULL; p = p->ai_next)
 	{
@@ -39,7 +39,7 @@ void Socket::initSocket()
 		{
 			std::cerr << "Error setting socket options" << std::endl;
 			close(sockfd); // Don't forget to close the socket in case of an error
-			return;
+			throw "Error setting socket options";
 		}
 
 		if (bind(sockfd, p->ai_addr, p->ai_addrlen) == -1)
@@ -54,11 +54,12 @@ void Socket::initSocket()
 	if (p == NULL)
 	{
 		std::cerr << "failed to bind" << std::endl;
-		return;
+		throw "fail to bind";
 	}
 	if (listen(sockfd, 10))
 	{
 		std::cerr << "listen error" << std::endl;
+		throw "fail to listen";
 	}
 	std::cout << HWHITE << "Server: waiting for connections..." << RESET << std::endl
 			  << std::endl;
