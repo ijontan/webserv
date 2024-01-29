@@ -118,8 +118,6 @@ void Socket::acceptLoop(void)
 		{
 			if (!(fds[i].revents & POLLIN))
 				continue;
-			if (i < (int)str.size())
-				str.push_back("");
 			if (fds[i].fd == sockfd)
 			{
 				addr_size = sizeof(their_addr);
