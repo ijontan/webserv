@@ -1,16 +1,22 @@
 #pragma once
 
 #include <string>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
 #include <iostream>
-#include "webserv.hpp"
 #include <string.h>
 #include <unistd.h>
+#include <poll.h>
+#include <vector>
 
 class Socket
 {
 private:
     int sockfd;
     std::string port;
+    struct pollfd fds[1024];
+    int pfdCount;
 
 public:
     Socket(void);
@@ -20,4 +26,6 @@ public:
     Socket &operator=(const Socket &rhs);
     void initSocket(void);
     void acceptLoop(void);
+    void addPfd(int fd);
+    void removePfd(int index);
 };
