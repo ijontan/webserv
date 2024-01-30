@@ -9,7 +9,7 @@ class ServerBlock;
 
 class WebServer {
 	public:
-		WebServer( std::string filePath );
+		WebServer( const std::string& filePath );
 		~WebServer();
 
 	private:

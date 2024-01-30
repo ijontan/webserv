@@ -9,12 +9,11 @@ class LocationBlock;
 class ServerBlock {
 	public:
 		ServerBlock();
+		ServerBlock( const ServerBlock& other );
+		ServerBlock& operator=( const ServerBlock& other );
 		~ServerBlock();
 
 	private:
-		ServerBlock( const ServerBlock& other );
-		ServerBlock& operator=( const ServerBlock& other );
-
 		std::vector<int>				_portsListeningOn;
 		std::string						_serverName;
 		std::string						_rootDirectory;

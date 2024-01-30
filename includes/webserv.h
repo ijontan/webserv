@@ -3,7 +3,7 @@
 #define WEBSERV_H
 
 // macros
-#define DEFAULT_CONFIG_FILE_PATH "../config_files/default.conf"
+#define DEFAULT_CONFIG_FILE_PATH "config_files/default.conf"
 
 // libraries
 #include <iostream>

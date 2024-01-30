@@ -1,34 +1,16 @@
 
 #include "webserv.h"
 
-WebServer::WebServer( std::string filePath ) {
+WebServer::WebServer( const std::string& filePath ) {
 	try {
-		Parser parser;
+		Parser	parser;
 
-		std::ifstream 	file( filePath );
-		std::string 	line;
-
-		ServerBlock 	serverBlock;
-
-		while (std::getline(file, line)) {
-			
-			// skips empty lines and comments
-			if (line.empty() || line.find('#') == 0) {
-				continue;
-			}
-
-			//
-			std::istringstream 	iss(line);
-			std::string			directive;
-			iss >> directive;
-
-			std::cout << "directive: " << directive << std::endl;
-		}
-		std::cout << GREEN "Server Block created" RESET << std::endl;
+		this->_serverBlocks = parser.createServerBlocks(filePath);
+		std::cout << GREEN "Server blocks created" RESET << std::endl;
 	} 
 	catch (const std::exception& e)
 	{
-		std::cout << URED << e.what() << RESET << std::endl;
+		std::cout << BRED << e.what() << RESET << std::endl;
 	}
 }
 
