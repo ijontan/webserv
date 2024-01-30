@@ -96,7 +96,7 @@ void *get_in_addr(struct sockaddr *sa)
 	return &(((struct sockaddr_in6 *)sa)->sin6_addr);
 }
 
-void Socket::acceptLoop(void)
+void Socket::acceptLoop(IOAdaptor nio)
 {
 	char s[INET6_ADDRSTRLEN];
 	int newFd;
@@ -140,15 +140,12 @@ void Socket::acceptLoop(void)
 				int bytes = recv(fds[i].fd, buff, sizeof(buff), 0);
 				if (bytes <= 0)
 				{
+					nio.recieveMessage(str[i]);
 					if (bytes == 0)
 					{
-						std::cout << HRED << "Server: client disconnected" << RESET << std::endl;
-						std::cout << BBLUE << "Message: " << RESET << std::endl
-								  << str[i] << std::endl
-								  << BBLUE << "End" << RESET << std::endl
-								  << "----------------------------------------" << std::endl;
-						str[i] = "Recieved message: " + str[i] + "\nSending back: Hello, world!\n";
-						send(newFd, str[i].c_str(), str[i].length(), 0);
+						std::cout << nio;
+						std::string toSend = nio.getMessageToSend();
+						send(newFd, toSend.c_str(), toSend.length(), 0);
 					}
 					else
 					{
@@ -157,6 +154,7 @@ void Socket::acceptLoop(void)
 					str.erase(str.begin() + i);
 					close(fds[i].fd);
 					removePfd(i);
+					nio.recieveMessage("");
 				}
 				else
 				{

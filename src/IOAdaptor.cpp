@@ -25,9 +25,9 @@ void IOAdaptor::recieveMessage(std::string raw)
     receivedRaw = raw;
 }
 
-std::string IOAdaptor::getMessageToSend()
+std::string IOAdaptor::getMessageToSend() const
 {
-    return "Recieved message: " + receivedRaw + "\nSending back: Hello, world!\n";
+    return "Recieved message:\n" + receivedRaw + "\nSending back: Hello, world!\n";
 }
 
 std::string IOAdaptor::getRaw() const
@@ -41,4 +41,5 @@ std::ostream &operator<<(std::ostream &os, const IOAdaptor &adaptor)
        << adaptor.getRaw() << std::endl
        << BBLUE << "End" << RESET << std::endl
        << "----------------------------------------" << std::endl;
+    return os;
 }

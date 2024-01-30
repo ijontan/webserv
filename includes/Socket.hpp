@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <poll.h>
 #include <vector>
+#include "IOAdaptor.hpp"
 
 class Socket
 {
@@ -25,7 +26,7 @@ public:
     Socket(const Socket &src);
     Socket &operator=(const Socket &rhs);
     void initSocket(void);
-    void acceptLoop(void);
+    void acceptLoop(IOAdaptor nio);
     void addPfd(int fd);
     void removePfd(int index);
 };

@@ -14,7 +14,7 @@ public:
     IOAdaptor(const IOAdaptor &src);
     IOAdaptor &operator=(const IOAdaptor &rhs);
     virtual void recieveMessage(std::string raw);
-    virtual std::string getMessageToSend();
+    virtual std::string getMessageToSend() const;
     std::string getRaw() const;
 };
 

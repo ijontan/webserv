@@ -11,6 +11,6 @@ int main(int argc, char const *argv[])
     }
     Socket sock(argv[1]);
     sock.initSocket();
-    sock.acceptLoop();
+    sock.acceptLoop(IOAdaptor());
     return 0;
 }
