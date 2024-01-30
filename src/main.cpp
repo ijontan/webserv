@@ -9,8 +9,9 @@ int main(int argc, char const *argv[])
         std::cerr << "Usage: ./webserv <port>" << std::endl;
         return 1;
     }
+    NetIO io;
     Socket sock(argv[1]);
     sock.initSocket();
-    sock.acceptLoop(IOAdaptor());
+    sock.acceptLoop(io);
     return 0;
 }

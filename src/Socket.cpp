@@ -96,7 +96,7 @@ void *get_in_addr(struct sockaddr *sa)
 	return &(((struct sockaddr_in6 *)sa)->sin6_addr);
 }
 
-void Socket::acceptLoop(IOAdaptor nio)
+void Socket::acceptLoop(IOAdaptor &nio)
 {
 	char s[INET6_ADDRSTRLEN];
 	int newFd;

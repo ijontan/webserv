@@ -26,7 +26,7 @@ public:
     Socket(const Socket &src);
     Socket &operator=(const Socket &rhs);
     void initSocket(void);
-    void acceptLoop(IOAdaptor nio);
+    void acceptLoop(IOAdaptor &nio);
     void addPfd(int fd);
     void removePfd(int index);
 };
