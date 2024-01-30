@@ -1,15 +1,13 @@
 
-#include "Webserv.hpp"
+#include "webserv.h"
 
-int main(int ac, char const *av[])
+int main(int ac, char **av)
 {
-	Parser parser;
-
 	if (ac == 1) {
-		parser.parseConfigFile("default.conf");
-	} else (ac == 2) {
-		parser.parseConfigFile(av[1]);
+		WebServer webServer(DEFAULT_CONFIG_FILE_PATH);
+	} else if (ac == 2) {
+		WebServer webServer(av[1]);
 	} else {
-		std::cerr << "Error: please only enter the .conf file (./webserv [.conf])" << std::endl;
+		std::cerr << "Error: please enter only the .conf file as the first argument (./webserv [.conf])" << std::endl;
 	}
 }
