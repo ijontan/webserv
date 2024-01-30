@@ -3,7 +3,6 @@
 
 WebServer::WebServer( std::string filePath ) {
 	try {
-
 		Parser parser;
 
 		std::ifstream 	file( filePath );
@@ -29,7 +28,7 @@ WebServer::WebServer( std::string filePath ) {
 	} 
 	catch (const std::exception& e)
 	{
-		std::cout << URED << e << RESET << std::endl;
+		std::cout << URED << e.what() << RESET << std::endl;
 	}
 }
 

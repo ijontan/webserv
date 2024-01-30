@@ -7,7 +7,7 @@
 class CustomException: public std::exception {
 	public:
 		CustomException( std::string errorMsg );
-		~CustomException();
+		virtual ~CustomException() _NOEXCEPT;
 
 		const char *what() const throw();
 
