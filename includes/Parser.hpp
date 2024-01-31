@@ -5,6 +5,7 @@
 #define PARSER_HPP
 
 #include "ServerBlock.hpp"
+#include "LocationBlock.hpp"
 
 class Parser {
 	public:
@@ -13,8 +14,9 @@ class Parser {
 
 		typedef void (Parser::*FuncPtr)( std::istringstream& );
 
+		// parsing the server block
 		void	parseServerBlocks( std::vector<ServerBlock>& serverBlocks );
-		void	parseServerBlockDirectives();
+		void	parseDirectives();
 		
 		// parsing the server block's directives
 		void	parsePortsListeningOn( std::istringstream& iss );
@@ -24,10 +26,18 @@ class Parser {
 		void	parseLimitClientBodySize( std::istringstream& iss );
 		void	parseCGI( std::istringstream& iss );
 		void	parseErrorPages( std::istringstream& iss );
+
+		void	parseAutoindexStatus( std::istringstream& iss );
+		void	parseAllowedMethods( std::istringstream& iss );
+		void	parseRedirection( std::istringstream& iss );
+		void	parseCgiPassPath( std::istringstream& iss );
+
+		// parsing the location block
 		void	parseLocationBlocks( std::istringstream& iss );
 
 		// utils
 		bool	isSkippableLine( std::string& line );
+		void	removeSemicolon( std::string& str );
 
 	private:
 		Parser( const Parser& other );
@@ -39,8 +49,9 @@ class Parser {
 		std::string									_tempLine;
 		int											_lineNum;
 		int											_serverBlockNum;
+		int											_locationBlockNum;
 		ServerBlock									_tempServerBlock;
-		// LocationBlock								_tempLocationBlock;
+		LocationBlock								_tempLocationBlock;
 
 		std::unordered_map<std::string, FuncPtr>	_executeDirectiveParsing;
 };

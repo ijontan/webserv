@@ -11,9 +11,14 @@ class LocationBlock {
 		LocationBlock& operator=( const LocationBlock& other );
 		~LocationBlock();
 
-	private:
+		// setters
+		void	setAutoindexStatus( bool status );
+		void	addAllowedMethods( std::string path );
+		void	setRedirection( int statusCode, std::string path );
+		void	setCgiPassPath( std::string path );
 
-		// bool						_autoindex;
+	private:
+		bool						_autoindexStatus;
 		std::vector<std::string>	_allowedMethods;
 		std::pair<int, std::string>	_redirection;
 		std::string					_cgiPass;

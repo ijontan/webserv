@@ -6,7 +6,7 @@ ServerBlock::ServerBlock():
 	_serverName(""),
 	_rootDirectory(""),
 	_index(""),
-	// _limitClientBodySize(0),
+	_limitClientBodySize(0),
 	// cgi,
 	_errorPages(),
 	_locationBlocks()
@@ -26,14 +26,14 @@ ServerBlock& ServerBlock::operator=( const ServerBlock& other ) {
 		this->_index = other._index;
 		this->_limitClientBodySize = other._limitClientBodySize;
 		// cgis
-
+		this->_errorPages = other._errorPages;
 		this->_locationBlocks = other._locationBlocks;
 	}
 	return *this;
 }
 
-void	ServerBlock::setPortsListeningOn( std::vector<int> portsListeningOn ) {
-	this->_portsListeningOn = portsListeningOn;
+void	ServerBlock::addPortsListeningOn( int port ) {
+	this->_portsListeningOn.push_back(port);
 }
 
 void	ServerBlock::setServerName( std::string serverName ) {
@@ -58,7 +58,7 @@ void 	ServerBlock::addErrorPage( int statusCode, std::string uri ) {
 	this->_errorPages[statusCode] = uri;
 }
 
-void 	ServerBlock::setLocationBlocks( std::vector<LocationBlock> locationBlocks ) {
-	this->_locationBlocks = locationBlocks;
+void 	ServerBlock::addLocationBlock( std::string path, LocationBlock locationBlock ) {
+	this->_locationBlocks[path] = locationBlock;
 }
 
