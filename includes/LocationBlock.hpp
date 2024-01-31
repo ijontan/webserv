@@ -7,11 +7,11 @@
 class LocationBlock {
 	public:
 		LocationBlock();
+		LocationBlock( const LocationBlock& other );
+		LocationBlock& operator=( const LocationBlock& other );
 		~LocationBlock();
 
 	private:
-		LocationBlock( const LocationBlock& other );
-		LocationBlock& operator=( const LocationBlock& other );
 
 		// bool						_autoindex;
 		std::vector<std::string>	_allowedMethods;

@@ -2,10 +2,11 @@
 #include "webserv.h"
 
 WebServer::WebServer( const std::string& filePath ) {
-	try {
-		Parser	parser;
+	try
+	{
+		Parser	parser(filePath);
 
-		this->_serverBlocks = parser.createServerBlocks(filePath);
+		parser.parseServerBlocks(this->_serverBlocks);
 		std::cout << GREEN "Server blocks created" RESET << std::endl;
 	} 
 	catch (const std::exception& e)

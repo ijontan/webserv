@@ -16,8 +16,7 @@ class WebServer {
 		WebServer( const WebServer& other );
 		WebServer& operator=( const WebServer& other );
 
-		std::vector<ServerBlock>		_serverBlocks;
+		std::vector<ServerBlock>	_serverBlocks;
 };
-
 
 #endif

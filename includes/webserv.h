@@ -12,9 +12,11 @@
 #include <sstream>
 #include <exception>
 
+
 // data structures
 #include <vector>
 #include <map>
+#include <unordered_map>
 
 // header files
 #include "colors.h"
