@@ -4,14 +4,21 @@
 
 int main(int argc, char const *argv[])
 {
-    if (argc != 2)
-    {
-        std::cerr << "Usage: ./webserv <port>" << std::endl;
-        return 1;
-    }
     NetIO io;
-    Socket sock(argv[1]);
-    sock.initSocket();
-    sock.acceptLoop(io);
+    if (argc == 1)
+    {
+        Server server;
+        server.loop(io);
+    }
+    else if (argc == 2)
+    {
+        Server server(argv[1]);
+        server.loop(io);
+    }
+    else
+    {
+        Server server(&argv[1]);
+        server.loop(io);
+    }
     return 0;
 }

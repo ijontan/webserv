@@ -16,8 +16,6 @@ class Socket
 private:
     int sockfd;
     std::string port;
-    struct pollfd fds[1024];
-    int pfdCount;
 
 public:
     Socket(void);
@@ -26,7 +24,7 @@ public:
     Socket(const Socket &src);
     Socket &operator=(const Socket &rhs);
     void initSocket(void);
-    void acceptLoop(IOAdaptor &nio);
-    void addPfd(int fd);
-    void removePfd(int index);
+    int getSockfd() const;
 };
+
+std::ostream &operator<<(std::ostream &os, const Socket &socket);
