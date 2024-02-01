@@ -13,7 +13,7 @@ class ServerBlock: public ABlock {
 		ServerBlock& operator=( const ServerBlock& other );
 		~ServerBlock();
 
-		void	addPortsListeningOn( int port );
+		void	addPortsListeningOn( std::string port );
 		void	setServerName( std::string serverName );
 
 		void 	addLocationBlock( std::string path, LocationBlock locationBlock );

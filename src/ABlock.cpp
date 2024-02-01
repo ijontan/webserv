@@ -64,7 +64,7 @@ void 	ABlock::setRedirection( int statusCode, std::string path ) {
 	this->_redirection.second = path;
 }
 
-std::vector<int>	ABlock::getPortsListeningOn() const {
+std::vector<std::string>	ABlock::getPortsListeningOn() const {
 	return this->_portsListeningOn;
 }
 

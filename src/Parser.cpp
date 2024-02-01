@@ -151,7 +151,7 @@ void	Parser::parseDirectives( T& block ) {
 
 
 void	Parser::parsePortsListeningOn( std::istringstream& iss ) {
-	int port;
+	std::string port;
 
 	while (iss >> port) {
 		std::cout << CYAN "added port: " << port << RESET <<std::endl;

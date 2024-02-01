@@ -19,7 +19,7 @@ ServerBlock& ServerBlock::operator=( const ServerBlock& other ) {
 	return *this;
 }
 
-void	ServerBlock::addPortsListeningOn( int port ) {
+void	ServerBlock::addPortsListeningOn( std::string port ) {
 	this->_portsListeningOn.push_back(port);
 }
 
@@ -33,9 +33,9 @@ void 	ServerBlock::addLocationBlock( std::string path, LocationBlock locationBlo
 
 std::ostream& operator<<(std::ostream& os, const ServerBlock& serverBlock) {
 	os << "listen: ";
-	const std::vector<int>& ports = serverBlock.getPortsListeningOn();
+	const std::vector<std::string>& ports = serverBlock.getPortsListeningOn();
 
-	for (std::vector<int>::const_iterator it = ports.begin(); it != ports.end(); it++) {
+	for (std::vector<std::string>::const_iterator it = ports.begin(); it != ports.end(); it++) {
 		os << *it << " ";
 	}
 	os << std::endl;

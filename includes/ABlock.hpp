@@ -23,7 +23,7 @@ class ABlock {
 		void	setRedirection( int statusCode, std::string path );
 
 		// getters
-		std::vector<int>						getPortsListeningOn() const;
+		std::vector<std::string>				getPortsListeningOn() const;
 		std::string								getServerName() const;
 		
 		std::string								getRootDirectory() const;
@@ -33,7 +33,7 @@ class ABlock {
 		std::pair<int, std::string>				getRedirection() const;
 
 	protected:
-		std::vector<int>								_portsListeningOn;
+		std::vector<std::string>						_portsListeningOn;
 		std::string										_serverName;
 
 		std::string										_rootDirectory;
