@@ -16,20 +16,25 @@ class Parser {
 
 		// parsing the server block
 		void	parseServerBlocks( std::vector<ServerBlock>& serverBlocks );
-		void	parseDirectives();
+		template <typename T>
+		void	parseDirectives( T& block );
 		
-		// parsing the server block's directives
 		void	parsePortsListeningOn( std::istringstream& iss );
 		void	parseServerName( std::istringstream& iss );
-		void	parseRoot( std::istringstream& iss );
-		void	parseIndex( std::istringstream& iss );
-		void	parseLimitClientBodySize( std::istringstream& iss );
-		void	parseCGI( std::istringstream& iss );
-		void	parseErrorPages( std::istringstream& iss );
+	
+		template <typename T>
+		void	parseRoot( T& block, std::istringstream& iss );
+		template <typename T>
+		void	parseIndex( T& block, std::istringstream& iss );
+		template <typename T>
+		void	parseClientMaxBodySize( T& block, std::istringstream& iss );
+		template <typename T>
+		void	parseErrorPages( T& block, std::istringstream& iss );
+		template <typename T>
+		void	parseRedirection( T& block, std::istringstream& iss );
 
 		void	parseAutoindexStatus( std::istringstream& iss );
 		void	parseAllowedMethods( std::istringstream& iss );
-		void	parseRedirection( std::istringstream& iss );
 		void	parseCgiPassPath( std::istringstream& iss );
 
 		// parsing the location block

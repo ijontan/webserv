@@ -7,7 +7,9 @@ WebServer::WebServer( const std::string& filePath ) {
 		Parser	parser(filePath);
 
 		parser.parseServerBlocks(this->_serverBlocks);
-		std::cout << GREEN "Server blocks created" RESET << std::endl;
+		std::cout << GREEN "Server blocks created" RESET << std::endl << std::endl;
+		
+		// printServerBlocksInfo();
 	} 
 	catch (const std::exception& e)
 	{
@@ -24,5 +26,11 @@ WebServer::WebServer( const WebServer& other ) {
 WebServer& WebServer::operator=( const WebServer& other ) {
 	(void)other;
 	return *this;
+}
+
+void	WebServer::printServerBlocksInfo() {
+	for (std::vector<ServerBlock>::iterator it = this->_serverBlocks.begin(); it != this->_serverBlocks.end(); it++) {
+		std::cout << *it << std::endl;
+	}
 }
 

@@ -12,6 +12,9 @@ class WebServer {
 		WebServer( const std::string& filePath );
 		~WebServer();
 
+		// utils
+		void	printServerBlocksInfo();
+
 	private:
 		WebServer( const WebServer& other );
 		WebServer& operator=( const WebServer& other );

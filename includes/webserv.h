@@ -22,6 +22,7 @@
 #include "colors.h"
 
 // hpp files
+#include "ABlock.hpp"
 #include "Parser.hpp"
 #include "LocationBlock.hpp"
 #include "ServerBlock.hpp"

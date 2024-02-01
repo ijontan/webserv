@@ -2,13 +2,7 @@
 #include "webserv.h"
 
 ServerBlock::ServerBlock():
-	_portsListeningOn(),
-	_serverName(""),
-	_rootDirectory(""),
-	_index(""),
-	_limitClientBodySize(0),
-	// cgi,
-	_errorPages(),
+	ABlock(),
 	_locationBlocks()
 {}
 
@@ -20,13 +14,6 @@ ServerBlock::ServerBlock( const ServerBlock& other ) {
 
 ServerBlock& ServerBlock::operator=( const ServerBlock& other ) {
 	if (this != &other) {
-		this->_portsListeningOn = other._portsListeningOn;
-		this->_serverName = other._serverName;
-		this->_rootDirectory = other._rootDirectory;
-		this->_index = other._index;
-		this->_limitClientBodySize = other._limitClientBodySize;
-		// cgis
-		this->_errorPages = other._errorPages;
 		this->_locationBlocks = other._locationBlocks;
 	}
 	return *this;
@@ -40,25 +27,27 @@ void	ServerBlock::setServerName( std::string serverName ) {
 	this->_serverName = serverName;
 }
 
-void	ServerBlock::setRootDirectory( std::string rootDirectory ) {
-	this->_rootDirectory = rootDirectory;
-}
-
-void	ServerBlock::setIndex( std::string index ) {
-	this->_index = index;
-}
-
-void	ServerBlock::setLimitClientBodySize( int limitClientBodySize ) {
-	this->_limitClientBodySize = limitClientBodySize;
-}
-
-// data_type	cgi_scripts
-
-void 	ServerBlock::addErrorPage( int statusCode, std::string uri ) {
-	this->_errorPages[statusCode] = uri;
-}
-
 void 	ServerBlock::addLocationBlock( std::string path, LocationBlock locationBlock ) {
 	this->_locationBlocks[path] = locationBlock;
 }
 
+std::ostream& operator<<(std::ostream& os, const ServerBlock& serverBlock) {
+	os << "listen: ";
+	const std::vector<int>& ports = serverBlock.getPortsListeningOn();
+
+	for (std::vector<int>::const_iterator it = ports.begin(); it != ports.end(); it++) {
+		os << *it << " ";
+	}
+	os << std::endl;
+
+
+	os << "server_name: " << serverBlock.getServerName() << std::endl;
+	
+	os << "root: " << serverBlock.getRootDirectory() << std::endl;
+	os << "index: " << serverBlock.getIndex() << std::endl;
+	os << "client_max_body_size: " << serverBlock.getClientMaxBodySize() << std::endl;
+	// os << "error_pages: " << serverBlock.getRootDirectory() << std::endl;
+	os << "redirection: " << serverBlock.getRootDirectory() << std::endl;
+
+	return os;
+}

@@ -2,9 +2,16 @@
 #include "webserv.h"
 
 LocationBlock::LocationBlock():
+	ABlock(),
 	_autoindexStatus(false),
 	_allowedMethods(),
-	_redirection(),
+	_cgiPass("")
+{}
+
+LocationBlock::LocationBlock( ServerBlock& serverBlock ):
+	ABlock(serverBlock),
+	_autoindexStatus(false),
+	_allowedMethods(),
 	_cgiPass("")
 {}
 
@@ -18,7 +25,6 @@ LocationBlock& LocationBlock::operator=( const LocationBlock& other ) {
 	if (this != &other) {
 		this->_autoindexStatus = other._autoindexStatus;
 		this->_allowedMethods = other._allowedMethods;
-		this->_redirection = other._redirection;
 		this->_cgiPass = other._cgiPass;
 	}
 	return *this;
@@ -32,12 +38,19 @@ void	LocationBlock::addAllowedMethods( std::string method ) {
 	this->_allowedMethods.push_back(method);
 }
 
-void	LocationBlock::setRedirection( int statusCode, std::string path ) {
-	this->_redirection.first = statusCode;
-	this->_redirection.second = path;
-}
-
 void	LocationBlock::setCgiPassPath( std::string path ) {
 	this->_cgiPass = path;
+}
+
+bool	LocationBlock::getAutoindexStatus() const {
+	return this->_autoindexStatus;
+}
+
+std::vector<std::string>	LocationBlock::getAllowedMethods() const {
+	return this->_allowedMethods;
+}
+
+std::string	LocationBlock::getCgiPass() const {
+	return this->_cgiPass;
 }
 
