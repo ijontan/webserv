@@ -23,6 +23,9 @@ LocationBlock::LocationBlock( const LocationBlock& other ) {
 
 LocationBlock& LocationBlock::operator=( const LocationBlock& other ) {
 	if (this != &other) {
+		// copy assignment of base class ABlock
+		ABlock::operator=(other);
+
 		this->_autoindexStatus = other._autoindexStatus;
 		this->_allowedMethods = other._allowedMethods;
 		this->_cgiPass = other._cgiPass;

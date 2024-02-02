@@ -8,8 +8,8 @@ WebServer::WebServer( const std::string& filePath ) {
 
 		parser.parseServerBlocks(this->_serverBlocks);
 		std::cout << GREEN "Server blocks created" RESET << std::endl << std::endl;
-		
-		// printServerBlocksInfo();
+
+		printServerBlocksInfo();
 	} 
 	catch (const std::exception& e)
 	{

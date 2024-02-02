@@ -76,8 +76,6 @@ void Parser::parseServerBlocks( std::vector<ServerBlock>& serverBlocks ) {
 			this->_tempServerBlock = ServerBlock();
 
 			parseDirectives(this->_tempServerBlock);
-			std::cout << this->_tempServerBlock << std::endl;
-
 
 			serverBlocks.push_back(this->_tempServerBlock);
 		} else {
@@ -86,7 +84,7 @@ void Parser::parseServerBlocks( std::vector<ServerBlock>& serverBlocks ) {
 									+ "): Server blocks must be in the enclosed in this format:\nserver {\n...\n}";
 			throw CustomException(errorMsg);
 		}
-	}	
+	}
 }
 
 // parses the individual directives like: listen, server_name and so on
@@ -259,7 +257,7 @@ location [path] {
 */
 void	Parser::parseLocationBlocks( std::istringstream& iss ) {
 	std::string	path, str;
-		
+
 	// gets the 2nd and 3rd element in the line
 	iss >> path >> str;
 	// std::cout << "path: " << path << std::endl;

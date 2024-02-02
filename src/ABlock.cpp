@@ -92,4 +92,3 @@ std::unordered_map<int, std::string>	ABlock::getErrorPages() const {
 std::pair<int, std::string>	ABlock::getRedirection() const {
 	return this->_redirection;
 }
-
