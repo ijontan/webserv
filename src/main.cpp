@@ -1,24 +1,13 @@
 
 #include "webserv.h"
-#include "Socket.hpp"
 
-int main(int argc, char const *argv[])
+int main(int ac, char **av)
 {
-    NetIO io;
-    if (argc == 1)
-    {
-        Server server;
-        server.loop(io);
-    }
-    else if (argc == 2)
-    {
-        Server server(argv[1]);
-        server.loop(io);
-    }
-    else
-    {
-        Server server(&argv[1]);
-        server.loop(io);
-    }
-    return 0;
+	if (ac == 1) {
+		WebServer webServer(DEFAULT_CONFIG_FILE_PATH);
+	} else if (ac == 2) {
+		WebServer webServer(av[1]);
+	} else {
+		std::cerr << "Error: please enter only the .conf file as the first argument (./webserv [.conf])" << std::endl;
+	}
 }
