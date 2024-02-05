@@ -19,7 +19,11 @@ public:
 
 	void addLocationBlock(std::string path, LocationBlock locationBlock);
 
+	void initSocket(void);
+	int getSockfd() const;
+
 private:
+	int sockfd;
 	std::map<std::string, LocationBlock> _locationBlocks;
 };
 
