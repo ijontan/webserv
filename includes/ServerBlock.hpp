@@ -6,22 +6,23 @@
 
 class LocationBlock;
 
-class ServerBlock: public ABlock {
-	public:
-		ServerBlock();
-		ServerBlock( const ServerBlock& other );
-		ServerBlock& operator=( const ServerBlock& other );
-		~ServerBlock();
+class ServerBlock : public ABlock
+{
+public:
+	ServerBlock();
+	ServerBlock(const ServerBlock &other);
+	ServerBlock &operator=(const ServerBlock &other);
+	~ServerBlock();
 
-		void	addPortsListeningOn( std::string port );
-		void	setServerName( std::string serverName );
+	void addPortsListeningOn(std::string port);
+	void setServerName(std::string serverName);
 
-		void 	addLocationBlock( std::string path, LocationBlock locationBlock );
+	void addLocationBlock(std::string path, LocationBlock locationBlock);
 
-	private:
-		std::unordered_map<std::string, LocationBlock>	_locationBlocks;
+private:
+	std::map<std::string, LocationBlock> _locationBlocks;
 };
 
-std::ostream& operator<<(std::ostream& os, const ServerBlock& serverBlock);
+std::ostream &operator<<(std::ostream &os, const ServerBlock &serverBlock);
 
 #endif
