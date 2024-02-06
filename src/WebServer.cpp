@@ -1,5 +1,8 @@
 
 #include "webserv.h"
+#include <string>
+#include <utility>
+#include <vector>
 
 WebServer::WebServer(const std::string &filePath)
 {
@@ -44,8 +47,8 @@ void WebServer::printServerBlocksInfo()
 void WebServer::initSockets()
 {
 	for (std::vector<ServerBlock>::iterator it = _serverBlocks.begin(); it < _serverBlocks.end(); it++) {
-		(*it).initSocket();
-		addPfd((*it).getSockfd());
+		(*it).initSockets();
+		addPfds((*it).getSockfds());
 	}
 }
 
@@ -59,6 +62,17 @@ static void *get_in_addr(struct sockaddr *sa)
     return &(((struct sockaddr_in6 *)sa)->sin6_addr);
 }
 
+template<typename T>
+static bool find(std::vector<T> arr, T value)
+{
+    for (size_t i = 0; i < arr.size(); i++) {
+        if (arr[i] == value) {
+            return true;
+        } 
+    }
+    return false;
+}
+
 void WebServer::loop(IOAdaptor io)
 {
     char s[INET6_ADDRSTRLEN];
@@ -66,9 +80,8 @@ void WebServer::loop(IOAdaptor io)
     struct sockaddr_storage theiraddr;
     socklen_t addrSize = sizeof(theiraddr);
     char buff[256];
-    std::vector<std::string> str;
+    std::map<int, std::string> strMap;
 
-    str.push_back("");
     for (size_t j = 0; j < _serverBlocks.size(); j++)
         std::cout << _serverBlocks[j];
 
@@ -89,7 +102,7 @@ void WebServer::loop(IOAdaptor io)
             // find if socket exist
             bool found = false;
             for (size_t j = 0; j < _serverBlocks.size(); j++)
-                if (_serverBlocks[j].getSockfd() == pfds[i].fd)
+                if (find(_serverBlocks[j].getSockfds(), pfds[i].fd))
                     found = true;
             std::cout << "found: " << found << std::endl;
 
@@ -106,8 +119,7 @@ void WebServer::loop(IOAdaptor io)
                           get_in_addr((struct sockaddr *)&theiraddr),
                           s, sizeof(s));
                 std::cout << HGREEN << "Server: got connection from: " << RESET << s << std::endl;
-                str.push_back("");
-                str[i] = "";
+                strMap.insert(std::pair<int, std::string>(newFd,""));
                 addPfd(newFd);
             }
             else
@@ -116,7 +128,8 @@ void WebServer::loop(IOAdaptor io)
                 int bytes = recv(pfds[i].fd, buff, sizeof(buff), 0);
                 if (bytes <= 0)
                 {
-                    io.recieveMessage(str[i]);
+                    std::cout<<"something:" << strMap[pfds[i].fd]<<std::endl;
+                    io.recieveMessage(strMap[pfds[i].fd]);
                     if (bytes == 0)
                     {
                         std::cout << io;
@@ -127,14 +140,14 @@ void WebServer::loop(IOAdaptor io)
                     {
                         std::cerr << "recv error" << std::endl;
                     }
-                    str.erase(str.begin() + i);
+                    strMap.erase(strMap.find(pfds[i].fd));
                     close(pfds[i].fd);
                     io.recieveMessage("");
                     removePfd(i);
                 }
                 else
                 {
-                    str[i] += buff;
+                    strMap[pfds[i].fd] += buff;
                     memset(buff, 0, sizeof(buff));
                 }
             }
@@ -148,6 +161,14 @@ void WebServer::addPfd(int fd)
     pfd.fd = fd;
     pfd.events = POLLIN;
     pfds.push_back(pfd);
+}
+
+void WebServer::addPfds(std::vector<int> fds)
+{
+    for (std::vector<int>::iterator it = fds.begin();it != fds.end() ;it++) {
+        addPfd(*it);
+        std::cout<<"fd: " << *it << std::endl; 
+    }
 }
 
 void WebServer::removePfd(int index)

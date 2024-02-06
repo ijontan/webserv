@@ -1,5 +1,6 @@
 
 #include "webserv.h"
+#include <vector>
 
 #ifndef SERVERBLOCK_HPP
 #define SERVERBLOCK_HPP
@@ -19,11 +20,12 @@ public:
 
 	void addLocationBlock(std::string path, LocationBlock locationBlock);
 
-	void initSocket(void);
-	int getSockfd() const;
+	std::vector<int> getSockfds() const;
+	void initSockets();
 
 private:
-	int sockfd;
+	void initSocket(std::string port);
+	std::vector<int> sockfds;
 	std::map<std::string, LocationBlock> _locationBlocks;
 };
 

@@ -1,5 +1,6 @@
 
 #include "webserv.h"
+#include <vector>
 
 #ifndef WEBSERVER_HPP
 #define WEBSERVER_HPP
@@ -17,8 +18,9 @@ class WebServer {
 		void	printServerBlocksInfo();
 		void	initSockets();
 		void	loop(IOAdaptor io);
-		void	addPfd(int fd);
 		void	removePfd(int index);
+		void	addPfd(int fd);
+		void	addPfds(std::vector<int> fds);
 
 	private:
 		WebServer( const WebServer& other );

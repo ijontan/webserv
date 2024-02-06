@@ -1,5 +1,7 @@
 
 #include "webserv.h"
+#include <iostream>
+#include <vector>
 
 ServerBlock::ServerBlock() : ABlock(),
 							 _locationBlocks()
@@ -42,24 +44,26 @@ void ServerBlock::addLocationBlock(std::string path, LocationBlock locationBlock
 	this->_locationBlocks[path] = locationBlock;
 }
 
-int ServerBlock::getSockfd() const
+std::vector<int> ServerBlock::getSockfds() const
 {
-	return sockfd;
+	return sockfds;
 }
 
-void ServerBlock::initSocket()
+void ServerBlock::initSocket(std::string port)
 {
 	struct addrinfo hints, *servInfo, *p;
+	int sockfd;
 
 	memset(&hints, 0, sizeof(hints));
+	servInfo = 0;
 	hints.ai_family = AF_UNSPEC;	 // AF_INET or AF_INET6 to force version
 	hints.ai_socktype = SOCK_STREAM; // TCP
 	hints.ai_flags = AI_PASSIVE;
-
-	if (getaddrinfo(NULL, getPortsListeningOn()[0].c_str(), &hints, &servInfo) != 0)
+	std::cout << "port: " << port << std::endl;
+	if (getaddrinfo(NULL, port.c_str(), &hints, &servInfo) != 0)
 	{
 		std::cerr << "getaddrinfo error" << std::endl;
-		throw "getaddrinfo error";
+		return ;
 	}
 	for (p = servInfo; p != NULL; p = p->ai_next)
 	{
@@ -98,6 +102,15 @@ void ServerBlock::initSocket()
 	}
 	std::cout << HWHITE << "Server: waiting for connections..." << RESET << std::endl
 			  << std::endl;
+	sockfds.push_back(sockfd);
+}
+
+void ServerBlock::initSockets()
+{
+	std::vector<std::string> ports = getPortsListeningOn();
+	for (std::vector<std::string>::iterator it = ports.begin();it < ports.end();it++) {
+		initSocket(*it);
+	}
 }
 
 std::ostream &operator<<(std::ostream &os, const ServerBlock &serverBlock)
