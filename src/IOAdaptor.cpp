@@ -1,5 +1,6 @@
 #include "IOAdaptor.hpp"
 #include "colors.h"
+#include <sstream>
 
 IOAdaptor::IOAdaptor(void) : receivedRaw("")
 {
@@ -27,7 +28,11 @@ void IOAdaptor::recieveMessage(std::string raw)
 
 std::string IOAdaptor::getMessageToSend() const
 {
-    return "Recieved message:\n" + receivedRaw + "\nSending back: Hello, world!\n";
+	std::stringstream ss;
+	ss	<< BGREEN << "Recieved message:\n" << RESET
+		<< receivedRaw 
+		<< BBLUE << "\nSending back: Hello, world!\n" << RESET;
+	return ss.str();
 }
 
 std::string IOAdaptor::getRaw() const

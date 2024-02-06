@@ -13,6 +13,17 @@
 #include <fstream>
 #include <sstream>
 #include <exception>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <string.h>
+#include <unistd.h>
+#include <poll.h>
+#include <vector>
+#include "colors.h"
+#include <arpa/inet.h>
+#include <fcntl.h>
+
 
 // data structures
 #include <vector>
@@ -29,5 +40,7 @@
 #include "ServerBlock.hpp"
 #include "WebServer.hpp"
 #include "CustomException.hpp"
+#include "IOAdaptor.hpp"
+#include "NetIO.hpp"
 
 #endif
