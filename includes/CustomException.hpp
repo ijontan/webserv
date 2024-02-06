@@ -4,17 +4,16 @@
 #ifndef CUSTOMEXCEPTION_HPP
 #define CUSTOMEXCEPTION_HPP
 
-class CustomException: public std::exception {
-	public:
-		CustomException( std::string errorMsg );
-		virtual ~CustomException() _NOEXCEPT;
+class CustomException : public std::exception
+{
+public:
+	CustomException(std::string errorMsg);
+	~CustomException() throw();
 
-		const char *what() const throw();
+	const char *what() const throw();
 
-	private:
-		std::string _errorMsg;
+private:
+	std::string _errorMsg;
 };
 
-
 #endif
-
