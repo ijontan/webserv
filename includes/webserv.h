@@ -5,8 +5,6 @@
 // macros
 #define DEFAULT_CONFIG_FILE_PATH "config_files/default.conf"
 
-#include <Server.hpp>
-
 // libraries
 #include <iostream>
 #include <string>
