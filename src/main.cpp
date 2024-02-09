@@ -26,10 +26,10 @@ int main(int ac, char **av) {
   // 		throw "getaddrinfo error";
   // 	}
   // }
-  
+
   IOAdaptor io;
   if (ac == 1) {
-    WebServer webServer(DEFAULT_CONFIG_FILE_PATH);
+     WebServer webServer(DEFAULT_CONFIG_FILE_PATH);
     webServer.loop(io);
   } else if (ac == 2) {
     WebServer webServer(av[1]);
