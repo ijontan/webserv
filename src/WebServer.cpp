@@ -76,7 +76,6 @@ static bool find(std::vector<T> arr, T value)
 void WebServer::loop(IOAdaptor io)
 {
     char s[INET6_ADDRSTRLEN];
-    int newFd;
     struct sockaddr_storage theiraddr;
     socklen_t addrSize = sizeof(theiraddr);
     char buff[256];
@@ -104,12 +103,11 @@ void WebServer::loop(IOAdaptor io)
             for (size_t j = 0; j < _serverBlocks.size(); j++)
                 if (find(_serverBlocks[j].getSockfds(), pfds[i].fd))
                     found = true;
-            std::cout << "found: " << found << std::endl;
 
             if (found)
             {
                 addrSize = sizeof(theiraddr);
-                newFd = accept(pfds[i].fd, (struct sockaddr *)&theiraddr, &addrSize);
+                int newFd = accept(pfds[i].fd, (struct sockaddr *)&theiraddr, &addrSize);
                 if (newFd == -1)
                 {
                     std::cerr << "accept error" << std::endl;
@@ -124,8 +122,9 @@ void WebServer::loop(IOAdaptor io)
             }
             else
             {
-                std::cout << "recieved message:" << std::endl;
+                memset(buff, 0, sizeof(buff));
                 int bytes = recv(pfds[i].fd, buff, sizeof(buff), 0);
+                std::cout << "recieved message:" << buff << std::endl;
                 if (bytes <= 0)
                 {
                     std::cout<<"something:" << strMap[pfds[i].fd]<<std::endl;
@@ -134,22 +133,17 @@ void WebServer::loop(IOAdaptor io)
                     {
                         std::cout << io;
                         std::string toSend = io.getMessageToSend();
-                        send(newFd, toSend.c_str(), toSend.length(), 0);
+                        send(pfds[i].fd, toSend.c_str(), toSend.length(), 0);
                     }
                     else
-                    {
                         std::cerr << "recv error" << std::endl;
-                    }
                     strMap.erase(strMap.find(pfds[i].fd));
                     close(pfds[i].fd);
                     io.recieveMessage("");
                     removePfd(i);
                 }
                 else
-                {
                     strMap[pfds[i].fd] += buff;
-                    memset(buff, 0, sizeof(buff));
-                }
             }
         }
     }
