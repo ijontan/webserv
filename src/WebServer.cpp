@@ -83,7 +83,7 @@ static bool find(std::vector<T> arr, T value)
 	return false;
 }
 
-void WebServer::loop(IOAdaptor io)
+void WebServer::loop(IOAdaptor &io)
 {
 	char s[INET6_ADDRSTRLEN];
 	struct sockaddr_storage theiraddr;
