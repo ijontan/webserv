@@ -18,7 +18,7 @@ public:
 	// utils
 	void printServerBlocksInfo();
 	void initSockets();
-	void loop(IOAdaptor io);
+	void loop(IOAdaptor &io);
 	void removePfd(int index);
 	void addPfd(int fd);
 	void addPfds(std::vector<int> fds);
