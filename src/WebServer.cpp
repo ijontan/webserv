@@ -1,5 +1,8 @@
 
+#include "colors.h"
 #include "webserv.h"
+#include <iostream>
+#include <ostream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -124,12 +127,11 @@ void WebServer::loop(IOAdaptor io)
             {
                 memset(buff, 0, sizeof(buff));
                 int bytes = recv(pfds[i].fd, buff, sizeof(buff), 0);
-                std::cout << "recieved message:" << buff << std::endl;
-                if (bytes <= 0)
+                strMap[pfds[i].fd] += buff;
+                if (bytes < 256)
                 {
-                    std::cout<<"something:" << strMap[pfds[i].fd]<<std::endl;
                     io.recieveMessage(strMap[pfds[i].fd]);
-                    if (bytes == 0)
+                    if (bytes >= 0)
                     {
                         std::cout << io;
                         std::string toSend = io.getMessageToSend();
@@ -142,8 +144,6 @@ void WebServer::loop(IOAdaptor io)
                     io.recieveMessage("");
                     removePfd(i);
                 }
-                else
-                    strMap[pfds[i].fd] += buff;
             }
         }
     }
