@@ -1,29 +1,33 @@
 
 #include "webserv.h"
 
-Parser::Parser(const std::string &filePath) : _filePath(filePath),
-											  _fileStream(filePath.c_str()),
-											  _tempLine(""),
-											  _lineNum(1),
-											  _serverBlockNum(1),
-											  _locationBlockNum(1),
-											  _tempServerBlock(),
-											  _tempLocationBlock(this->_tempServerBlock)
+Parser::Parser(const std::string &filePath)
+	: _filePath(filePath), _fileStream(filePath.c_str()), _tempLine(""),
+	  _lineNum(1), _serverBlockNum(1), _locationBlockNum(1), _tempServerBlock(),
+	  _tempLocationBlock(this->_tempServerBlock)
 {
-	// this->_executeDirectiveParsing["listen"] 					= &Parser::parsePortsListeningOn;
-	// this->_executeDirectiveParsing["server_name"] 				= &Parser::parseServerName;
+	// this->_executeDirectiveParsing["listen"] 					=
+	// &Parser::parsePortsListeningOn;
+	// this->_executeDirectiveParsing["server_name"] 				=
+	// &Parser::parseServerName;
 
-	// this->_executeDirectiveParsing["root"] 						= &Parser::parseRoot;
-	// this->_executeDirectiveParsing["index"]						= &Parser::parseIndex;
-	// this->_executeDirectiveParsing["client_max_body_size"]		= &Parser::parseClientMaxBodySize;
-	// this->_executeDirectiveParsing["error_page"] 				= &Parser::parseErrorPages;
-	// this->_executeDirectiveParsing["return"]					= &Parser::parseRedirection;
+	// this->_executeDirectiveParsing["root"] 						=
+	// &Parser::parseRoot; this->_executeDirectiveParsing["index"]
+	// = &Parser::parseIndex;
+	// this->_executeDirectiveParsing["client_max_body_size"]		=
+	// &Parser::parseClientMaxBodySize;
+	// this->_executeDirectiveParsing["error_page"] 				=
+	// &Parser::parseErrorPages; this->_executeDirectiveParsing["return"]
+	// = &Parser::parseRedirection;
 
-	// this->_executeDirectiveParsing["location"] 					= &Parser::parseLocationBlocks;
+	// this->_executeDirectiveParsing["location"] 					=
+	// &Parser::parseLocationBlocks;
 
-	// this->_executeDirectiveParsing["autoindex"]					= &Parser::parseAutoindexStatus;
-	// this->_executeDirectiveParsing["limit_except"]				= &Parser::parseAllowedMethods;
-	// this->_executeDirectiveParsing["cgi_pass"]					= &Parser::parseCgiPassPath;
+	// this->_executeDirectiveParsing["autoindex"]					=
+	// &Parser::parseAutoindexStatus;
+	// this->_executeDirectiveParsing["limit_except"]				=
+	// &Parser::parseAllowedMethods; this->_executeDirectiveParsing["cgi_pass"]
+	// = &Parser::parseCgiPassPath;
 }
 
 /*
@@ -32,7 +36,9 @@ Location:	autoindex, limit_except, cgi_pass
 Both:		root, index, client_max_body_size, error_page, return
 */
 
-Parser::~Parser() {}
+Parser::~Parser()
+{
+}
 
 Parser::Parser(const Parser &other)
 {
@@ -50,7 +56,8 @@ void Parser::parseServerBlocks(std::vector<ServerBlock> &serverBlocks)
 	// open the file
 	if (this->_fileStream.is_open() == false)
 	{
-		std::string errorMsg = "Error: Cannot open config file " + this->_filePath;
+		std::string errorMsg =
+			"Error: Cannot open config file " + this->_filePath;
 		throw CustomException(errorMsg);
 	}
 
@@ -75,7 +82,8 @@ void Parser::parseServerBlocks(std::vector<ServerBlock> &serverBlocks)
 		if (str1 == "server" && str2 == "{")
 		{
 			std::cout << std::endl
-					  << HYELLOW "Creating server block " << this->_serverBlockNum << RESET << std::endl;
+					  << HYELLOW "Creating server block "
+					  << this->_serverBlockNum << RESET << std::endl;
 			this->_locationBlockNum = 1;
 			this->_lineNum++;
 			this->_serverBlockNum++;
@@ -89,7 +97,9 @@ void Parser::parseServerBlocks(std::vector<ServerBlock> &serverBlocks)
 		else
 		{
 			std::stringstream ss;
-			ss << "Error (line " << this->_lineNum << "): Server blocks must be in the enclosed in this format:\nserver {\n...\n}";
+			ss << "Error (line " << this->_lineNum
+			   << "): Server blocks must be in the enclosed in this "
+				  "format:\nserver {\n...\n}";
 			throw CustomException(ss.str());
 		}
 	}
@@ -116,11 +126,12 @@ void Parser::parseDirectives(T &block)
 			return;
 		}
 
-		// // check if the directive exists in the unordered map using an iterator:
-		// std::map<std::string, FuncPtr>::iterator it = this->_executeDirectiveParsing.find(directive);
+		// // check if the directive exists in the unordered map using an
+		// iterator: std::map<std::string, FuncPtr>::iterator it =
+		// this->_executeDirectiveParsing.find(directive);
 
-		// // if it does then execute the function pointer to parse the directive
-		// if (it != this->_executeDirectiveParsing.end()) {
+		// // if it does then execute the function pointer to parse the
+		// directive if (it != this->_executeDirectiveParsing.end()) {
 		// 	(this->*(it->second))(iss);
 		// 	this->_lineNum++;
 		// } else {
@@ -210,7 +221,8 @@ void Parser::parseRoot(T &block, std::istringstream &iss)
 	iss >> rootDirectory;
 	removeSemicolon(rootDirectory);
 	block.setRootDirectory(rootDirectory);
-	std::cout << MAGENTA "set root directory: " << rootDirectory << RESET << std::endl;
+	std::cout << MAGENTA "set root directory: " << rootDirectory << RESET
+			  << std::endl;
 }
 
 template <typename T>
@@ -231,7 +243,8 @@ void Parser::parseClientMaxBodySize(T &block, std::istringstream &iss)
 
 	iss >> clientMaxBodySize;
 	block.setClientMaxBodySize(clientMaxBodySize);
-	std::cout << MAGENTA "set limit client body size: " << clientMaxBodySize << RESET << std::endl;
+	std::cout << MAGENTA "set limit client body size: " << clientMaxBodySize
+			  << RESET << std::endl;
 }
 
 template <typename T>
@@ -243,7 +256,8 @@ void Parser::parseErrorPages(T &block, std::istringstream &iss)
 	iss >> statusCode >> uri;
 	removeSemicolon(uri);
 	block.addErrorPage(statusCode, uri);
-	std::cout << MAGENTA "added error page: " << statusCode << " " << uri << RESET << std::endl;
+	std::cout << MAGENTA "added error page: " << statusCode << " " << uri
+			  << RESET << std::endl;
 }
 
 template <typename T>
@@ -255,7 +269,8 @@ void Parser::parseRedirection(T &block, std::istringstream &iss)
 	iss >> statusCode >> path;
 	removeSemicolon(path);
 	block.setRedirection(statusCode, path);
-	std::cout << MAGENTA "added redirection: " << statusCode << " " << path << RESET << std::endl;
+	std::cout << MAGENTA "added redirection: " << statusCode << " " << path
+			  << RESET << std::endl;
 }
 
 void Parser::parseAutoindexStatus(std::istringstream &iss)
@@ -311,7 +326,9 @@ void Parser::parseLocationBlocks(std::istringstream &iss)
 
 	if (str == "{")
 	{
-		std::cout << HYELLOW "Creating location block " << this->_locationBlockNum << " (" << path << ")" << RESET << std::endl;
+		std::cout << HYELLOW "Creating location block "
+				  << this->_locationBlockNum << " (" << path << ")" << RESET
+				  << std::endl;
 
 		this->_tempLocationBlock = LocationBlock(this->_tempServerBlock);
 
@@ -325,7 +342,9 @@ void Parser::parseLocationBlocks(std::istringstream &iss)
 	else
 	{
 		std::stringstream ss;
-		ss << "Error (line " << this->_lineNum << "): Location blocks must be in the enclosed in this format:\nlocation [path] {\n...\n}";
+		ss << "Error (line " << this->_lineNum
+		   << "): Location blocks must be in the enclosed in this "
+			  "format:\nlocation [path] {\n...\n}";
 		throw CustomException(ss.str());
 	}
 }

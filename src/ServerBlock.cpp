@@ -3,8 +3,7 @@
 #include <iostream>
 #include <vector>
 
-ServerBlock::ServerBlock() : ABlock(),
-							 _locationBlocks()
+ServerBlock::ServerBlock() : ABlock(), _locationBlocks()
 {
 }
 
@@ -39,7 +38,8 @@ void ServerBlock::setServerName(std::string serverName)
 	this->_serverName = serverName;
 }
 
-void ServerBlock::addLocationBlock(std::string path, LocationBlock locationBlock)
+void ServerBlock::addLocationBlock(std::string path,
+								   LocationBlock locationBlock)
 {
 	this->_locationBlocks[path] = locationBlock;
 }
@@ -63,21 +63,24 @@ void ServerBlock::initSocket(std::string port)
 	if (getaddrinfo(NULL, port.c_str(), &hints, &servInfo) != 0)
 	{
 		std::cerr << "getaddrinfo error" << std::endl;
-		return ;
+		return;
 	}
 	for (p = servInfo; p != NULL; p = p->ai_next)
 	{
-		if ((sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1)
+		if ((sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) ==
+			-1)
 		{
 			std::cerr << "socket error" << std::endl;
 			continue;
 		}
 		fcntl(sockfd, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
 
-		if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &sockfd, sizeof(int)) == -1)
+		if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &sockfd,
+					   sizeof(int)) == -1)
 		{
 			std::cerr << "Error setting socket options" << std::endl;
-			close(sockfd); // Don't forget to close the socket in case of an error
+			close(
+				sockfd); // Don't forget to close the socket in case of an error
 			throw "Error setting socket options";
 		}
 
@@ -100,7 +103,8 @@ void ServerBlock::initSocket(std::string port)
 		std::cerr << "listen error" << std::endl;
 		throw "fail to listen";
 	}
-	std::cout << HWHITE << "Server: waiting for connections..." << RESET << std::endl
+	std::cout << HWHITE << "Server: waiting for connections..." << RESET
+			  << std::endl
 			  << std::endl;
 	sockfds.push_back(sockfd);
 }
@@ -108,7 +112,9 @@ void ServerBlock::initSocket(std::string port)
 void ServerBlock::initSockets()
 {
 	std::vector<std::string> ports = getPortsListeningOn();
-	for (std::vector<std::string>::iterator it = ports.begin();it < ports.end();it++) {
+	for (std::vector<std::string>::iterator it = ports.begin();
+		 it < ports.end(); it++)
+	{
 		initSocket(*it);
 	}
 }
@@ -118,7 +124,8 @@ std::ostream &operator<<(std::ostream &os, const ServerBlock &serverBlock)
 	// print ports:
 	os << "listen: ";
 	const std::vector<std::string> &ports = serverBlock.getPortsListeningOn();
-	for (std::vector<std::string>::const_iterator it = ports.begin(); it != ports.end(); it++)
+	for (std::vector<std::string>::const_iterator it = ports.begin();
+		 it != ports.end(); it++)
 	{
 		os << *it << " ";
 	}
@@ -127,18 +134,22 @@ std::ostream &operator<<(std::ostream &os, const ServerBlock &serverBlock)
 	os << "server_name: " << serverBlock.getServerName() << std::endl;
 	os << "root: " << serverBlock.getRootDirectory() << std::endl;
 	os << "index: " << serverBlock.getIndex() << std::endl;
-	os << "client_max_body_size: " << serverBlock.getClientMaxBodySize() << std::endl;
+	os << "client_max_body_size: " << serverBlock.getClientMaxBodySize()
+	   << std::endl;
 
 	// print error_pages:
 	os << "error pages: " << std::endl;
 	const std::map<int, std::string> &errorPages = serverBlock.getErrorPages();
-	for (std::map<int, std::string>::const_iterator it = errorPages.begin(); it != errorPages.end(); it++)
+	for (std::map<int, std::string>::const_iterator it = errorPages.begin();
+		 it != errorPages.end(); it++)
 	{
 		os << (*it).first << " " << (*it).second << std::endl;
 	}
 
-	const std::pair<int, std::string> &redirection = serverBlock.getRedirection();
-	os << "redirection: " << redirection.first << " " << redirection.second << std::endl;
+	const std::pair<int, std::string> &redirection =
+		serverBlock.getRedirection();
+	os << "redirection: " << redirection.first << " " << redirection.second
+	   << std::endl;
 
 	return os;
 }

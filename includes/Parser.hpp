@@ -4,8 +4,8 @@
 #ifndef PARSER_HPP
 #define PARSER_HPP
 
-#include "ServerBlock.hpp"
 #include "LocationBlock.hpp"
+#include "ServerBlock.hpp"
 
 class Parser
 {

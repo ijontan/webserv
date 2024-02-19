@@ -1,29 +1,26 @@
 
 #include "webserv.h"
 
-ABlock::ABlock() : _portsListeningOn(),
-				   _serverName(""),
-
-				   _rootDirectory(""),
-				   _index(""),
-				   _clientMaxBodySize(0),
-				   _errorPages(),
-				   _redirection()
+ABlock::ABlock()
+	: _portsListeningOn(), _serverName(""), _rootDirectory(""), _index(""),
+	  _clientMaxBodySize(0), _errorPages(), _redirection()
 {
 }
 
-ABlock::ABlock(ServerBlock &serverBlock) : _portsListeningOn(serverBlock.getPortsListeningOn()),
-										   _serverName(serverBlock.getServerName()),
-
-										   _rootDirectory(serverBlock.getRootDirectory()),
-										   _index(serverBlock.getIndex()),
-										   _clientMaxBodySize(serverBlock.getClientMaxBodySize()),
-										   _errorPages(serverBlock.getErrorPages()),
-										   _redirection(serverBlock.getRedirection())
+ABlock::ABlock(ServerBlock &serverBlock)
+	: _portsListeningOn(serverBlock.getPortsListeningOn()),
+	  _serverName(serverBlock.getServerName()),
+	  _rootDirectory(serverBlock.getRootDirectory()),
+	  _index(serverBlock.getIndex()),
+	  _clientMaxBodySize(serverBlock.getClientMaxBodySize()),
+	  _errorPages(serverBlock.getErrorPages()),
+	  _redirection(serverBlock.getRedirection())
 {
 }
 
-ABlock::~ABlock() {}
+ABlock::~ABlock()
+{
+}
 
 ABlock::ABlock(const ABlock &other)
 {
@@ -36,7 +33,6 @@ ABlock &ABlock::operator=(const ABlock &other)
 	{
 		this->_portsListeningOn = other._portsListeningOn;
 		this->_serverName = other._serverName;
-
 		this->_rootDirectory = other._rootDirectory;
 		this->_index = other._index;
 		this->_clientMaxBodySize = other._clientMaxBodySize;
