@@ -1,21 +1,20 @@
 
 #include "webserv.h"
 
-LocationBlock::LocationBlock() : ABlock(),
-								 _autoindexStatus(false),
-								 _allowedMethods(),
-								 _cgiPass("")
+LocationBlock::LocationBlock()
+	: ABlock(), _autoindexStatus(false), _allowedMethods(), _cgiPass("")
 {
 }
 
-LocationBlock::LocationBlock(ServerBlock &serverBlock) : ABlock(serverBlock),
-														 _autoindexStatus(false),
-														 _allowedMethods(),
-														 _cgiPass("")
+LocationBlock::LocationBlock(ServerBlock &serverBlock)
+	: ABlock(serverBlock), _autoindexStatus(false), _allowedMethods(),
+	  _cgiPass("")
 {
 }
 
-LocationBlock::~LocationBlock() {}
+LocationBlock::~LocationBlock()
+{
+}
 
 LocationBlock::LocationBlock(const LocationBlock &other) : ABlock()
 {

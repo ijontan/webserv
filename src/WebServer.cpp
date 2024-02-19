@@ -26,7 +26,9 @@ WebServer::WebServer(const std::string &filePath)
 	}
 }
 
-WebServer::~WebServer() {}
+WebServer::~WebServer()
+{
+}
 
 WebServer::WebServer(const WebServer &other)
 {
@@ -41,7 +43,8 @@ WebServer &WebServer::operator=(const WebServer &other)
 
 void WebServer::printServerBlocksInfo()
 {
-	for (std::vector<ServerBlock>::iterator it = this->_serverBlocks.begin(); it != this->_serverBlocks.end(); it++)
+	for (std::vector<ServerBlock>::iterator it = this->_serverBlocks.begin();
+		 it != this->_serverBlocks.end(); it++)
 	{
 		std::cout << *it << std::endl;
 	}
@@ -49,7 +52,9 @@ void WebServer::printServerBlocksInfo()
 
 void WebServer::initSockets()
 {
-	for (std::vector<ServerBlock>::iterator it = _serverBlocks.begin(); it < _serverBlocks.end(); it++) {
+	for (std::vector<ServerBlock>::iterator it = _serverBlocks.begin();
+		 it < _serverBlocks.end(); it++)
+	{
 		(*it).initSockets();
 		addPfds((*it).getSockfds());
 	}
@@ -57,116 +62,120 @@ void WebServer::initSockets()
 
 static void *get_in_addr(struct sockaddr *sa)
 {
-    if (sa->sa_family == AF_INET)
-    {
-        return &(((struct sockaddr_in *)sa)->sin_addr);
-    }
+	if (sa->sa_family == AF_INET)
+	{
+		return &(((struct sockaddr_in *)sa)->sin_addr);
+	}
 
-    return &(((struct sockaddr_in6 *)sa)->sin6_addr);
+	return &(((struct sockaddr_in6 *)sa)->sin6_addr);
 }
 
-template<typename T>
+template <typename T>
 static bool find(std::vector<T> arr, T value)
 {
-    for (size_t i = 0; i < arr.size(); i++) {
-        if (arr[i] == value) {
-            return true;
-        } 
-    }
-    return false;
+	for (size_t i = 0; i < arr.size(); i++)
+	{
+		if (arr[i] == value)
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 void WebServer::loop(IOAdaptor io)
 {
-    char s[INET6_ADDRSTRLEN];
-    struct sockaddr_storage theiraddr;
-    socklen_t addrSize = sizeof(theiraddr);
-    char buff[256];
-    std::map<int, std::string> strMap;
+	char s[INET6_ADDRSTRLEN];
+	struct sockaddr_storage theiraddr;
+	socklen_t addrSize = sizeof(theiraddr);
+	char buff[256];
+	std::map<int, std::string> strMap;
 
-    for (size_t j = 0; j < _serverBlocks.size(); j++)
-        std::cout << _serverBlocks[j];
+	for (size_t j = 0; j < _serverBlocks.size(); j++)
+		std::cout << _serverBlocks[j];
 
-    for (;;)
-    {
-        int pollCount = poll(&pfds[0], pfds.size(), -1);
-        if (pollCount == -1)
-        {
-            std::cerr << "poll error" << std::endl;
-            return;
-        }
+	for (;;)
+	{
+		int pollCount = poll(&pfds[0], pfds.size(), -1);
+		if (pollCount == -1)
+		{
+			std::cerr << "poll error" << std::endl;
+			return;
+		}
 
-        for (size_t i = 0; i < pfds.size(); i++)
-        {
-            if (!(pfds[i].revents & POLLIN))
-                continue;
+		for (size_t i = 0; i < pfds.size(); i++)
+		{
+			if (!(pfds[i].revents & POLLIN))
+				continue;
 
-            // find if socket exist
-            bool found = false;
-            for (size_t j = 0; j < _serverBlocks.size(); j++)
-                if (find(_serverBlocks[j].getSockfds(), pfds[i].fd))
-                    found = true;
+			// find if socket exist
+			bool found = false;
+			for (size_t j = 0; j < _serverBlocks.size(); j++)
+				if (find(_serverBlocks[j].getSockfds(), pfds[i].fd))
+					found = true;
 
-            if (found)
-            {
-                addrSize = sizeof(theiraddr);
-                int newFd = accept(pfds[i].fd, (struct sockaddr *)&theiraddr, &addrSize);
-                if (newFd == -1)
-                {
-                    std::cerr << "accept error" << std::endl;
-                    continue;
-                }
-                inet_ntop(theiraddr.ss_family,
-                          get_in_addr((struct sockaddr *)&theiraddr),
-                          s, sizeof(s));
-                std::cout << HGREEN << "Server: got connection from: " << RESET << s << std::endl;
-                strMap.insert(std::pair<int, std::string>(newFd,""));
-                addPfd(newFd);
-            }
-            else
-            {
-                memset(buff, 0, sizeof(buff));
-                int bytes = recv(pfds[i].fd, buff, sizeof(buff), 0);
-                strMap[pfds[i].fd] += buff;
-                if (bytes < 256)
-                {
-                    io.recieveMessage(strMap[pfds[i].fd]);
-                    if (bytes >= 0)
-                    {
-                        std::cout << io;
-                        std::string toSend = io.getMessageToSend();
-                        send(pfds[i].fd, toSend.c_str(), toSend.length(), 0);
-                    }
-                    else
-                        std::cerr << "recv error" << std::endl;
-                    strMap.erase(strMap.find(pfds[i].fd));
-                    close(pfds[i].fd);
-                    io.recieveMessage("");
-                    removePfd(i);
-                }
-            }
-        }
-    }
+			if (found)
+			{
+				addrSize = sizeof(theiraddr);
+				int newFd = accept(pfds[i].fd, (struct sockaddr *)&theiraddr,
+								   &addrSize);
+				if (newFd == -1)
+				{
+					std::cerr << "accept error" << std::endl;
+					continue;
+				}
+				inet_ntop(theiraddr.ss_family,
+						  get_in_addr((struct sockaddr *)&theiraddr), s,
+						  sizeof(s));
+				std::cout << HGREEN << "Server: got connection from: " << RESET
+						  << s << std::endl;
+				strMap.insert(std::pair<int, std::string>(newFd, ""));
+				addPfd(newFd);
+			}
+			else
+			{
+				memset(buff, 0, sizeof(buff));
+				int bytes = recv(pfds[i].fd, buff, sizeof(buff), 0);
+				strMap[pfds[i].fd] += buff;
+				if (bytes < 256)
+				{
+					io.recieveMessage(strMap[pfds[i].fd]);
+					if (bytes >= 0)
+					{
+						std::cout << io;
+						std::string toSend = io.getMessageToSend();
+						send(pfds[i].fd, toSend.c_str(), toSend.length(), 0);
+					}
+					else
+						std::cerr << "recv error" << std::endl;
+					strMap.erase(strMap.find(pfds[i].fd));
+					close(pfds[i].fd);
+					io.recieveMessage("");
+					removePfd(i);
+				}
+			}
+		}
+	}
 }
 
 void WebServer::addPfd(int fd)
 {
-    struct pollfd pfd;
-    pfd.fd = fd;
-    pfd.events = POLLIN;
-    pfds.push_back(pfd);
+	struct pollfd pfd;
+	pfd.fd = fd;
+	pfd.events = POLLIN;
+	pfds.push_back(pfd);
 }
 
 void WebServer::addPfds(std::vector<int> fds)
 {
-    for (std::vector<int>::iterator it = fds.begin();it != fds.end() ;it++) {
-        addPfd(*it);
-        std::cout<<"fd: " << *it << std::endl; 
-    }
+	for (std::vector<int>::iterator it = fds.begin(); it != fds.end(); it++)
+	{
+		addPfd(*it);
+		std::cout << "fd: " << *it << std::endl;
+	}
 }
 
 void WebServer::removePfd(int index)
 {
-    pfds.erase(pfds.begin() + index);
+	pfds.erase(pfds.begin() + index);
 }
-

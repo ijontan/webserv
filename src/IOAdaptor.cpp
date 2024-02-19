@@ -8,13 +8,13 @@ IOAdaptor::IOAdaptor(void) : receivedRaw("")
 
 IOAdaptor::IOAdaptor(const IOAdaptor &src)
 {
-    *this = src;
+	*this = src;
 }
 
 IOAdaptor &IOAdaptor::operator=(const IOAdaptor &rhs)
 {
-    this->receivedRaw = rhs.receivedRaw;
-    return *this;
+	this->receivedRaw = rhs.receivedRaw;
+	return *this;
 }
 
 IOAdaptor::~IOAdaptor(void)
@@ -23,28 +23,28 @@ IOAdaptor::~IOAdaptor(void)
 
 void IOAdaptor::recieveMessage(std::string raw)
 {
-    receivedRaw = raw;
+	receivedRaw = raw;
 }
 
 std::string IOAdaptor::getMessageToSend() const
 {
 	std::stringstream ss;
-	ss	<< BGREEN << "Recieved message:\n" << RESET
-		<< receivedRaw 
-		<< BBLUE << "\nSending back: Hello, world!\n" << RESET;
+	ss << BGREEN << "Recieved message:\n"
+	   << RESET << receivedRaw << BBLUE << "\nSending back: Hello, world!\n"
+	   << RESET;
 	return ss.str();
 }
 
 std::string IOAdaptor::getRaw() const
 {
-    return receivedRaw;
+	return receivedRaw;
 }
 
 std::ostream &operator<<(std::ostream &os, const IOAdaptor &adaptor)
 {
-    os << BBLUE << "Message: " << RESET << std::endl
-       << adaptor.getRaw() << std::endl
-       << BBLUE << "End" << RESET << std::endl
-       << "----------------------------------------" << std::endl;
-    return os;
+	os << BBLUE << "Message: " << RESET << std::endl
+	   << adaptor.getRaw() << std::endl
+	   << BBLUE << "End" << RESET << std::endl
+	   << "----------------------------------------" << std::endl;
+	return os;
 }
