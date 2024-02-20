@@ -14,8 +14,7 @@ WebServer::WebServer(const std::string &filePath)
 		Parser parser(filePath);
 
 		parser.parseServerBlocks(this->_serverBlocks);
-		std::cout << GREEN "Server blocks created" RESET << std::endl
-				  << std::endl;
+		std::cout << GREEN "Server blocks created" RESET << std::endl << std::endl;
 
 		printServerBlocksInfo();
 		initSockets();
@@ -43,8 +42,7 @@ WebServer &WebServer::operator=(const WebServer &other)
 
 void WebServer::printServerBlocksInfo()
 {
-	for (std::vector<ServerBlock>::iterator it = this->_serverBlocks.begin();
-		 it != this->_serverBlocks.end(); it++)
+	for (std::vector<ServerBlock>::iterator it = this->_serverBlocks.begin(); it != this->_serverBlocks.end(); it++)
 	{
 		std::cout << *it << std::endl;
 	}
@@ -52,8 +50,7 @@ void WebServer::printServerBlocksInfo()
 
 void WebServer::initSockets()
 {
-	for (std::vector<ServerBlock>::iterator it = _serverBlocks.begin();
-		 it < _serverBlocks.end(); it++)
+	for (std::vector<ServerBlock>::iterator it = _serverBlocks.begin(); it < _serverBlocks.end(); it++)
 	{
 		(*it).initSockets();
 		addPfds((*it).getSockfds());
@@ -91,6 +88,7 @@ void WebServer::loop(IOAdaptor &io)
 	char buff[256];
 	std::map<int, std::string> strMap;
 
+	buff[255] = 0;
 	for (size_t j = 0; j < _serverBlocks.size(); j++)
 		std::cout << _serverBlocks[j];
 
@@ -117,27 +115,24 @@ void WebServer::loop(IOAdaptor &io)
 			if (found)
 			{
 				addrSize = sizeof(theiraddr);
-				int newFd = accept(pfds[i].fd, (struct sockaddr *)&theiraddr,
-								   &addrSize);
+				int newFd = accept(pfds[i].fd, (struct sockaddr *)&theiraddr, &addrSize);
 				if (newFd == -1)
 				{
 					std::cerr << "accept error" << std::endl;
 					continue;
 				}
-				inet_ntop(theiraddr.ss_family,
-						  get_in_addr((struct sockaddr *)&theiraddr), s,
-						  sizeof(s));
-				std::cout << HGREEN << "Server: got connection from: " << RESET
-						  << s << std::endl;
+				inet_ntop(theiraddr.ss_family, get_in_addr((struct sockaddr *)&theiraddr), s, sizeof(s));
+				std::cout << HGREEN << "Server: got connection from: " << RESET << s << std::endl;
 				strMap.insert(std::pair<int, std::string>(newFd, ""));
 				addPfd(newFd);
 			}
 			else
 			{
 				memset(buff, 0, sizeof(buff));
-				int bytes = recv(pfds[i].fd, buff, sizeof(buff), 0);
+				int bytes = recv(pfds[i].fd, buff, sizeof(buff) - 1, 0);
+				// std::cout << WHITE << bytes << ": \n" << BLUE << buff << std::endl;
 				strMap[pfds[i].fd] += buff;
-				if (bytes < 256)
+				if (bytes < 255)
 				{
 					io.recieveMessage(strMap[pfds[i].fd]);
 					if (bytes >= 0)
