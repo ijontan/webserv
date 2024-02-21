@@ -1,4 +1,8 @@
 #include "NetIO.hpp"
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <vector>
 
 NetIO::NetIO(void) : IOAdaptor()
 {
@@ -21,8 +25,45 @@ NetIO::~NetIO(void)
 
 std::string NetIO::getMessageToSend() const
 {
-	if (getRaw() == "wanna fight?")
-		return "fuck you bitch";
+	std::stringstream ss;
+	std::vector<std::string> tokens = tokenize(getRaw());
+	std::string path;
+	if (tokens[1] == "/")
+	{
+		path = "www/index.html";
+		ss << "HTTP/1.1 200 OK\r\n"
+		   << "Content-Type: text/html\r\n\n";
+	}
 	else
-		return "ok";
+	{
+		path = "www" + tokens[1];
+		ss << "HTTP/1.1 200 OK\r\n";
+		if (tokens[1] == "/style.css")
+			ss << "Content-Type: text/css\r\n\n";
+		else
+			ss << "Content-Type: text/js\r\n\n";
+	}
+	std::ifstream file(path.c_str());
+
+	if (!file.is_open())
+	{
+		return "cannot open!";
+	}
+
+	ss << file.rdbuf();
+	file.close();
+	return ss.str();
+}
+
+std::vector<std::string> NetIO::tokenize(std::string s) const
+{
+	std::istringstream iss(s);
+	std::string token;
+	std::vector<std::string> ret;
+
+	while (std::getline(iss, token, ' '))
+	{
+		ret.push_back(token);
+	}
+	return ret;
 }

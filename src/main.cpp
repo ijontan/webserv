@@ -1,5 +1,6 @@
 
 #include "IOAdaptor.hpp"
+#include "NetIO.hpp"
 #include "webserv.h"
 #include <vector>
 
@@ -28,16 +29,16 @@ int main(int ac, char **av)
 	// 	}
 	// }
 
-	IOAdaptor io;
+	NetIO io;
 	if (ac == 1)
 	{
-		WebServer webServer(DEFAULT_CONFIG_FILE_PATH);
-		webServer.loop(io);
+		WebServer webServer(DEFAULT_CONFIG_FILE_PATH, io);
+		webServer.loop();
 	}
 	else if (ac == 2)
 	{
-		WebServer webServer(av[1]);
-		webServer.loop(io);
+		WebServer webServer(av[1], io);
+		webServer.loop();
 	}
 	else
 	{

@@ -12,13 +12,13 @@ class IOAdaptor;
 class WebServer
 {
 public:
-	WebServer(const std::string &filePath);
+	WebServer(const std::string &filePath, IOAdaptor &io);
 	~WebServer();
 
 	// utils
 	void printServerBlocksInfo();
 	void initSockets();
-	void loop(IOAdaptor &io);
+	void loop();
 	void removePfd(int index);
 	void addPfd(int fd);
 	void addPfds(std::vector<int> fds);
@@ -26,9 +26,12 @@ public:
 private:
 	WebServer(const WebServer &other);
 	WebServer &operator=(const WebServer &other);
+	void acceptConnection(int index, std::map<int, std::string> &buffMap);
+	void handleIO(int index, std::map<int, std::string> &buffMap);
 
 	std::vector<ServerBlock> _serverBlocks;
 	std::vector<struct pollfd> pfds;
+	IOAdaptor &_io;
 };
 
 #endif
