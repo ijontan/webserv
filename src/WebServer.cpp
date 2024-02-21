@@ -1,4 +1,5 @@
 
+#include "IOAdaptor.hpp"
 #include "colors.h"
 #include "webserv.h"
 #include <iostream>
@@ -7,7 +8,7 @@
 #include <utility>
 #include <vector>
 
-WebServer::WebServer(const std::string &filePath)
+WebServer::WebServer(const std::string &filePath, IOAdaptor &io) : _io(io)
 {
 	try
 	{
@@ -29,7 +30,7 @@ WebServer::~WebServer()
 {
 }
 
-WebServer::WebServer(const WebServer &other)
+WebServer::WebServer(const WebServer &other) : _io(other._io)
 {
 	(void)other;
 }
@@ -80,15 +81,10 @@ static bool find(std::vector<T> arr, T value)
 	return false;
 }
 
-void WebServer::loop(IOAdaptor &io)
+void WebServer::loop()
 {
-	char s[INET6_ADDRSTRLEN];
-	struct sockaddr_storage theiraddr;
-	socklen_t addrSize = sizeof(theiraddr);
-	char buff[256];
-	std::map<int, std::string> strMap;
+	std::map<int, std::string> buffMap;
 
-	buff[255] = 0;
 	for (size_t j = 0; j < _serverBlocks.size(); j++)
 		std::cout << _serverBlocks[j];
 
@@ -113,43 +109,53 @@ void WebServer::loop(IOAdaptor &io)
 					found = true;
 
 			if (found)
-			{
-				addrSize = sizeof(theiraddr);
-				int newFd = accept(pfds[i].fd, (struct sockaddr *)&theiraddr, &addrSize);
-				if (newFd == -1)
-				{
-					std::cerr << "accept error" << std::endl;
-					continue;
-				}
-				inet_ntop(theiraddr.ss_family, get_in_addr((struct sockaddr *)&theiraddr), s, sizeof(s));
-				std::cout << HGREEN << "Server: got connection from: " << RESET << s << std::endl;
-				strMap.insert(std::pair<int, std::string>(newFd, ""));
-				addPfd(newFd);
-			}
+				acceptConnection(i, buffMap);
 			else
-			{
-				memset(buff, 0, sizeof(buff));
-				int bytes = recv(pfds[i].fd, buff, sizeof(buff) - 1, 0);
-				// std::cout << WHITE << bytes << ": \n" << BLUE << buff << std::endl;
-				strMap[pfds[i].fd] += buff;
-				if (bytes < 255)
-				{
-					io.recieveMessage(strMap[pfds[i].fd]);
-					if (bytes >= 0)
-					{
-						std::cout << io;
-						std::string toSend = io.getMessageToSend();
-						send(pfds[i].fd, toSend.c_str(), toSend.length(), 0);
-					}
-					else
-						std::cerr << "recv error" << std::endl;
-					strMap.erase(strMap.find(pfds[i].fd));
-					close(pfds[i].fd);
-					io.recieveMessage("");
-					removePfd(i);
-				}
-			}
+				handleIO(i, buffMap);
 		}
+	}
+}
+
+void WebServer::acceptConnection(int index, std::map<int, std::string> &buffMap)
+{
+	struct sockaddr_storage theiraddr;
+	socklen_t addrSize = sizeof(theiraddr);
+	char s[INET6_ADDRSTRLEN];
+	int newFd = accept(pfds[index].fd, (struct sockaddr *)&theiraddr, &addrSize);
+	if (newFd == -1)
+	{
+		std::cerr << "accept error" << std::endl;
+		return;
+	}
+	inet_ntop(theiraddr.ss_family, get_in_addr((struct sockaddr *)&theiraddr), s, sizeof(s));
+	std::cout << HGREEN << "Server: got connection from: " << RESET << s << std::endl;
+	buffMap.insert(std::pair<int, std::string>(newFd, ""));
+	addPfd(newFd);
+}
+
+void WebServer::handleIO(int index, std::map<int, std::string> &buffMap)
+{
+	char buff[256];
+	buff[255] = 0;
+	memset(buff, 0, sizeof(buff));
+	int bytes = recv(pfds[index].fd, buff, sizeof(buff) - 1, 0);
+	// std::cout << WHITE << bytes << ": \n" << BLUE << buff << std::endl;
+	buffMap[pfds[index].fd] += buff;
+	if (bytes < 255)
+	{
+		_io.recieveMessage(buffMap[pfds[index].fd]);
+		if (bytes >= 0)
+		{
+			std::cout << _io;
+			std::string toSend = _io.getMessageToSend();
+			send(pfds[index].fd, toSend.c_str(), toSend.length(), 0);
+		}
+		else
+			std::cerr << "recv error" << std::endl;
+		buffMap.erase(buffMap.find(pfds[index].fd));
+		close(pfds[index].fd);
+		_io.recieveMessage("");
+		removePfd(index);
 	}
 }
 
