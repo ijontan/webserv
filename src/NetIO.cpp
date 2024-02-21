@@ -1,7 +1,10 @@
 #include "NetIO.hpp"
+#include "webserv.h"
+#include <cstddef>
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 NetIO::NetIO(void) : IOAdaptor()
@@ -26,9 +29,13 @@ NetIO::~NetIO(void)
 std::string NetIO::getMessageToSend() const
 {
 	std::stringstream ss;
-	std::vector<std::string> tokens = tokenize(getRaw());
 	std::string path;
-	if (tokens[1] == "/")
+
+	NetIO::requestInfo ri;
+
+	tokenize(getRaw(), ri);
+
+	if (ri.request[1] == "/")
 	{
 		path = "www/index.html";
 		ss << "HTTP/1.1 200 OK\r\n"
@@ -36,12 +43,9 @@ std::string NetIO::getMessageToSend() const
 	}
 	else
 	{
-		path = "www" + tokens[1];
+		path = "www" + ri.request[1];
 		ss << "HTTP/1.1 200 OK\r\n";
-		if (tokens[1] == "/style.css")
-			ss << "Content-Type: text/css\r\n\n";
-		else
-			ss << "Content-Type: text/js\r\n\n";
+		ss << "Content-Type: text/" << utils::split( ri.request[1], '.').back() << "\r\n";
 	}
 	std::ifstream file(path.c_str());
 
@@ -55,15 +59,13 @@ std::string NetIO::getMessageToSend() const
 	return ss.str();
 }
 
-std::vector<std::string> NetIO::tokenize(std::string s) const
+void NetIO::tokenize(std::string s, NetIO::requestInfo &ri) const
 {
-	std::istringstream iss(s);
-	std::string token;
-	std::vector<std::string> ret;
+	std::pair<std::string, std::string> headerBody = utils::splitPair(s, "\r\n\n");
+	std::vector<std::string> requestHeader = utils::split(headerBody.first, "\r\n");
 
-	while (std::getline(iss, token, ' '))
-	{
-		ret.push_back(token);
-	}
-	return ret;
+	ri.request = utils::split(requestHeader[0], ' ');
+	for (size_t i = 1; i < requestHeader.size(); i++)
+		ri.headers.insert(utils::splitPair(requestHeader[i], ": "));
+	ri.body = headerBody.second;
 }
