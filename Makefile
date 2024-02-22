@@ -6,7 +6,7 @@
 #    By: itan <itan@student.42kl.edu.my>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/09/18 20:55:16 by itan              #+#    #+#              #
-#    Updated: 2024/01/22 13:19:08 by itan             ###   ########.fr        #
+#    Updated: 2024/02/22 09:03:22 by itan             ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -26,6 +26,7 @@ AR		= ar -rcs
 CC		= g++
 CFLAGS	= -Wall -Werror -Wextra -std=c++98
 RM		= rm -f
+INCFILES= $(shell find includes -type f)
 INC		= $(addprefix -I , $(shell find includes -type d))
 
 # this is for debugging
@@ -55,12 +56,13 @@ NORMAL		= \033[0m
 BLINK		= \033[4m
 REVERSE		= \033[5m
 UNDERLINE	= \033[3m
-	
+CLEARLINE	= \33[2K\r
+
 all::	$(NAME)
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(INCFILES)
 				@mkdir -p $(OBJ_DIRS)
-				@printf "$(YELLOW)$(BRIGHT)Generating %25s\t$(NORMAL)%.40s\r" "$(NAME) src objects...$(NORMAL)" $@
+				@printf "$(CLEARLINE)$(YELLOW)$(BRIGHT)Generating %25s\t$(NORMAL)%.40s" "$(NAME) src objects..." $@
 				@$(CC) $(CFLAGS) $(INC) -c $< -o $@
 
 $(NAME)::	$(OBJ) 
@@ -68,11 +70,16 @@ $(NAME)::	$(OBJ)
 			@$(CC) $(CFLAGS) $(OBJ) $(INC) -o $(NAME)
 			@printf "$(GREEN)COMPLETE!!$(NORMAL)\n\n"
 
-$(DNAME):	$(SRC)
+$(DNAME):	$(SRC) $(INCFILES)
 			@printf "\n$(MAGENTA)$(BRIGHT)Compiling $(DNAME) for $(NAME)...          \n"
 			@$(CC) $(CFLAGS) $(DFLAGS) $(INC) $(SRC) $(DSRC) -o $(DNAME)
 			@printf "$(GREEN)COMPLETE!!$(NORMAL)\n\n"
 
+watch:	
+		@command -v entr || printf "Need to install entr in watch mode"
+		@printf "\n $(INCFILES) \n\n"
+		@echo "$(SRC) $(INCFILES)" | sed "s/ /\n/g" | entr -r -s "make && ./$(NAME)"
+		
 d: 	debug
 
 debug:	$(DNAME)

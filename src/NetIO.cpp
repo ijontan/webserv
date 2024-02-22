@@ -39,7 +39,7 @@ std::string NetIO::getMessageToSend() const
 	{
 		path = "www/index.html";
 		ss << "HTTP/1.1 200 OK\r\n"
-		   << "Content-Type: text/html\r\n\n";
+		   << "Content-Type: text/html\r\n";
 	}
 	else
 	{
@@ -47,6 +47,7 @@ std::string NetIO::getMessageToSend() const
 		ss << "HTTP/1.1 200 OK\r\n";
 		ss << "Content-Type: text/" << utils::split( ri.request[1], '.').back() << "\r\n";
 	}
+	ss << "\n";
 	std::ifstream file(path.c_str());
 
 	if (!file.is_open())

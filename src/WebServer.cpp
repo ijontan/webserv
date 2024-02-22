@@ -2,6 +2,7 @@
 #include "IOAdaptor.hpp"
 #include "colors.h"
 #include "webserv.h"
+#include <cstddef>
 #include <iostream>
 #include <ostream>
 #include <string>
@@ -28,6 +29,9 @@ WebServer::WebServer(const std::string &filePath, IOAdaptor &io) : _io(io)
 
 WebServer::~WebServer()
 {
+	for (size_t i = 0; i < _pfds.size(); i++) {
+		close(_pfds[i].fd);
+	}
 }
 
 WebServer::WebServer(const WebServer &other) : _io(other._io)
@@ -90,22 +94,22 @@ void WebServer::loop()
 
 	for (;;)
 	{
-		int pollCount = poll(&pfds[0], pfds.size(), -1);
+		int pollCount = poll(&_pfds[0], _pfds.size(), -1);
 		if (pollCount == -1)
 		{
 			std::cerr << "poll error" << std::endl;
 			return;
 		}
 
-		for (size_t i = 0; i < pfds.size(); i++)
+		for (size_t i = 0; i < _pfds.size(); i++)
 		{
-			if (!(pfds[i].revents & POLLIN))
+			if (!(_pfds[i].revents & POLLIN))
 				continue;
 
 			// find if socket exist
 			bool found = false;
 			for (size_t j = 0; j < _serverBlocks.size(); j++)
-				if (find(_serverBlocks[j].getSockfds(), pfds[i].fd))
+				if (find(_serverBlocks[j].getSockfds(), _pfds[i].fd))
 					found = true;
 
 			if (found)
@@ -121,7 +125,7 @@ void WebServer::acceptConnection(int index, std::map<int, std::string> &buffMap)
 	struct sockaddr_storage theiraddr;
 	socklen_t addrSize = sizeof(theiraddr);
 	char s[INET6_ADDRSTRLEN];
-	int newFd = accept(pfds[index].fd, (struct sockaddr *)&theiraddr, &addrSize);
+	int newFd = accept(_pfds[index].fd, (struct sockaddr *)&theiraddr, &addrSize);
 	if (newFd == -1)
 	{
 		std::cerr << "accept error" << std::endl;
@@ -138,22 +142,22 @@ void WebServer::handleIO(int index, std::map<int, std::string> &buffMap)
 	char buff[256];
 	buff[255] = 0;
 	memset(buff, 0, sizeof(buff));
-	int bytes = recv(pfds[index].fd, buff, sizeof(buff) - 1, 0);
+	int bytes = recv(_pfds[index].fd, buff, sizeof(buff) - 1, 0);
 	// std::cout << WHITE << bytes << ": \n" << BLUE << buff << std::endl;
-	buffMap[pfds[index].fd] += buff;
+	buffMap[_pfds[index].fd] += buff;
 	if (bytes < 255)
 	{
-		_io.recieveMessage(buffMap[pfds[index].fd]);
+		_io.recieveMessage(buffMap[_pfds[index].fd]);
 		if (bytes >= 0)
 		{
 			std::cout << _io;
 			std::string toSend = _io.getMessageToSend();
-			send(pfds[index].fd, toSend.c_str(), toSend.length(), 0);
+			send(_pfds[index].fd, toSend.c_str(), toSend.length(), 0);
 		}
 		else
 			std::cerr << "recv error" << std::endl;
-		buffMap.erase(buffMap.find(pfds[index].fd));
-		close(pfds[index].fd);
+		buffMap.erase(buffMap.find(_pfds[index].fd));
+		close(_pfds[index].fd);
 		_io.recieveMessage("");
 		removePfd(index);
 	}
@@ -164,7 +168,7 @@ void WebServer::addPfd(int fd)
 	struct pollfd pfd;
 	pfd.fd = fd;
 	pfd.events = POLLIN;
-	pfds.push_back(pfd);
+	_pfds.push_back(pfd);
 }
 
 void WebServer::addPfds(std::vector<int> fds)
@@ -178,5 +182,5 @@ void WebServer::addPfds(std::vector<int> fds)
 
 void WebServer::removePfd(int index)
 {
-	pfds.erase(pfds.begin() + index);
+	_pfds.erase(_pfds.begin() + index);
 }

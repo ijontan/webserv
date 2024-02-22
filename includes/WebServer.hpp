@@ -30,7 +30,7 @@ private:
 	void handleIO(int index, std::map<int, std::string> &buffMap);
 
 	std::vector<ServerBlock> _serverBlocks;
-	std::vector<struct pollfd> pfds;
+	std::vector<struct pollfd> _pfds;
 	IOAdaptor &_io;
 };
 
