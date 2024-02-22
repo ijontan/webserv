@@ -26,7 +26,7 @@ void IOAdaptor::recieveMessage(std::string raw)
 	receivedRaw = raw;
 }
 
-std::string IOAdaptor::getMessageToSend() const
+std::string IOAdaptor::getMessageToSend()
 {
 	std::stringstream ss;
 	ss << BGREEN << "Recieved message:\n"

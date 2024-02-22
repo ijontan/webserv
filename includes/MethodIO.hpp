@@ -6,7 +6,7 @@
 /*   By: nwai-kea <nwai-kea@student.42kl.edu.my>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/19 15:42:11 by nwai-kea          #+#    #+#             */
-/*   Updated: 2024/02/20 14:33:31 by nwai-kea         ###   ########.fr       */
+/*   Updated: 2024/02/23 04:30:05 by nwai-kea         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,11 +14,13 @@
 
 #include "IOAdaptor.hpp"
 
-#include <string>
 #include <sstream>
+#include <string>
 #include <fstream>
-#include <iostream>
 #include <vector>
+#include <map>
+#include <ctime>
+#include <limits>
 #include "colors.h"
 
 #define GET 0
@@ -28,14 +30,31 @@
 class MethodIO : public IOAdaptor
 {
 private:
+    // int _code;
+    std::string statusLine;
+    // std::map<std::string, std::string> responseHeader;
+    std::string response;
+    std::string path;
+
+    void setPath(std::string path);
+
 public:
     MethodIO(void);
     ~MethodIO(void);
     MethodIO(const MethodIO &src);
     MethodIO &operator=(const MethodIO &rhs);
-	std::string getMessageToSend() const;
-    std::string getMethod(std::stringstream *ss, std::vector<std::string> token) const;
-    std::string postMethod(std::stringstream *ss, std::vector<std::string> token) const;
-    std::string delMethod(std::stringstream *ss, std::vector<std::string> token) const;
+    std::string generateResponse(int code);
+	std::string getMessageToSend();
+    std::string getMethod(std::stringstream *ss, std::vector<std::string> token);
+    std::string postMethod(std::stringstream *ss, std::vector<std::string> token);
+    std::string delMethod(std::stringstream *ss, std::vector<std::string> token);
+    std::string getMap() const;
+    std::string getDate() const;
+    std::string getPath() const;
+    std::string getLen() const;
     int chooseMethod(std::vector<std::string> token) const;
+
+    // void setCode(int code) const;
+    // int getCode() const;
+    std::string getMessage(int code) const;
 };

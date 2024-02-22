@@ -26,13 +26,14 @@ NetIO::~NetIO(void)
 {
 }
 
-std::string NetIO::getMessageToSend() const
+std::string NetIO::getMessageToSend()
 {
 	std::stringstream ss;
 	std::string path;
 
 	NetIO::requestInfo ri;
 
+	ss << getRaw();
 	tokenize(getRaw(), ri);
 
 	if (ri.request[1] == "/")

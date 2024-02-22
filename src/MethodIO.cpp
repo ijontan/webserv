@@ -6,7 +6,7 @@
 /*   By: nwai-kea <nwai-kea@student.42kl.edu.my>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/19 16:12:22 by nwai-kea          #+#    #+#             */
-/*   Updated: 2024/02/21 00:49:05 by nwai-kea         ###   ########.fr       */
+/*   Updated: 2024/02/23 04:36:27 by nwai-kea         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,40 +43,31 @@ int MethodIO::chooseMethod(std::vector<std::string> token) const
         return -1;
 }
 
-std::string MethodIO::getMethod(std::stringstream *ss, std::vector<std::string> token) const
+std::string MethodIO::getMethod(std::stringstream *ss, std::vector<std::string> token)
 {
-    std::ifstream file;
-
     if (token[2] != "HTTP/1.1\r" )
     {
-        *ss << BRED << "HTTP/1.1 400 Bad Request\r\n" 
+        *ss << BRED << generateResponse(400)
         << "Content-Type: text/plain\r\n"
         << "\r\n"
         << "400 Bad Request" << RESET;
     }
     else
     {
-        std::cout << "Checking file..." << token[1] << std::endl;
-        file.open(token[1], std::ifstream::in);
+        std::ifstream file(token[1].c_str());
         if (file.fail())
-        {
-            *ss << BRED << "HTTP/1.1 404 Not Found\r\n" 
-            << "Content-Type: text/plain\r\n"
-            << "\r\n"
-            << "404 Not Found" << RESET;
-        }
+            *ss << BRED << generateResponse(404) << RESET;
         else
         {
-            *ss << BGREEN << "HTTP/1.1 200 OK\r\n"
-            << "Content-Type: text/plain\r\n"
-            << "\r\n" << RESET; 
+            setPath(token[1]);
+            *ss << BGREEN << generateResponse(200) << file.rdbuf() << RESET;
         }
         file.close();
     }
     return (ss->str());
 }
 
-std::string MethodIO::delMethod(std::stringstream *ss, std::vector<std::string> token) const
+std::string MethodIO::delMethod(std::stringstream *ss, std::vector<std::string> token)
 {
     std::ifstream file;
 
@@ -118,7 +109,7 @@ std::string MethodIO::delMethod(std::stringstream *ss, std::vector<std::string> 
     return (ss->str());
 }
 
-std::string MethodIO::postMethod(std::stringstream *ss, std::vector<std::string> token) const
+std::string MethodIO::postMethod(std::stringstream *ss, std::vector<std::string> token)
 {
     std::ifstream file;
 
@@ -164,7 +155,7 @@ std::string MethodIO::postMethod(std::stringstream *ss, std::vector<std::string>
     return (ss->str());
 }
 
-std::string MethodIO::getMessageToSend() const
+std::string MethodIO::getMessageToSend()
 {
     std::stringstream ss;
     std::stringstream str(getRaw());
@@ -188,9 +179,93 @@ std::string MethodIO::getMessageToSend() const
         }
         case 1:
             return postMethod(&ss, token);
+            break;
         case 2:
             return delMethod(&ss, token);
+            break;
         default:
             return("Bruh");
+            break;
     }
+}
+
+std::string MethodIO::getMessage(int code) const
+{
+    switch (code) {
+        case 200:
+            return ("OK");
+        case 400:
+            return ("Bad Request");
+        case 404:
+            return ("Not Found");
+        default:
+            return ("Undefined");
+    }
+}
+
+std::string MethodIO::getDate() const
+{
+    const std::string day[] = {"Sun","Mon","Tue",
+        "Wed","Thu","Fri","Sat"};
+    char date[100];
+
+    time_t now = time(0);
+    tm *t = localtime(&now);
+    std::strftime(date, sizeof(date), "%a, %d %b %Y %H:%M:%S %Z", t);
+    std::string dateStr(date);
+    return (dateStr);
+}
+
+std::string MethodIO::getLen() const
+{
+    std::string path = getPath();
+    std::string size;
+    std::ifstream f;
+
+    f.open(path, std::ifstream::in);
+    if (f.is_open())
+    {
+        f.ignore(std::numeric_limits<std::streamsize>::max());
+        std::streamsize len = f.gcount();
+        f.clear();
+        f.seekg(0, std::ios_base::beg);
+        int l = static_cast<int>(len);
+        f.close();
+        std::stringstream str;
+        str << l;
+        str >> size;
+        return (size);
+    }
+    else
+        return ("File not found/Content Error");
+}
+
+std::string MethodIO::getMap() const
+{
+    return ("Date: " + getDate() + "\r\nServer: webserv" + 
+        "\r\nContent-Length: " + getLen() +
+        "\r\nContent-Type: text/html\r\n\r\n");  
+}
+
+std::string MethodIO::generateResponse(int code)
+{
+    std::ostringstream conv;
+
+    conv << code;
+    this->statusLine = "HTTP/1.1 " + conv.str() + " " + getMessage(code) + "\r\n";
+    this->response = getMap(); 
+    return (this->statusLine + this->response);
+}
+
+void MethodIO::setPath(std::string path)
+{
+    if (path == "/")
+        this->path = "www/index.html";
+    else
+        this->path = path;
+}
+
+std::string MethodIO::getPath() const
+{
+    return this->path;
 }
