@@ -6,7 +6,7 @@
 /*   By: nwai-kea <nwai-kea@student.42kl.edu.my>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/19 16:12:22 by nwai-kea          #+#    #+#             */
-/*   Updated: 2024/02/23 04:36:27 by nwai-kea         ###   ########.fr       */
+/*   Updated: 2024/02/23 13:47:40 by nwai-kea         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,21 +47,25 @@ std::string MethodIO::getMethod(std::stringstream *ss, std::vector<std::string> 
 {
     if (token[2] != "HTTP/1.1\r" )
     {
-        *ss << BRED << generateResponse(400)
-        << "Content-Type: text/plain\r\n"
-        << "\r\n"
-        << "400 Bad Request" << RESET;
+        *ss << BRED << generateResponse(400) << RESET;
     }
     else
     {
-        std::ifstream file(token[1].c_str());
+        std::ifstream file;
+        setPath(token[1]);
+        file.open(getPath(), std::ifstream::in);
         if (file.fail())
-            *ss << BRED << generateResponse(404) << RESET;
-        else
         {
-            setPath(token[1]);
-            *ss << BGREEN << generateResponse(200) << file.rdbuf() << RESET;
+            setPath("www/notfound.html");
+            file.open(getPath(), std::ifstream::in);
+            if (file.fail())
+                *ss << BRED << generateResponse(404) << RESET;
+            else
+                *ss << BRED << generateResponse(404) << WHITE << file.rdbuf() << RESET;
+            file.close();
         }
+        else
+            *ss << BGREEN << generateResponse(200) << WHITE << file.rdbuf() << RESET;
         file.close();
     }
     return (ss->str());
@@ -82,7 +86,7 @@ std::string MethodIO::delMethod(std::stringstream *ss, std::vector<std::string> 
     {
         std::cout << "Checking file..." << token[1] << std::endl;
         file.open(token[1], std::ifstream::in);
-        if (file.fail())
+        if (!file.is_open())
         {
             *ss << BRED << "HTTP/1.1 404 Not Found\r\n" 
             << "Content-Type: text/plain\r\n"
@@ -193,11 +197,17 @@ std::string MethodIO::getMessage(int code) const
 {
     switch (code) {
         case 200:
+        {
             return ("OK");
+        }
         case 400:
+        {
             return ("Bad Request");
+        }
         case 404:
+        {
             return ("Not Found");
+        }
         default:
             return ("Undefined");
     }
@@ -234,23 +244,44 @@ std::string MethodIO::getLen() const
         std::stringstream str;
         str << l;
         str >> size;
-        return (size);
+        return ("Content-Length: " + size + "\r\n");
     }
     else
-        return ("File not found/Content Error");
+        return ("File not found/Content Error\r\n");
+}
+
+std::string MethodIO::getType() const 
+{
+    std::string p;
+    std::string extension;
+    size_t file = getPath().find_last_of("/\\");
+    if (file != std::string::npos)
+        p = getPath().substr(file + 1);
+    file = p.rfind(".");
+    if (file != std::string::npos)
+        extension = p.substr(file + 1);
+    if (extension == "html")
+        return ("Content-Type: text/html\r\n");
+    else if (extension == "css")
+        return ("Content-Type: text/css\r\n");
+    else if (extension == "txt")
+        return ("Content-Type: text/plain\r\n");
+    else
+        return ("\r\n");    
 }
 
 std::string MethodIO::getMap() const
 {
     return ("Date: " + getDate() + "\r\nServer: webserv" + 
-        "\r\nContent-Length: " + getLen() +
-        "\r\nContent-Type: text/html\r\n\r\n");  
+        "\r\n" + getLen() + getType() + 
+        "\r\n");  
 }
 
 std::string MethodIO::generateResponse(int code)
 {
     std::ostringstream conv;
 
+    setCode(code);
     conv << code;
     this->statusLine = "HTTP/1.1 " + conv.str() + " " + getMessage(code) + "\r\n";
     this->response = getMap(); 
@@ -263,6 +294,16 @@ void MethodIO::setPath(std::string path)
         this->path = "www/index.html";
     else
         this->path = path;
+}
+
+void MethodIO::setCode(int code)
+{
+    this->_code = code;
+}
+
+int MethodIO::getCode() const
+{
+    return (this->_code);
 }
 
 std::string MethodIO::getPath() const

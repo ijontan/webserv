@@ -6,7 +6,7 @@
 /*   By: nwai-kea <nwai-kea@student.42kl.edu.my>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/19 15:42:11 by nwai-kea          #+#    #+#             */
-/*   Updated: 2024/02/23 04:30:05 by nwai-kea         ###   ########.fr       */
+/*   Updated: 2024/02/23 13:15:54 by nwai-kea         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,13 +30,14 @@
 class MethodIO : public IOAdaptor
 {
 private:
-    // int _code;
+    int _code;
     std::string statusLine;
     // std::map<std::string, std::string> responseHeader;
     std::string response;
     std::string path;
 
     void setPath(std::string path);
+    void setCode(int code);
 
 public:
     MethodIO(void);
@@ -48,13 +49,14 @@ public:
     std::string getMethod(std::stringstream *ss, std::vector<std::string> token);
     std::string postMethod(std::stringstream *ss, std::vector<std::string> token);
     std::string delMethod(std::stringstream *ss, std::vector<std::string> token);
+    int getCode() const;
     std::string getMap() const;
     std::string getDate() const;
     std::string getPath() const;
     std::string getLen() const;
+    std::string getType() const;
     int chooseMethod(std::vector<std::string> token) const;
 
     // void setCode(int code) const;
-    // int getCode() const;
     std::string getMessage(int code) const;
 };
