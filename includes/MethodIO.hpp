@@ -6,7 +6,7 @@
 /*   By: nwai-kea <nwai-kea@student.42kl.edu.my>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/19 15:42:11 by nwai-kea          #+#    #+#             */
-/*   Updated: 2024/02/23 13:15:54 by nwai-kea         ###   ########.fr       */
+/*   Updated: 2024/02/23 22:46:03 by nwai-kea         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 #include <map>
 #include <ctime>
 #include <limits>
+#include <unistd.h>
 #include "colors.h"
 
 #define GET 0

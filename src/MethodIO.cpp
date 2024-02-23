@@ -6,7 +6,7 @@
 /*   By: nwai-kea <nwai-kea@student.42kl.edu.my>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/19 16:12:22 by nwai-kea          #+#    #+#             */
-/*   Updated: 2024/02/23 17:43:57 by itan             ###   ########.fr       */
+/*   Updated: 2024/02/23 22:59:09 by nwai-kea         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,10 +45,8 @@ int MethodIO::chooseMethod(std::vector<std::string> token) const
 
 std::string MethodIO::getMethod(std::stringstream *ss, std::vector<std::string> token)
 {
-    if (token[2] != "HTTP/1.1\r" )
-    {
+    if (token[2] != "HTTP/1.1" )
         *ss << BRED << generateResponse(400) << RESET;
-    }
     else
     {
         std::ifstream file;
@@ -74,39 +72,39 @@ std::string MethodIO::getMethod(std::stringstream *ss, std::vector<std::string> 
 std::string MethodIO::delMethod(std::stringstream *ss, std::vector<std::string> token)
 {
     std::ifstream file;
+    std::ifstream file2;
 
-    if (token[2] != "HTTP/1.1\r" )
-    {
-        *ss << BRED << "HTTP/1.1 400 Bad Request\r\n" 
-        << "Content-Type: text/plain\r\n"
-        << "\r\n"
-        << "400 Bad Request" << RESET;
-    }
+    if (token[2] != "HTTP/1.1" )
+        *ss << BRED << generateResponse(400) << RESET;
     else
     {
-        std::cout << "Checking file..." << token[1] << std::endl;
-        file.open(token[1].c_str(), std::ifstream::in);
-        if (!file.is_open())
+        setPath(token[1]);
+        file.open(getPath().c_str(), std::ifstream::in);
+        if (file.fail())
         {
-            *ss << BRED << "HTTP/1.1 404 Not Found\r\n" 
-            << "Content-Type: text/plain\r\n"
-            << "\r\n"
-            << "404 Not Found" << RESET;
+            if(access(getPath().c_str(), W_OK) != 0)
+                *ss << BRED << generateResponse(403) << RESET;
+            else
+            {
+                setPath("www/notfound.html");
+                file2.open(getPath().c_str(), std::ifstream::in);
+                if (file2.fail())
+                    *ss << BRED << generateResponse(404) << RESET;
+                else
+                    *ss << BRED << generateResponse(404) << WHITE << file.rdbuf() << RESET;
+                file2.close();
+            }
         }
         else
         {
             file.close();
-            if (remove(token[1].c_str()) == 0)
+            if (std::remove(getPath().c_str()) == 0)
             {
-                *ss << BGREEN << "HTTP/1.1 204 No Content\r\n"
-                << "Content-Type: text/plain\r\n"
-                << "\r\n" << RESET;
+                *ss << BGREEN << generateResponse(204) << RESET;
             }
             else
             {
-                *ss << BRED << "HTTP/1.1 403 No Forbidden Error\r\n"
-                << "Content-Type: text/plain\r\n"
-                << "\r\n" << RESET;
+                *ss << BRED << generateResponse(403) << RESET;
             }
         }
     }
@@ -117,41 +115,29 @@ std::string MethodIO::postMethod(std::stringstream *ss, std::vector<std::string>
 {
     std::ifstream file;
 
-    if (token[2] != "HTTP/1.1\r" )
-    {
-        *ss << BRED << "HTTP/1.1 400 Bad Request\r\n" 
-        << "Content-Type: text/plain\r\n"
-        << "\r\n"
-        << "400 Bad Request" << RESET;
-    }
+    if (token[2] != "HTTP/1.1" )
+        *ss << BRED << generateResponse(400) << RESET;
     else
     {
-        std::cout << "Checking file..." << token[1] << std::endl;
-        file.open(token[1].c_str(), std::ifstream::in);
+        setPath(token[1]);
+        file.open(getPath().c_str(), std::ifstream::in);
         if (file)
         {
-            *ss << BRED << "HTTP/1.1 409 Conflict\r\n" 
-            << "Content-Type: text/plain\r\n"
-            << "\r\n"
-            << "409 Conflict" << RESET;
+            file.close();
+            *ss << BRED << generateResponse(409) << RESET;
         }
         else
         {
-            std::ofstream output(token[1].c_str());
+            std::ofstream output(getPath().c_str());
 
             if (output.fail())
             {
-                *ss << BRED << "HTTP/1.1 403 Forbidden\r\n" 
-                << "Content-Type: text/plain\r\n"
-                << "\r\n"
-                << "403 Forbidden" << RESET;
+                *ss << BRED << generateResponse(403) << RESET;
             }
             else
             {
                 output.close();
-                *ss << BGREEN << "HTTP/1.1 204 No Content\r\n"
-                << "Content-Type: text/plain\r\n"
-                << "\r\n" << RESET;
+                *ss << BGREEN << generateResponse(204) << RESET;
             }
             
         }
@@ -177,19 +163,13 @@ std::string MethodIO::getMessageToSend()
     switch(method)
     {
         case 0:
-        {
             return getMethod(&ss, token);
-            break;
-        }
         case 1:
             return postMethod(&ss, token);
-            break;
         case 2:
             return delMethod(&ss, token);
-            break;
         default:
             return("Bruh");
-            break;
     }
 }
 
@@ -200,13 +180,25 @@ std::string MethodIO::getMessage(int code) const
         {
             return ("OK");
         }
+        case 204:
+        {
+            return ("No Content");
+        }
         case 400:
         {
             return ("Bad Request");
         }
+        case 403:
+        {
+            return ("Forbidden Error");
+        }
         case 404:
         {
             return ("Not Found");
+        }
+        case 409:
+        {
+            return ("Conflict");
         }
         default:
             return ("Undefined");
@@ -247,7 +239,7 @@ std::string MethodIO::getLen() const
         return ("Content-Length: " + size + "\r\n");
     }
     else
-        return ("File not found/Content Error\r\n");
+        return ("\r\n");
 }
 
 std::string MethodIO::getType() const 
@@ -291,7 +283,7 @@ std::string MethodIO::generateResponse(int code)
 void MethodIO::setPath(std::string path)
 {
     if (path == "/")
-        this->path = "www/index.html";
+        this->path = "testing.txt";
     else
         this->path = path;
 }
