@@ -6,7 +6,7 @@
 /*   By: nwai-kea <nwai-kea@student.42kl.edu.my>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/19 16:12:22 by nwai-kea          #+#    #+#             */
-/*   Updated: 2024/02/23 13:47:40 by nwai-kea         ###   ########.fr       */
+/*   Updated: 2024/02/23 17:43:57 by itan             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,11 +53,11 @@ std::string MethodIO::getMethod(std::stringstream *ss, std::vector<std::string> 
     {
         std::ifstream file;
         setPath(token[1]);
-        file.open(getPath(), std::ifstream::in);
+        file.open(getPath().c_str(), std::ifstream::in);
         if (file.fail())
         {
             setPath("www/notfound.html");
-            file.open(getPath(), std::ifstream::in);
+            file.open(getPath().c_str(), std::ifstream::in);
             if (file.fail())
                 *ss << BRED << generateResponse(404) << RESET;
             else
@@ -85,7 +85,7 @@ std::string MethodIO::delMethod(std::stringstream *ss, std::vector<std::string> 
     else
     {
         std::cout << "Checking file..." << token[1] << std::endl;
-        file.open(token[1], std::ifstream::in);
+        file.open(token[1].c_str(), std::ifstream::in);
         if (!file.is_open())
         {
             *ss << BRED << "HTTP/1.1 404 Not Found\r\n" 
@@ -127,7 +127,7 @@ std::string MethodIO::postMethod(std::stringstream *ss, std::vector<std::string>
     else
     {
         std::cout << "Checking file..." << token[1] << std::endl;
-        file.open(token[1], std::ifstream::in);
+        file.open(token[1].c_str(), std::ifstream::in);
         if (file)
         {
             *ss << BRED << "HTTP/1.1 409 Conflict\r\n" 
@@ -137,7 +137,7 @@ std::string MethodIO::postMethod(std::stringstream *ss, std::vector<std::string>
         }
         else
         {
-            std::ofstream output(token[1]);
+            std::ofstream output(token[1].c_str());
 
             if (output.fail())
             {
@@ -232,7 +232,7 @@ std::string MethodIO::getLen() const
     std::string size;
     std::ifstream f;
 
-    f.open(path, std::ifstream::in);
+    f.open(path.c_str(), std::ifstream::in);
     if (f.is_open())
     {
         f.ignore(std::numeric_limits<std::streamsize>::max());
