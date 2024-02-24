@@ -6,7 +6,7 @@
 /*   By: nwai-kea <nwai-kea@student.42kl.edu.my>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/19 15:42:11 by nwai-kea          #+#    #+#             */
-/*   Updated: 2024/02/23 22:46:03 by nwai-kea         ###   ########.fr       */
+/*   Updated: 2024/02/24 18:42:21 by nwai-kea         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,9 @@ public:
 	std::string getMessageToSend();
     std::string getMethod(std::stringstream *ss, std::vector<std::string> token);
     std::string postMethod(std::stringstream *ss, std::vector<std::string> token);
+    std::string headMethod(std::stringstream *ss, std::vector<std::string> token);
     std::string delMethod(std::stringstream *ss, std::vector<std::string> token);
+    std::string putMethod(std::stringstream *ss, std::vector<std::string> token);
     int getCode() const;
     std::string getMap() const;
     std::string getDate() const;
