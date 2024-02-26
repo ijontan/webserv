@@ -33,7 +33,6 @@ std::string NetIO::getMessageToSend()
 
 	NetIO::requestInfo ri;
 
-	ss << getRaw();
 	tokenize(getRaw(), ri);
 
 	if (ri.request[1] == "/")

@@ -6,7 +6,7 @@
 /*   By: nwai-kea <nwai-kea@student.42kl.edu.my>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/19 15:42:11 by nwai-kea          #+#    #+#             */
-/*   Updated: 2024/02/24 18:42:21 by nwai-kea         ###   ########.fr       */
+/*   Updated: 2024/02/26 18:52:20 by nwai-kea         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,18 @@
 class MethodIO : public IOAdaptor
 {
 private:
+    struct requestInfo
+	{
+		std::vector<std::string> request;
+		std::map<std::string, std::string> headers;
+		std::string body;
+	};
+    struct responseInfo
+	{
+		std::vector<std::string> response;
+		std::map<std::string, std::string> headers;
+        std::string body;
+	};
     int _code;
     std::string statusLine;
     // std::map<std::string, std::string> responseHeader;
@@ -39,19 +51,20 @@ private:
 
     void setPath(std::string path);
     void setCode(int code);
+    void tokenize(std::string s, MethodIO::requestInfo &ri) const;
 
 public:
     MethodIO(void);
     ~MethodIO(void);
     MethodIO(const MethodIO &src);
     MethodIO &operator=(const MethodIO &rhs);
-    std::string generateResponse(int code);
+    std::string generateResponse(int code, MethodIO::responseInfo &ri);
 	std::string getMessageToSend();
-    std::string getMethod(std::stringstream *ss, std::vector<std::string> token);
-    std::string postMethod(std::stringstream *ss, std::vector<std::string> token);
-    std::string headMethod(std::stringstream *ss, std::vector<std::string> token);
-    std::string delMethod(std::stringstream *ss, std::vector<std::string> token);
-    std::string putMethod(std::stringstream *ss, std::vector<std::string> token);
+    std::string getMethod(std::stringstream *ss, std::vector<std::string> token, MethodIO::responseInfo &ri);
+    std::string postMethod(std::stringstream *ss, std::vector<std::string> token, MethodIO::responseInfo &ri);
+    std::string headMethod(std::stringstream *ss, std::vector<std::string> token, MethodIO::responseInfo &ri);
+    std::string delMethod(std::stringstream *ss, std::vector<std::string> token, MethodIO::responseInfo &ri);
+    std::string putMethod(std::stringstream *ss, std::vector<std::string> token, MethodIO::responseInfo &ri);
     int getCode() const;
     std::string getMap() const;
     std::string getDate() const;

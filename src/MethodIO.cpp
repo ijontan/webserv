@@ -6,11 +6,12 @@
 /*   By: nwai-kea <nwai-kea@student.42kl.edu.my>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/19 16:12:22 by nwai-kea          #+#    #+#             */
-/*   Updated: 2024/02/24 19:47:13 by nwai-kea         ###   ########.fr       */
+/*   Updated: 2024/02/26 18:52:16 by nwai-kea         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "MethodIO.hpp"
+#include "utils.hpp"
 
 MethodIO::MethodIO(void) : IOAdaptor()
 {
@@ -47,10 +48,45 @@ int MethodIO::chooseMethod(std::vector<std::string> token) const
         return -1;
 }
 
-std::string MethodIO::getMethod(std::stringstream *ss, std::vector<std::string> token)
+std::string MethodIO::getMethod(std::stringstream *ss, std::vector<std::string> token , MethodIO::responseInfo &ri)
 {
-    if (token[2] != "HTTP/1.1" )
-        *ss << BRED << generateResponse(400) << RESET;
+    if (token[2] != "HTTP/1.1\r")
+        *ss << BRED << generateResponse(400, ri) << RESET;
+    else
+    {
+        std::ifstream file;
+        std::ostringstream body;
+        setPath(token[1]);
+        file.open(getPath().c_str(), std::ifstream::in);
+        if (file.fail())
+        {
+            setPath("www/notfound.html");
+            file.open(getPath().c_str(), std::ifstream::in);
+            if (file.fail())
+                *ss << BRED << generateResponse(404, ri) << RESET;
+            else
+            {
+                body << file.rdbuf();
+                ri.body.append(body.str());
+                *ss << BRED << generateResponse(404, ri) << WHITE << ri.body << RESET;
+            }
+            file.close();
+        }
+        else
+        {
+            body << file.rdbuf();
+            ri.body.append(body.str());
+            *ss << BGREEN << generateResponse(200, ri) << WHITE << ri.body << RESET;
+        }
+        file.close();
+    }
+    return (ss->str());
+}
+
+std::string MethodIO::headMethod(std::stringstream *ss, std::vector<std::string> token, MethodIO::responseInfo &ri)
+{
+    if (token[2] != "HTTP/1.1\r")
+        *ss << BRED << generateResponse(400, ri) << RESET;
     else
     {
         std::ifstream file;
@@ -61,51 +97,25 @@ std::string MethodIO::getMethod(std::stringstream *ss, std::vector<std::string> 
             setPath("www/notfound.html");
             file.open(getPath().c_str(), std::ifstream::in);
             if (file.fail())
-                *ss << BRED << generateResponse(404) << RESET;
+                *ss << BRED << generateResponse(404, ri) << RESET;
             else
-                *ss << BRED << generateResponse(404) << WHITE << file.rdbuf() << RESET;
+                *ss << BRED << generateResponse(404, ri) << RESET;
             file.close();
         }
         else
-            *ss << BGREEN << generateResponse(200) << WHITE << file.rdbuf() << RESET;
+            *ss << BGREEN << generateResponse(200, ri) << RESET;
         file.close();
     }
     return (ss->str());
 }
 
-std::string MethodIO::headMethod(std::stringstream *ss, std::vector<std::string> token)
-{
-    if (token[2] != "HTTP/1.1" )
-        *ss << BRED << generateResponse(400) << RESET;
-    else
-    {
-        std::ifstream file;
-        setPath(token[1]);
-        file.open(getPath().c_str(), std::ifstream::in);
-        if (file.fail())
-        {
-            setPath("www/notfound.html");
-            file.open(getPath().c_str(), std::ifstream::in);
-            if (file.fail())
-                *ss << BRED << generateResponse(404) << RESET;
-            else
-                *ss << BRED << generateResponse(404) << RESET;
-            file.close();
-        }
-        else
-            *ss << BGREEN << generateResponse(200) << RESET;
-        file.close();
-    }
-    return (ss->str());
-}
-
-std::string MethodIO::delMethod(std::stringstream *ss, std::vector<std::string> token)
+std::string MethodIO::delMethod(std::stringstream *ss, std::vector<std::string> token, MethodIO::responseInfo &ri)
 {
     std::ifstream file;
     std::ifstream file2;
 
-    if (token[2] != "HTTP/1.1" )
-        *ss << BRED << generateResponse(400) << RESET;
+    if (token[2] != "HTTP/1.1\r")
+        *ss << BRED << generateResponse(400, ri) << RESET;
     else
     {
         setPath(token[1]);
@@ -113,15 +123,20 @@ std::string MethodIO::delMethod(std::stringstream *ss, std::vector<std::string> 
         if (file.fail())
         {
             if(access(getPath().c_str(), W_OK) != 0)
-                *ss << BRED << generateResponse(403) << RESET;
+                *ss << BRED << generateResponse(403, ri) << RESET;
             else
             {
                 setPath("www/notfound.html");
                 file2.open(getPath().c_str(), std::ifstream::in);
                 if (file2.fail())
-                    *ss << BRED << generateResponse(404) << RESET;
+                    *ss << BRED << generateResponse(404, ri) << RESET;
                 else
-                    *ss << BRED << generateResponse(404) << WHITE << file.rdbuf() << RESET;
+                {
+                    std::ostringstream body;
+                    body << file.rdbuf();
+                    ri.body.append(body.str());
+                    *ss << BRED << generateResponse(404, ri) << WHITE << ri.body << RESET;
+                }
                 file2.close();
             }
         }
@@ -130,23 +145,23 @@ std::string MethodIO::delMethod(std::stringstream *ss, std::vector<std::string> 
             file.close();
             if (std::remove(getPath().c_str()) == 0)
             {
-                *ss << BGREEN << generateResponse(204) << RESET;
+                *ss << BGREEN << generateResponse(204, ri) << RESET;
             }
             else
             {
-                *ss << BRED << generateResponse(403) << RESET;
+                *ss << BRED << generateResponse(403, ri) << RESET;
             }
         }
     }
     return (ss->str());
 }
 
-std::string MethodIO::postMethod(std::stringstream *ss, std::vector<std::string> token)
+std::string MethodIO::postMethod(std::stringstream *ss, std::vector<std::string> token, MethodIO::responseInfo &ri)
 {
     std::ifstream file;
 
-    if (token[2] != "HTTP/1.1" )
-        *ss << BRED << generateResponse(400) << RESET;
+    if (token[2] != "HTTP/1.1\r")
+        *ss << BRED << generateResponse(400, ri) << RESET;
     else
     {
         setPath(token[1]);
@@ -154,7 +169,7 @@ std::string MethodIO::postMethod(std::stringstream *ss, std::vector<std::string>
         if (file)
         {
             file.close();
-            *ss << BGREEN << generateResponse(204) << RESET;
+            *ss << BGREEN << generateResponse(204, ri) << RESET;
         }
         else
         {
@@ -162,12 +177,12 @@ std::string MethodIO::postMethod(std::stringstream *ss, std::vector<std::string>
 
             if (output.fail())
             {
-                *ss << BRED << generateResponse(403) << RESET;
+                *ss << BRED << generateResponse(403, ri) << RESET;
             }
             else
             {
                 output.close();
-                *ss << BGREEN << generateResponse(204) << RESET;
+                *ss << BGREEN << generateResponse(204, ri) << RESET;
             }
             
         }
@@ -175,24 +190,24 @@ std::string MethodIO::postMethod(std::stringstream *ss, std::vector<std::string>
     return (ss->str());
 }
 
-std::string MethodIO::putMethod(std::stringstream *ss, std::vector<std::string> token)
+std::string MethodIO::putMethod(std::stringstream *ss, std::vector<std::string> token, MethodIO::responseInfo &ri)
 {
     std::ifstream file;
 
-    if (token[2] != "HTTP/1.1" )
-        *ss << BRED << generateResponse(400) << RESET;
+    if (token[2] != "HTTP/1.1\r")
+        *ss << BRED << generateResponse(400, ri) << RESET;
     else
     {
         setPath(token[1]);
         std::ofstream output(getPath().c_str());
         if (output.fail())
         {
-            *ss << BRED << generateResponse(403) << RESET;
+            *ss << BRED << generateResponse(403, ri) << RESET;
         }
         else
         {
             output.close();
-            *ss << BGREEN << generateResponse(201) << RESET;
+            *ss << BGREEN << generateResponse(201, ri) << RESET;
         }
     }
     return (ss->str());
@@ -204,7 +219,10 @@ std::string MethodIO::getMessageToSend()
     std::stringstream str(getRaw());
 	std::string word;
     std::vector<std::string> token;
+    // MethodIO::requestInfo ri;
+    MethodIO::responseInfo ri;
 
+    // tokenize(getRaw(), ri);
 	while (std::getline(str, word))
     {
         std::string tok;
@@ -216,15 +234,15 @@ std::string MethodIO::getMessageToSend()
     switch(method)
     {
         case 0:
-            return getMethod(&ss, token);
+            return getMethod(&ss, token, ri);
         case 1:
-            return postMethod(&ss, token);
+            return postMethod(&ss, token, ri);
         case 2:
-            return delMethod(&ss, token);
+            return delMethod(&ss, token, ri);
         case 3:
-            return headMethod(&ss, token);
+            return headMethod(&ss, token, ri);
         case 4:
-            return putMethod(&ss, token);
+            return putMethod(&ss, token, ri);
         default:
             return("Bruh");
     }
@@ -268,8 +286,6 @@ std::string MethodIO::getMessage(int code) const
 
 std::string MethodIO::getDate() const
 {
-    const std::string day[] = {"Sun","Mon","Tue",
-        "Wed","Thu","Fri","Sat"};
     char date[100];
 
     time_t now = time(0);
@@ -330,21 +346,26 @@ std::string MethodIO::getMap() const
         "\r\n");  
 }
 
-std::string MethodIO::generateResponse(int code)
+std::string MethodIO::generateResponse(int code, MethodIO::responseInfo &ri)
 {
     std::ostringstream conv;
 
     setCode(code);
     conv << code;
-    this->statusLine = "HTTP/1.1 " + conv.str() + " " + getMessage(code) + "\r\n";
-    this->response = getMap(); 
-    return (this->statusLine + this->response);
+    this->statusLine = "HTTP/1.1 " + conv.str() + " " + getMessage(code);
+    this->response = getMap();
+    ri.response = utils::split(this->statusLine, " ");
+    std::pair<std::string, std::string> headerBody = utils::splitPair(this->response, "\r\n\n");
+    std::vector<std::string> requestHeader = utils::split(this->response, "\r\n");
+    for (size_t i = 1; i < requestHeader.size(); i++)
+		ri.headers.insert(utils::splitPair(requestHeader[i], ": "));
+    return (this->statusLine + "\r\n" + this->response);
 }
 
 void MethodIO::setPath(std::string path)
 {
     if (path == "/")
-        this->path = "testing.txt";
+        this->path = "www/index.html";
     else
         this->path = path;
 }
@@ -362,4 +383,15 @@ int MethodIO::getCode() const
 std::string MethodIO::getPath() const
 {
     return this->path;
+}
+
+void MethodIO::tokenize(std::string s, MethodIO::requestInfo &ri) const
+{
+	std::pair<std::string, std::string> headerBody = utils::splitPair(s, "\r\n\n");
+	std::vector<std::string> requestHeader = utils::split(headerBody.first, "\r\n");
+
+	ri.request = utils::split(requestHeader[0], ' ');
+	for (size_t i = 1; i < requestHeader.size(); i++)
+		ri.headers.insert(utils::splitPair(requestHeader[i], ": "));
+	ri.body = headerBody.second;
 }
