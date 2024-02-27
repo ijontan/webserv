@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <string>
+class WebServer;
 
 class IOAdaptor
 {
@@ -14,7 +15,7 @@ public:
 	IOAdaptor(const IOAdaptor &src);
 	IOAdaptor &operator=(const IOAdaptor &rhs);
 	virtual void recieveMessage(std::string raw);
-	virtual std::string getMessageToSend() const;
+	virtual std::string getMessageToSend(WebServer &ws);
 	std::string getRaw() const;
 };
 

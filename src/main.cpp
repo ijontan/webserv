@@ -1,6 +1,7 @@
 
 #include "IOAdaptor.hpp"
 #include "NetIO.hpp"
+#include "MethodIO.hpp"
 #include "webserv.h"
 #include <vector>
 
@@ -29,7 +30,7 @@ int main(int ac, char **av)
 	// 	}
 	// }
 
-	NetIO io;
+	MethodIO io;
 	if (ac == 1)
 	{
 		WebServer webServer(DEFAULT_CONFIG_FILE_PATH, io);

@@ -26,8 +26,9 @@ NetIO::~NetIO(void)
 {
 }
 
-std::string NetIO::getMessageToSend() const
+std::string NetIO::getMessageToSend(WebServer &ws)
 {
+	(void)ws;
 	std::stringstream ss;
 	std::string path;
 

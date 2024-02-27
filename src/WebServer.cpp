@@ -151,7 +151,7 @@ void WebServer::handleIO(int index, std::map<int, std::string> &buffMap)
 		if (bytes >= 0)
 		{
 			std::cout << _io;
-			std::string toSend = _io.getMessageToSend();
+			std::string toSend = _io.getMessageToSend(*this);
 			send(_pfds[index].fd, toSend.c_str(), toSend.length(), 0);
 		}
 		else
