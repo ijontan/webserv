@@ -6,12 +6,61 @@
 /*   By: nwai-kea <nwai-kea@student.42kl.edu.my>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/19 16:12:22 by nwai-kea          #+#    #+#             */
-/*   Updated: 2024/02/26 18:52:16 by nwai-kea         ###   ########.fr       */
+/*   Updated: 2024/02/28 01:47:19 by itan             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "MethodIO.hpp"
 #include "utils.hpp"
+#include <cstddef>
+#include <ctime>
+#include <fstream>
+#include <ios>
+#include <iostream>
+#include <map>
+#include <ostream>
+#include <sstream>
+#include <string>
+#include <vector>
+
+const std::map<std::string, MethodIO::MethodPointer> MethodIO::methods = initMathodsMap();
+const std::map<int, std::string> MethodIO::errCodeMessages = initErrCodeMessages();
+const std::map<std::string, std::string> MethodIO::contentTypes = initContentTypes();
+
+std::map<std::string, MethodIO::MethodPointer> MethodIO::initMathodsMap()
+{
+	std::map<std::string, MethodIO::MethodPointer> m;
+	m["GET"] = &MethodIO::getMethod;
+	m["POST"] = &MethodIO::postMethod;
+	m["HEAD"] = &MethodIO::headMethod;
+	m["DELETE"] = &MethodIO::delMethod;
+	m["PUT"] = &MethodIO::putMethod;
+	return m;
+}
+
+std::map<int, std::string> MethodIO::initErrCodeMessages()
+{
+	std::map<int, std::string> m;
+	m[200] = "OK";
+	m[201] = "Created";
+	m[204] = "No Content";
+	m[400] = "Bad Request";
+	m[403] = "Forbidden Error";
+	m[404] = "Not Found";
+	m[409] = "Conflict";
+	return m;
+}
+
+std::map<std::string, std::string> MethodIO::initContentTypes()
+{
+	std::map<std::string, std::string> m;
+	m["txt"] = "text/plain";
+	m["html"] = "text/html";
+	m["css"] = "text/css";
+	m["js"] = "text/javascript";
+
+	return m;
+}
 
 MethodIO::MethodIO(void) : IOAdaptor()
 {
@@ -19,379 +68,227 @@ MethodIO::MethodIO(void) : IOAdaptor()
 
 MethodIO::MethodIO(const MethodIO &src) : IOAdaptor()
 {
-    *this = src;
+	*this = src;
 }
 
 MethodIO &MethodIO::operator=(const MethodIO &rhs)
 {
-    (void)rhs;
-    return *this;
+	(void)rhs;
+	return *this;
 }
 
 MethodIO::~MethodIO(void)
 {
 }
 
-int MethodIO::chooseMethod(std::vector<std::string> token) const
+std::string MethodIO::getMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::rInfo &rsi)
 {
-    if (token[0] == "GET")
-        return 0;
-    else if (token[0] == "POST")
-        return 1;
-    else if (token[0] == "DELETE")
-        return 2;
-    else if (token[0] == "HEAD")
-        return 3;
-    else if (token[0] == "PUT")
-        return 4;
-    else
-        return -1;
+	int code = 200;
+	if (rqi.request[2] != "HTTP/1.1")
+		return generateResponse(400, rsi);
+	std::string path = getPath(rqi.request[1], ws);
+	std::ifstream file(path.c_str());
+	if (file.fail())
+	{
+		code = 404;
+		file.close();
+		path = getPath("/notfound.html", ws);
+		file.open(path.c_str());
+		if (file.fail())
+			return generateResponse(code, rsi);
+	}
+	rsi.headers["Content-Length"] = getLen(file);
+	rsi.headers["Content-Type"] = getType(path);
+	std::ostringstream body;
+	body << file.rdbuf();
+	rsi.body.append(body.str());
+	file.close();
+	return (generateResponse(code, rsi));
 }
 
-std::string MethodIO::getMethod(std::stringstream *ss, std::vector<std::string> token , MethodIO::responseInfo &ri)
+std::string MethodIO::headMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::rInfo &rsi)
 {
-    if (token[2] != "HTTP/1.1\r")
-        *ss << BRED << generateResponse(400, ri) << RESET;
-    else
-    {
-        std::ifstream file;
-        std::ostringstream body;
-        setPath(token[1]);
-        file.open(getPath().c_str(), std::ifstream::in);
-        if (file.fail())
-        {
-            setPath("www/notfound.html");
-            file.open(getPath().c_str(), std::ifstream::in);
-            if (file.fail())
-                *ss << BRED << generateResponse(404, ri) << RESET;
-            else
-            {
-                body << file.rdbuf();
-                ri.body.append(body.str());
-                *ss << BRED << generateResponse(404, ri) << WHITE << ri.body << RESET;
-            }
-            file.close();
-        }
-        else
-        {
-            body << file.rdbuf();
-            ri.body.append(body.str());
-            *ss << BGREEN << generateResponse(200, ri) << WHITE << ri.body << RESET;
-        }
-        file.close();
-    }
-    return (ss->str());
+	int code = 200;
+	if (rqi.request[2] != "HTTP/1.1")
+		return generateResponse(400, rsi);
+	std::string path = getPath(rqi.request[1], ws);
+	std::ifstream file(path.c_str());
+	if (file.fail())
+	{
+		code = 404;
+		file.close();
+		path = getPath("/notfound.html", ws);
+		file.open(path.c_str());
+		if (file.fail())
+			return generateResponse(code, rsi);
+	}
+	rsi.headers["Content-Type"] = getType(path);
+	file.close();
+	return (generateResponse(code, rsi));
 }
 
-std::string MethodIO::headMethod(std::stringstream *ss, std::vector<std::string> token, MethodIO::responseInfo &ri)
+std::string MethodIO::delMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::rInfo &rsi)
 {
-    if (token[2] != "HTTP/1.1\r")
-        *ss << BRED << generateResponse(400, ri) << RESET;
-    else
-    {
-        std::ifstream file;
-        setPath(token[1]);
-        file.open(getPath().c_str(), std::ifstream::in);
-        if (file.fail())
-        {
-            setPath("www/notfound.html");
-            file.open(getPath().c_str(), std::ifstream::in);
-            if (file.fail())
-                *ss << BRED << generateResponse(404, ri) << RESET;
-            else
-                *ss << BRED << generateResponse(404, ri) << RESET;
-            file.close();
-        }
-        else
-            *ss << BGREEN << generateResponse(200, ri) << RESET;
-        file.close();
-    }
-    return (ss->str());
+	std::ifstream file;
+	std::ifstream file2;
+	std::stringstream ss;
+
+	if (rqi.request[1] != "HTTP/1.1\r")
+		return generateResponse(400, rsi);
+	std::string path = getPath(rqi.request[1], ws);
+	file.open(path.c_str(), std::ifstream::in);
+	if (file.fail())
+	{
+		if (access(getPath(rqi.request[1], ws).c_str(), W_OK) != 0)
+			return generateResponse(403, rsi);
+		file2.open(getPath("/notfound.html", ws).c_str(), std::ifstream::in);
+		if (file2.fail())
+			ss << generateResponse(404, rsi);
+		else
+		{
+			std::ostringstream body;
+			body << file.rdbuf();
+			rsi.body.append(body.str());
+			ss << generateResponse(404, rsi) << rsi.body;
+		}
+		file2.close();
+	}
+	else
+	{
+		if (std::remove(path.c_str()) == 0)
+			ss << generateResponse(204, rsi);
+		else
+			ss << generateResponse(403, rsi);
+	}
+	file.close();
+	return (ss.str());
 }
 
-std::string MethodIO::delMethod(std::stringstream *ss, std::vector<std::string> token, MethodIO::responseInfo &ri)
+std::string MethodIO::postMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::rInfo &rsi)
 {
-    std::ifstream file;
-    std::ifstream file2;
+	std::ifstream file;
+	std::stringstream ss;
 
-    if (token[2] != "HTTP/1.1\r")
-        *ss << BRED << generateResponse(400, ri) << RESET;
-    else
-    {
-        setPath(token[1]);
-        file.open(getPath().c_str(), std::ifstream::in);
-        if (file.fail())
-        {
-            if(access(getPath().c_str(), W_OK) != 0)
-                *ss << BRED << generateResponse(403, ri) << RESET;
-            else
-            {
-                setPath("www/notfound.html");
-                file2.open(getPath().c_str(), std::ifstream::in);
-                if (file2.fail())
-                    *ss << BRED << generateResponse(404, ri) << RESET;
-                else
-                {
-                    std::ostringstream body;
-                    body << file.rdbuf();
-                    ri.body.append(body.str());
-                    *ss << BRED << generateResponse(404, ri) << WHITE << ri.body << RESET;
-                }
-                file2.close();
-            }
-        }
-        else
-        {
-            file.close();
-            if (std::remove(getPath().c_str()) == 0)
-            {
-                *ss << BGREEN << generateResponse(204, ri) << RESET;
-            }
-            else
-            {
-                *ss << BRED << generateResponse(403, ri) << RESET;
-            }
-        }
-    }
-    return (ss->str());
+	if (rqi.request[2] != "HTTP/1.1")
+		return generateResponse(400, rsi);
+	file.open(getPath(rqi.request[1], ws).c_str(), std::ifstream::in);
+	if (file.fail())
+		ss << generateResponse(204, rsi);
+	else
+	{
+		std::ofstream output(getPath(rqi.request[1], ws).c_str());
+
+		if (output.fail())
+			ss << generateResponse(403, rsi);
+		else
+			ss << generateResponse(204, rsi);
+		output.close();
+	}
+	file.close();
+	return (ss.str());
 }
 
-std::string MethodIO::postMethod(std::stringstream *ss, std::vector<std::string> token, MethodIO::responseInfo &ri)
+std::string MethodIO::putMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::rInfo &rsi)
 {
-    std::ifstream file;
+	std::ifstream file;
+	std::stringstream ss;
 
-    if (token[2] != "HTTP/1.1\r")
-        *ss << BRED << generateResponse(400, ri) << RESET;
-    else
-    {
-        setPath(token[1]);
-        file.open(getPath().c_str(), std::ifstream::in);
-        if (file)
-        {
-            file.close();
-            *ss << BGREEN << generateResponse(204, ri) << RESET;
-        }
-        else
-        {
-            std::ofstream output(getPath().c_str());
-
-            if (output.fail())
-            {
-                *ss << BRED << generateResponse(403, ri) << RESET;
-            }
-            else
-            {
-                output.close();
-                *ss << BGREEN << generateResponse(204, ri) << RESET;
-            }
-            
-        }
-    }
-    return (ss->str());
+	if (rqi.request[2] != "HTTP/1.1")
+		return generateResponse(400, rsi);
+	file.open(getPath(rqi.request[1], ws).c_str(), std::ifstream::in);
+	if (file.fail())
+		ss << generateResponse(403, rsi);
+	else
+		ss << generateResponse(201, rsi);
+	file.close();
+	return (ss.str());
 }
 
-std::string MethodIO::putMethod(std::stringstream *ss, std::vector<std::string> token, MethodIO::responseInfo &ri)
+std::string MethodIO::getMessageToSend(WebServer &ws)
 {
-    std::ifstream file;
-
-    if (token[2] != "HTTP/1.1\r")
-        *ss << BRED << generateResponse(400, ri) << RESET;
-    else
-    {
-        setPath(token[1]);
-        std::ofstream output(getPath().c_str());
-        if (output.fail())
-        {
-            *ss << BRED << generateResponse(403, ri) << RESET;
-        }
-        else
-        {
-            output.close();
-            *ss << BGREEN << generateResponse(201, ri) << RESET;
-        }
-    }
-    return (ss->str());
-}
-
-std::string MethodIO::getMessageToSend()
-{
-    std::stringstream ss;
-    std::stringstream str(getRaw());
 	std::string word;
-    std::vector<std::string> token;
-    // MethodIO::requestInfo ri;
-    MethodIO::responseInfo ri;
+	MethodIO::rInfo rqi;
+	MethodIO::rInfo rsi;
 
-    // tokenize(getRaw(), ri);
-	while (std::getline(str, word))
-    {
-        std::string tok;
-        std::stringstream w(word);
-        while (getline(w, tok, ' '))
-            token.push_back(tok);
-    }
-    int method = chooseMethod(token);
-    switch(method)
-    {
-        case 0:
-            return getMethod(&ss, token, ri);
-        case 1:
-            return postMethod(&ss, token, ri);
-        case 2:
-            return delMethod(&ss, token, ri);
-        case 3:
-            return headMethod(&ss, token, ri);
-        case 4:
-            return putMethod(&ss, token, ri);
-        default:
-            return("Bruh");
-    }
+	tokenize(getRaw(), rqi);
+	std::string method = rqi.request[0];
+	rsi.headers["Date"] = getDate();
+	std::map<std::string, MethodPointer>::const_iterator it = methods.find(method);
+	if (it != methods.end())
+		return (it->second)(ws, rqi, rsi);
+	std::cerr << "methods not found" << std::endl;
+	return "bruh";
 }
 
-std::string MethodIO::getMessage(int code) const
+std::string MethodIO::getMessage(int code)
 {
-    switch (code) {
-        case 200:
-        {
-            return ("OK");
-        }
-        case 201:
-        {
-            return ("Created");
-        }
-        case 204:
-        {
-            return ("No Content");
-        }
-        case 400:
-        {
-            return ("Bad Request");
-        }
-        case 403:
-        {
-            return ("Forbidden Error");
-        }
-        case 404:
-        {
-            return ("Not Found");
-        }
-        case 409:
-        {
-            return ("Conflict");
-        }
-        default:
-            return ("Undefined");
-    }
+	std::map<int, std::string>::const_iterator val = errCodeMessages.find(code);
+	if (val != errCodeMessages.end())
+		return val->second;
+	return "Undefined";
 }
 
-std::string MethodIO::getDate() const
+std::string MethodIO::getDate()
 {
-    char date[100];
+	char date[100];
 
-    time_t now = time(0);
-    tm *t = localtime(&now);
-    std::strftime(date, sizeof(date), "%a, %d %b %Y %H:%M:%S %Z", t);
-    std::string dateStr(date);
-    return (dateStr);
+	time_t now = time(0);
+	tm *t = localtime(&now);
+	std::strftime(date, sizeof(date), "%a, %d %b %Y %H:%M:%S %Z", t);
+	std::string dateStr(date);
+	return (dateStr);
 }
 
-std::string MethodIO::getLen() const
+std::string MethodIO::getLen(std::ifstream &file)
 {
-    std::string path = getPath();
-    std::string size;
-    std::ifstream f;
+	std::stringstream ss;
 
-    f.open(path.c_str(), std::ifstream::in);
-    if (f.is_open())
-    {
-        f.ignore(std::numeric_limits<std::streamsize>::max());
-        std::streamsize len = f.gcount();
-        f.clear();
-        f.seekg(0, std::ios_base::beg);
-        int l = static_cast<int>(len);
-        f.close();
-        std::stringstream str;
-        str << l;
-        str >> size;
-        return ("Content-Length: " + size + "\r\n");
-    }
-    else
-        return ("\r\n");
+	file.seekg(0, std::ios::end);
+	std::streampos fileSize = file.tellg();
+	file.seekg(0, std::ios::beg);
+	ss << fileSize;
+	return ss.str();
 }
 
-std::string MethodIO::getType() const 
+std::string MethodIO::getType(std::string path)
 {
-    std::string p;
-    std::string extension;
-    size_t file = getPath().find_last_of("/\\");
-    if (file != std::string::npos)
-        p = getPath().substr(file + 1);
-    file = p.rfind(".");
-    if (file != std::string::npos)
-        extension = p.substr(file + 1);
-    if (extension == "html")
-        return ("Content-Type: text/html\r\n");
-    else if (extension == "css")
-        return ("Content-Type: text/css\r\n");
-    else if (extension == "txt")
-        return ("Content-Type: text/plain\r\n");
-    else
-        return ("\r\n");    
+	std::string p;
+	std::vector<std::string> tokens = utils::split(path, '.');
+	std::string extension = tokens[tokens.size() - 1];
+
+	if (tokens.size() == 1)
+		extension = "txt";
+	std::map<std::string, std::string>::const_iterator it = contentTypes.find(extension);
+	if (it == contentTypes.end())
+		return "";
+	return it->second;
 }
 
-std::string MethodIO::getMap() const
+std::string MethodIO::generateResponse(int code, MethodIO::rInfo &rsi)
 {
-    return ("Date: " + getDate() + "\r\nServer: webserv" + 
-        "\r\n" + getLen() + getType() + 
-        "\r\n");  
+	std::ostringstream ss;
+	std::map<std::string, std::string>::iterator it;
+
+	ss << "HTTP/1.1 " << code << " " << getMessage(code) << "\r\n";
+	for (it = rsi.headers.begin(); it != rsi.headers.end(); it++)
+		ss << it->first << ": " << it->second << "\r\n";
+	ss << "\r\n" << rsi.body;
+	return (ss.str());
 }
 
-std::string MethodIO::generateResponse(int code, MethodIO::responseInfo &ri)
+std::string MethodIO::getPath(std::string basePath, WebServer &ws)
 {
-    std::ostringstream conv;
-
-    setCode(code);
-    conv << code;
-    this->statusLine = "HTTP/1.1 " + conv.str() + " " + getMessage(code);
-    this->response = getMap();
-    ri.response = utils::split(this->statusLine, " ");
-    std::pair<std::string, std::string> headerBody = utils::splitPair(this->response, "\r\n\n");
-    std::vector<std::string> requestHeader = utils::split(this->response, "\r\n");
-    for (size_t i = 1; i < requestHeader.size(); i++)
-		ri.headers.insert(utils::splitPair(requestHeader[i], ": "));
-    return (this->statusLine + "\r\n" + this->response);
+	(void)ws;
+	return basePath == "/" ? "www/index.html" : "www" + basePath;
 }
 
-void MethodIO::setPath(std::string path)
-{
-    if (path == "/")
-        this->path = "www/index.html";
-    else
-        this->path = path;
-}
-
-void MethodIO::setCode(int code)
-{
-    this->_code = code;
-}
-
-int MethodIO::getCode() const
-{
-    return (this->_code);
-}
-
-std::string MethodIO::getPath() const
-{
-    return this->path;
-}
-
-void MethodIO::tokenize(std::string s, MethodIO::requestInfo &ri) const
+void MethodIO::tokenize(std::string s, MethodIO::rInfo &rsi) const
 {
 	std::pair<std::string, std::string> headerBody = utils::splitPair(s, "\r\n\n");
 	std::vector<std::string> requestHeader = utils::split(headerBody.first, "\r\n");
 
-	ri.request = utils::split(requestHeader[0], ' ');
+	rsi.request = utils::split(requestHeader[0], ' ');
 	for (size_t i = 1; i < requestHeader.size(); i++)
-		ri.headers.insert(utils::splitPair(requestHeader[i], ": "));
-	ri.body = headerBody.second;
+		rsi.headers.insert(utils::splitPair(requestHeader[i], ": "));
+	rsi.body = headerBody.second;
 }
