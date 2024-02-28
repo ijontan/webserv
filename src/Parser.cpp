@@ -5,30 +5,7 @@ Parser::Parser(const std::string &filePath)
 	: _filePath(filePath), _fileStream(filePath.c_str()), _tempLine(""),
 	  _lineNum(1), _serverBlockNum(1), _locationBlockNum(1), _tempServerBlock(),
 	  _tempLocationBlock(this->_tempServerBlock)
-{
-	// this->_executeDirectiveParsing["listen"] 					=
-	// &Parser::parsePortsListeningOn;
-	// this->_executeDirectiveParsing["server_name"] 				=
-	// &Parser::parseServerName;
-
-	// this->_executeDirectiveParsing["root"] 						=
-	// &Parser::parseRoot; this->_executeDirectiveParsing["index"]
-	// = &Parser::parseIndex;
-	// this->_executeDirectiveParsing["client_max_body_size"]		=
-	// &Parser::parseClientMaxBodySize;
-	// this->_executeDirectiveParsing["error_page"] 				=
-	// &Parser::parseErrorPages; this->_executeDirectiveParsing["return"]
-	// = &Parser::parseRedirection;
-
-	// this->_executeDirectiveParsing["location"] 					=
-	// &Parser::parseLocationBlocks;
-
-	// this->_executeDirectiveParsing["autoindex"]					=
-	// &Parser::parseAutoindexStatus;
-	// this->_executeDirectiveParsing["limit_except"]				=
-	// &Parser::parseAllowedMethods; this->_executeDirectiveParsing["cgi_pass"]
-	// = &Parser::parseCgiPassPath;
-}
+{}
 
 /*
 Server:		listen, server_name
@@ -70,8 +47,6 @@ void Parser::parseServerBlocks(std::vector<ServerBlock> &serverBlocks)
 
 		// gets the 1st and 2nd element in the line
 		iss >> str1 >> str2;
-		// std::cout << "str1: " << str1 << std::endl;
-		// std::cout << "str2: " << str2 << std::endl;
 
 		if (isSkippableLine(str1))
 		{
@@ -126,25 +101,6 @@ void Parser::parseDirectives(T &block)
 			return;
 		}
 
-		// // check if the directive exists in the unordered map using an
-		// iterator: std::map<std::string, FuncPtr>::iterator it =
-		// this->_executeDirectiveParsing.find(directive);
-
-		// // if it does then execute the function pointer to parse the
-		// directive if (it != this->_executeDirectiveParsing.end()) {
-		// 	(this->*(it->second))(iss);
-		// 	this->_lineNum++;
-		// } else {
-		// 	std::string errorMsg = "Error ("
-		// 							+ this->_filePath
-		// 							+ ": line "
-		// 							+ std::to_string(this->_lineNum)
-		// 							+ "): The directive "
-		// 							+ directive
-		// 							+ " does not exist";
-		// 	throw CustomException(errorMsg);
-		// }
-
 		if (directive == "listen")
 		{
 			parsePortsListeningOn(iss);
@@ -189,6 +145,14 @@ void Parser::parseDirectives(T &block)
 		{
 			parseCgiPassPath(iss);
 		}
+		else
+		{
+			std::stringstream ss;
+			ss << "Error (line " << this->_lineNum
+			   << "): The directive " << directive <<
+				  " does not exist";
+			throw CustomException(ss.str());
+		}
 	}
 }
 
@@ -198,9 +162,34 @@ void Parser::parsePortsListeningOn(std::istringstream &iss)
 
 	while (iss >> port)
 	{
-		std::cout << CYAN "added port: " << port << RESET << std::endl;
-		this->_tempServerBlock.addPortsListeningOn(port);
+		if (isValidPort(port))
+		{
+			std::cout << CYAN "added port: " << port << RESET << std::endl;
+			this->_tempServerBlock.addPortsListeningOn(port);
+		}
+		else
+		{
+			std::stringstream ss;
+			ss << "Error (line " << this->_lineNum
+			   << "): Port " << port << " is invalid";
+			throw CustomException(ss.str());
+		}
 	}
+}
+
+bool Parser::isValidPort( std::string port )
+{
+	int port = std::stoi(port);
+
+	if (port < 0 || port > 65536)
+		return (false);
+
+	for (int i = 0; i < port.length(); i++)
+	{
+		if (port[i].is_digit() == false)
+			return (false);
+	}
+	return (true);
 }
 
 void Parser::parseServerName(std::istringstream &iss)

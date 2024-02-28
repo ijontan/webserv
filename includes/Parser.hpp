@@ -43,6 +43,9 @@ public:
 	bool isSkippableLine(std::string &line);
 	void removeSemicolon(std::string &str);
 
+	// error checking
+	bool isValidPort( std::string port );
+
 private:
 	Parser(const Parser &other);
 	Parser &operator=(const Parser &other);
