@@ -1,8 +1,7 @@
 
-#include "webserv.h"
+#pragma once
 
-#ifndef LOCATIONBLOCK_HPP
-#define LOCATIONBLOCK_HPP
+#include "ABlock.hpp"
 
 class LocationBlock : public ABlock
 {
@@ -29,4 +28,3 @@ private:
 	std::string _cgiPass;
 };
 
-#endif

@@ -1,9 +1,10 @@
 
-#include "webserv.h"
-#include <vector>
+#pragma once
 
-#ifndef WEBSERVER_HPP
-#define WEBSERVER_HPP
+#include <vector>
+#include <string>
+#include <map>
+
 
 class Parser;
 class ServerBlock;
@@ -34,4 +35,3 @@ private:
 	IOAdaptor &_io;
 };
 
-#endif

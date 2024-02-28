@@ -6,7 +6,7 @@
 /*   By: nwai-kea <nwai-kea@student.42kl.edu.my>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/19 16:12:22 by nwai-kea          #+#    #+#             */
-/*   Updated: 2024/02/28 01:47:19 by itan             ###   ########.fr       */
+/*   Updated: 2024/02/28 19:31:46 by itan             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,11 +23,11 @@
 #include <string>
 #include <vector>
 
-const std::map<std::string, MethodIO::MethodPointer> MethodIO::methods = initMathodsMap();
+const std::map<std::string, MethodIO::MethodPointer> MethodIO::methods = initMethodsMap();
 const std::map<int, std::string> MethodIO::errCodeMessages = initErrCodeMessages();
 const std::map<std::string, std::string> MethodIO::contentTypes = initContentTypes();
 
-std::map<std::string, MethodIO::MethodPointer> MethodIO::initMathodsMap()
+std::map<std::string, MethodIO::MethodPointer> MethodIO::initMethodsMap()
 {
 	std::map<std::string, MethodIO::MethodPointer> m;
 	m["GET"] = &MethodIO::getMethod;

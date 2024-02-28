@@ -21,7 +21,7 @@ IOAdaptor::~IOAdaptor(void)
 {
 }
 
-void IOAdaptor::recieveMessage(std::string raw)
+void IOAdaptor::receiveMessage(std::string raw)
 {
 	receivedRaw = raw;
 }
@@ -30,7 +30,7 @@ std::string IOAdaptor::getMessageToSend(WebServer &ws)
 {
 	(void)ws;
 	std::stringstream ss;
-	ss << BGREEN << "Recieved message:\n"
+	ss << BGREEN << "Received message:\n"
 	   << RESET << receivedRaw << BBLUE << "\nSending back: Hello, world!\n"
 	   << RESET;
 	return ss.str();

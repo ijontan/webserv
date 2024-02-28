@@ -6,7 +6,7 @@
 /*   By: nwai-kea <nwai-kea@student.42kl.edu.my>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/19 15:42:11 by nwai-kea          #+#    #+#             */
-/*   Updated: 2024/02/28 00:54:40 by itan             ###   ########.fr       */
+/*   Updated: 2024/02/28 19:29:56 by itan             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@ private:
 
 	void tokenize(std::string s, MethodIO::rInfo &ri) const;
 
-	static std::map<std::string, MethodPointer> initMathodsMap();
+	static std::map<std::string, MethodPointer> initMethodsMap();
 	static std::map<int, std::string> initErrCodeMessages();
 	static std::map<std::string, std::string> initContentTypes();
 	static std::string getMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::rInfo &rsi);

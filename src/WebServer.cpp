@@ -147,7 +147,7 @@ void WebServer::handleIO(int index, std::map<int, std::string> &buffMap)
 	buffMap[_pfds[index].fd] += buff;
 	if (bytes < 255)
 	{
-		_io.recieveMessage(buffMap[_pfds[index].fd]);
+		_io.receiveMessage(buffMap[_pfds[index].fd]);
 		if (bytes >= 0)
 		{
 			std::cout << _io;
@@ -158,7 +158,7 @@ void WebServer::handleIO(int index, std::map<int, std::string> &buffMap)
 			std::cerr << "recv error" << std::endl;
 		buffMap.erase(buffMap.find(_pfds[index].fd));
 		close(_pfds[index].fd);
-		_io.recieveMessage("");
+		_io.receiveMessage("");
 		removePfd(index);
 	}
 }

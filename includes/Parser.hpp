@@ -1,11 +1,9 @@
 
-#include "webserv.h"
-
-#ifndef PARSER_HPP
-#define PARSER_HPP
+#pragma once
 
 #include "LocationBlock.hpp"
 #include "ServerBlock.hpp"
+#include <fstream>
 
 class Parser
 {
@@ -62,4 +60,3 @@ private:
 	std::map<std::string, FuncPtr> _executeDirectiveParsing;
 };
 
-#endif

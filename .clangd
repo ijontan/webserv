@@ -1,2 +1,0 @@
-CompileFlags:
-  Add: [-Wall, -Werror, -Wextra, -std=c++98, -I/home/ijon/src/webserv/includes]

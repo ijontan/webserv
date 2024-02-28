@@ -1,9 +1,8 @@
 
-#include "webserv.h"
+#pragma once
 
-#ifndef CUSTOMEXCEPTION_HPP
-#define CUSTOMEXCEPTION_HPP
-
+#include <exception>
+#include <string>
 class CustomException : public std::exception
 {
 public:
@@ -16,4 +15,3 @@ private:
 	std::string _errorMsg;
 };
 
-#endif

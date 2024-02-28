@@ -1,8 +1,10 @@
 
-#include "webserv.h"
 
-#ifndef ABLOCK_HPP
-#define ABLOCK_HPP
+#pragma once
+
+#include <string>
+#include <map>
+#include <vector>
 
 class LocationBlock;
 class ServerBlock;
@@ -44,4 +46,3 @@ protected:
 	std::pair<int, std::string> _redirection;
 };
 
-#endif

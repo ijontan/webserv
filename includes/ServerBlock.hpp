@@ -1,9 +1,8 @@
 
-#include "webserv.h"
+#pragma once
 #include <vector>
-
-#ifndef SERVERBLOCK_HPP
-#define SERVERBLOCK_HPP
+#include <string>
+#include "ABlock.hpp"
 
 class LocationBlock;
 
@@ -31,4 +30,3 @@ private:
 
 std::ostream &operator<<(std::ostream &os, const ServerBlock &serverBlock);
 
-#endif

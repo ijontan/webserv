@@ -6,7 +6,7 @@
 #    By: itan <itan@student.42kl.edu.my>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/09/18 20:55:16 by itan              #+#    #+#              #
-#    Updated: 2024/02/22 09:03:22 by itan             ###   ########.fr        #
+#    Updated: 2024/02/28 19:41:20 by itan             ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -58,7 +58,10 @@ REVERSE		= \033[5m
 UNDERLINE	= \033[3m
 CLEARLINE	= \33[2K\r
 
-all::	$(NAME)
+all::	$(NAME) .clangd
+
+.clangd: 
+	printf "CompileFlags: \n	Add: [-Wall, -Werror, -Wextra, -std=c++98, -I$(shell pwd)/includes]" > .clangd
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(INCFILES)
 				@mkdir -p $(OBJ_DIRS)
