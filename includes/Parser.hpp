@@ -15,8 +15,8 @@ public:
 
 	// parsing the server block
 	void parseServerBlocks(std::vector<ServerBlock> &serverBlocks);
-	template <typename T>
-	void parseDirectives(T &block);
+	void parseServerBlockDirectives(ServerBlock &block);
+	void parseLocationBlockDirectives(LocationBlock &block);
 
 	void parsePortsListeningOn(std::istringstream &iss);
 	void parseServerName(std::istringstream &iss);
@@ -41,10 +41,12 @@ public:
 
 	// utils
 	bool isSkippableLine(std::string &line);
-	void removeSemicolon(std::string &str);
 
 	// error checking
-	bool isValidPort( std::string port );
+	bool isValidSemicolonFormat(std::string &line);
+	bool isLocationDirective(std::string &line);
+	bool isClosedCurlyBracket(std::string &line);
+	bool isValidPort(std::string &port);
 
 private:
 	Parser(const Parser &other);
