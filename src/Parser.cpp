@@ -3,8 +3,8 @@
 
 Parser::Parser(const std::string &filePath)
 	: _filePath(filePath), _fileStream(filePath.c_str()), _tempLine(""),
-	  _lineNum(1), _serverBlockNum(1), _locationBlockNum(1), _tempServerBlock(),
-	  _tempLocationBlock(this->_tempServerBlock)
+	  _lineNum(1), _serverBlockNum(1), _locationBlockNum(1), _bracketPairing(0),
+	  _tempServerBlock(), _tempLocationBlock(this->_tempServerBlock)
 {}
 
 /*
@@ -61,6 +61,7 @@ void Parser::parseServerBlocks(std::vector<ServerBlock> &serverBlocks)
 			this->_locationBlockNum = 1;
 			this->_lineNum++;
 			this->_serverBlockNum++;
+			this->_bracketPairing++;
 
 			this->_tempServerBlock = ServerBlock();
 
@@ -79,6 +80,46 @@ void Parser::parseServerBlocks(std::vector<ServerBlock> &serverBlocks)
 	}
 }
 
+/*
+parse location blocks:
+location [path] {
+	directive1,
+	...,
+}
+*/
+void Parser::parseLocationBlocks(std::istringstream &iss)
+{
+	std::string path, str1, str2;
+
+	// gets the 2nd and 3rd element in the line
+	iss >> path >> str1 >> str2;
+
+	if (str1 == "{" && str2.empty())
+	{
+		std::cout << HYELLOW "Creating location block "
+				  << this->_locationBlockNum << " (" << path << ")" << RESET
+				  << std::endl;
+
+		this->_tempLocationBlock = LocationBlock(this->_tempServerBlock);
+
+		this->_lineNum++;
+		this->_locationBlockNum++;
+		this->_bracketPairing++;
+
+		parseLocationBlockDirectives(this->_tempLocationBlock);
+
+		this->_tempServerBlock.addLocationBlock(path, this->_tempLocationBlock);
+	}
+	else
+	{
+		std::stringstream ss;
+		ss << "Error (line " << this->_lineNum
+		   << "): Location blocks must be in the enclosed in this "
+			  "format:\nlocation [path] {\n...\n}";
+		throw CustomException(ss.str());
+	}
+}
+
 // parses the individual directives like: listen, server_name and so on
 void Parser::parseServerBlockDirectives(ServerBlock &block)
 {
@@ -87,6 +128,7 @@ void Parser::parseServerBlockDirectives(ServerBlock &block)
 		if (isClosedCurlyBracket(this->_tempLine))
 		{
 			this->_lineNum++;
+			this->_bracketPairing--;
 			return;
 		}
 		if (isSkippableLine(this->_tempLine))
@@ -162,7 +204,15 @@ void Parser::parseServerBlockDirectives(ServerBlock &block)
 				  " does not exist";
 			throw CustomException(ss.str());
 		}
-		this->_lineNum++;
+		if (directive != "location")
+			this->_lineNum++;
+	}
+	if (this->_bracketPairing != 0)
+	{
+		std::stringstream ss;
+		ss << "Error (line " << this->_lineNum
+			<< "): Server block is not closed with }";
+		throw CustomException(ss.str());
 	}
 }
 
@@ -173,6 +223,7 @@ void Parser::parseLocationBlockDirectives(LocationBlock &block)
 		if (isClosedCurlyBracket(this->_tempLine))
 		{
 			this->_lineNum++;
+			this->_bracketPairing--;
 			return;
 		}
 		if (isSkippableLine(this->_tempLine))
@@ -253,6 +304,13 @@ void Parser::parseLocationBlockDirectives(LocationBlock &block)
 			throw CustomException(ss.str());
 		}
 		this->_lineNum++;
+	}
+	if (this->_bracketPairing != 1)
+	{
+		std::stringstream ss;
+		ss << "Error (line " << this->_lineNum
+			<< "): Location block is not closed with }";
+		throw CustomException(ss.str());
 	}
 }
 
@@ -425,45 +483,6 @@ void Parser::parseCgiPassPath(std::istringstream &iss)
 	std::cout << CYAN "cgi pass path: " << path << RESET << std::endl;
 }
 
-/*
-parse location blocks:
-location [path] {
-	directive1,
-	...,
-}
-*/
-void Parser::parseLocationBlocks(std::istringstream &iss)
-{
-	std::string path, str1, str2;
-
-	// gets the 2nd and 3rd element in the line
-	iss >> path >> str1 >> str2;
-
-	if (str1 == "{" && str2.empty())
-	{
-		std::cout << HYELLOW "Creating location block "
-				  << this->_locationBlockNum << " (" << path << ")" << RESET
-				  << std::endl;
-
-		this->_tempLocationBlock = LocationBlock(this->_tempServerBlock);
-
-		this->_lineNum++;
-		this->_locationBlockNum++;
-
-		parseLocationBlockDirectives(this->_tempLocationBlock);
-
-		this->_tempServerBlock.addLocationBlock(path, this->_tempLocationBlock);
-	}
-	else
-	{
-		std::stringstream ss;
-		ss << "Error (line " << this->_lineNum
-		   << "): Location blocks must be in the enclosed in this "
-			  "format:\nlocation [path] {\n...\n}";
-		throw CustomException(ss.str());
-	}
-}
-
 bool Parser::isSkippableLine(std::string &line)
 {
 	std::istringstream iss(line);
@@ -491,10 +510,10 @@ bool Parser::isLocationDirective(std::string &line)
 bool Parser::isClosedCurlyBracket(std::string &line)
 {
 	std::istringstream iss(line);
-	std::string temp;
+	std::string temp, temp1;
 
-	iss >> temp;
-	if (temp == "}")
+	iss >> temp >> temp1;
+	if (temp == "}" && temp1.empty())
 		return true;
 	return false;
 }

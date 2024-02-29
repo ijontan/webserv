@@ -59,6 +59,7 @@ private:
 	int _lineNum;
 	int _serverBlockNum;
 	int _locationBlockNum;
+	int _bracketPairing;
 	ServerBlock _tempServerBlock;
 	LocationBlock _tempLocationBlock;
 
