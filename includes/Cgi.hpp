@@ -18,5 +18,4 @@ public:
 	std::string getRaw() const;
 	virtual void recieveMessage(std::string raw);
 	virtual std::string getMessageToSend(WebServer &ws);
-	virtual 
 };
