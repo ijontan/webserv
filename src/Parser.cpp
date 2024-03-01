@@ -331,7 +331,6 @@ bool Parser::isValidSemicolonFormat(std::string &line)
 	return (false);
 }
 
-
 /*
 - check if there's at least 1 port
 - check if the port's within range, and does not have any special symbols
@@ -347,7 +346,7 @@ void Parser::parsePortsListeningOn(std::istringstream &iss)
 	{
 		std::stringstream ss;
 		ss << "Error (line " << this->_lineNum
-			<< "): listen must have at least one port";
+			<< "): listen [port1] [port2] ... (needs at least one port number)";
 		throw CustomException(ss.str());
 	}
 
@@ -370,37 +369,41 @@ void Parser::parsePortsListeningOn(std::istringstream &iss)
 	}
 }
 
-bool Parser::isValidPort(std::string &port)
-{
-	for (unsigned int i = 0; i < port.length(); i++)
-	{
-		if (isdigit(port[i]) == false)
-			return (false);
-	}
-
-	int portNum = std::stoi(port);
-
-	if (portNum < 0 || portNum > 65536)
-		return (false);
-
-	return (true);
-}
-
 void Parser::parseServerName(std::istringstream &iss)
 {
 	std::string serverName;
 
 	iss >> serverName;
-	this->_tempServerBlock.setServerName(serverName);
-	std::cout << CYAN "set server name: " << serverName << RESET << std::endl;
+	if (serverName.empty())
+	{
+		std::stringstream ss;
+		ss << "Error (line " << this->_lineNum
+			<< "): server_name [serverName1] [serverName2] ... (needs at least one server name)";
+		throw CustomException(ss.str());
+	}
+	while (!serverName.empty())
+	{
+		this->_tempServerBlock.addServerName(serverName);
+		std::cout << CYAN "added server name: " << serverName << RESET << std::endl;
+		if (!(iss >> serverName))
+			break;
+	}
 }
 
 template <typename T>
 void Parser::parseRoot(T &block, std::istringstream &iss)
 {
 	std::string rootDirectory;
+	std::string temp;
 
-	iss >> rootDirectory;
+	iss >> rootDirectory >> temp;
+	if (rootDirectory.empty() || !temp.empty())
+	{
+		std::stringstream ss;
+		ss << "Error (line " << this->_lineNum
+			<< "): root [rootDirectoryPath] (needs only one absolute path)";
+		throw CustomException(ss.str());
+	}
 	block.setRootDirectory(rootDirectory);
 	std::cout << MAGENTA "set root directory: " << rootDirectory << RESET
 			  << std::endl;
@@ -412,18 +415,40 @@ void Parser::parseIndex(T &block, std::istringstream &iss)
 	std::string index;
 
 	iss >> index;
-	block.setIndex(index);
-	std::cout << MAGENTA "set index: " << index << RESET << std::endl;
+	if (index.empty())
+	{
+		std::stringstream ss;
+		ss << "Error (line " << this->_lineNum
+			<< "): index [index1] [index2] ... (needs at least one relative path)";
+		throw CustomException(ss.str());
+	}
+	while (!index.empty())
+	{
+		block.addIndex(index);
+		std::cout << MAGENTA "added index: " << index << RESET << std::endl;
+		if (!(iss >> index))
+			break;
+	}
 }
 
 template <typename T>
 void Parser::parseClientMaxBodySize(T &block, std::istringstream &iss)
 {
-	int clientMaxBodySize;
+	std::string clientMaxBodySize;
+	std::string temp;
+	int num;
 
-	iss >> clientMaxBodySize;
-	block.setClientMaxBodySize(clientMaxBodySize);
-	std::cout << MAGENTA "set limit client body size: " << clientMaxBodySize
+	iss >> clientMaxBodySize >> temp;
+	if (clientMaxBodySize.empty() || !isValidNumber(clientMaxBodySize) || !temp.empty())
+	{
+		std::stringstream ss;
+		ss << "Error (line " << this->_lineNum
+			<< "): client_body_max_size [int] (needs only one integer)";
+		throw CustomException(ss.str());
+	}
+	num = std::stoi(clientMaxBodySize);
+	block.setClientMaxBodySize(num);
+	std::cout << MAGENTA "set limit client body size: " << num
 			  << RESET << std::endl;
 }
 
@@ -432,11 +457,23 @@ void Parser::parseErrorPages(T &block, std::istringstream &iss)
 {
 	int statusCode;
 	std::string uri;
+	std::string temp;
 
-	iss >> statusCode >> uri;
-	block.addErrorPage(statusCode, uri);
-	std::cout << MAGENTA "added error page: " << statusCode << " " << uri
-			  << RESET << std::endl;
+	iss >> statusCode >> uri >> temp;
+	if (isValidStatusCode(statusCode) && !uri.empty() && temp.empty())
+	{
+		block.addErrorPage(statusCode, uri);
+		std::cout << MAGENTA "added error page: " << statusCode << " " << uri
+				<< RESET << std::endl;
+	}
+	else
+	{
+		std::stringstream ss;
+		ss << "Error (line " << this->_lineNum
+			<< "): error_page [errorStatusCode] [filePath] (needs one status code (400, 401, 404, 409) \
+and one path)";
+		throw CustomException(ss.str());
+	}
 }
 
 template <typename T>
@@ -444,8 +481,9 @@ void Parser::parseRedirection(T &block, std::istringstream &iss)
 {
 	int statusCode;
 	std::string path;
+	std::string temp;
 
-	iss >> statusCode >> path;
+	iss >> statusCode >> path >> temp;
 	block.setRedirection(statusCode, path);
 	std::cout << MAGENTA "added redirection: " << statusCode << " " << path
 			  << RESET << std::endl;
@@ -454,23 +492,51 @@ void Parser::parseRedirection(T &block, std::istringstream &iss)
 void Parser::parseAutoindexStatus(std::istringstream &iss)
 {
 	std::string status;
+	std::string temp;
 
-	iss >> status;
-	if (status == "on")
+	iss >> status >> temp;
+	if (status.empty() || !temp.empty() || status != "on")
+	{
+		std::stringstream ss;
+		ss << "Error (line " << this->_lineNum
+			<< "): autoindex on (needs the on status)";
+		throw CustomException(ss.str());
+	}
+	else
 	{
 		this->_tempLocationBlock.setAutoindexStatus(true);
+		std::cout << CYAN "autoindex set to on" << RESET << std::endl;
 	}
-	std::cout << CYAN "autoindex set to on" << RESET << std::endl;
 }
 
 void Parser::parseAllowedMethods(std::istringstream &iss)
 {
 	std::string method;
 
-	while (iss >> method)
+	iss >> method;
+	if (method.empty())
 	{
-		std::cout << CYAN "added method: " << method << RESET << std::endl;
-		this->_tempLocationBlock.addAllowedMethods(method);
+		std::stringstream ss;
+		ss << "Error (line " << this->_lineNum
+			<< "): limit_except [method1] [method2] ... (needs at least one method: GET, POST, DELETE)";
+		throw CustomException(ss.str());
+	}
+	while (!method.empty())
+	{
+		if (isValidMethod(method))
+		{
+			std::cout << CYAN "added method: " << method << RESET << std::endl;
+			this->_tempLocationBlock.addAllowedMethods(method);
+		}
+		else
+		{
+			std::stringstream ss;
+			ss << "Error (line " << this->_lineNum
+				<< "): " << method << " is an invalid method (valid methods: GET, POST, DELETE)";
+			throw CustomException(ss.str());
+		}
+		if (!(iss >> method))
+			break;
 	}
 }
 
@@ -507,6 +573,21 @@ bool Parser::isLocationDirective(std::string &line)
 	return (false);
 }
 
+bool Parser::isValidPort(std::string &port)
+{
+	if (!isValidNumber(port))
+	{
+		return (false);
+	}
+
+	int portNum = std::stoi(port);
+
+	if (portNum < 0 || portNum > 65536)
+		return (false);
+
+	return (true);
+}
+
 bool Parser::isClosedCurlyBracket(std::string &line)
 {
 	std::istringstream iss(line);
@@ -516,4 +597,42 @@ bool Parser::isClosedCurlyBracket(std::string &line)
 	if (temp == "}" && temp1.empty())
 		return true;
 	return false;
+}
+
+bool Parser::isValidStatusCode(int statusCode)
+{
+	int validStatusCodes[4] = {400, 401, 404, 409};
+	
+	for (int i = 0; i < 4; i++)
+	{
+		if (statusCode == validStatusCodes[i])
+		{
+			return (true);
+		}
+	}
+	return (false);
+}
+
+bool Parser::isValidMethod(std::string &method)
+{
+	std::string validMethods[3] = {"GET", "POST", "DELETE"};
+	
+	for (int i = 0; i < 3; i++)
+	{
+		if (method == validMethods[i])
+		{
+			return (true);
+		}
+	}
+	return (false);
+}
+
+bool Parser::isValidNumber(std::string num)
+{
+	for (unsigned int i = 0; i < num.length(); i++)
+	{
+		if (isdigit(num[i]) == false)
+			return (false);
+	}
+	return (true);
 }

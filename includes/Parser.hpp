@@ -47,6 +47,9 @@ public:
 	bool isLocationDirective(std::string &line);
 	bool isClosedCurlyBracket(std::string &line);
 	bool isValidPort(std::string &port);
+	bool isValidStatusCode(int statusCode);
+	bool isValidMethod(std::string &method);
+	bool isValidNumber(std::string num);
 
 private:
 	Parser(const Parser &other);
@@ -62,7 +65,5 @@ private:
 	int _bracketPairing;
 	ServerBlock _tempServerBlock;
 	LocationBlock _tempLocationBlock;
-
-	std::map<std::string, FuncPtr> _executeDirectiveParsing;
 };
 

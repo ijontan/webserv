@@ -15,7 +15,7 @@ public:
 	~ServerBlock();
 
 	void addPortsListeningOn(std::string port);
-	void setServerName(std::string serverName);
+	void addServerName(std::string serverName);
 
 	void addLocationBlock(std::string path, LocationBlock locationBlock);
 
