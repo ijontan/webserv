@@ -47,7 +47,7 @@ public:
 	bool isLocationDirective(std::string &line);
 	bool isClosedCurlyBracket(std::string &line);
 	bool isValidPort(std::string &port);
-	bool isValidStatusCode(int statusCode);
+	bool isValidErrorStatusCode(int statusCode);
 	bool isValidMethod(std::string &method);
 	bool isValidNumber(std::string num);
 

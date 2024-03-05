@@ -30,3 +30,4 @@ private:
 
 std::ostream &operator<<(std::ostream &os, const ServerBlock &serverBlock);
 
+void print_vector(std::ostream &os, const std::vector<std::string> &vector);

@@ -460,7 +460,7 @@ void Parser::parseErrorPages(T &block, std::istringstream &iss)
 	std::string temp;
 
 	iss >> statusCode >> uri >> temp;
-	if (isValidStatusCode(statusCode) && !uri.empty() && temp.empty())
+	if (isValidErrorStatusCode(statusCode) && !uri.empty() && temp.empty())
 	{
 		block.addErrorPage(statusCode, uri);
 		std::cout << MAGENTA "added error page: " << statusCode << " " << uri
@@ -484,6 +484,14 @@ void Parser::parseRedirection(T &block, std::istringstream &iss)
 	std::string temp;
 
 	iss >> statusCode >> path >> temp;
+	// statusCode checking subject to change
+	if (statusCode.empty() || path.empty() || !temp.empty())
+	{
+		std::stringstream ss;
+		ss << "Error (line " << this->_lineNum
+			<< "): return [statusCode] [url]";
+		throw CustomException(ss.str());
+	}
 	block.setRedirection(statusCode, path);
 	std::cout << MAGENTA "added redirection: " << statusCode << " " << path
 			  << RESET << std::endl;
@@ -502,11 +510,8 @@ void Parser::parseAutoindexStatus(std::istringstream &iss)
 			<< "): autoindex on (needs the on status)";
 		throw CustomException(ss.str());
 	}
-	else
-	{
-		this->_tempLocationBlock.setAutoindexStatus(true);
-		std::cout << CYAN "autoindex set to on" << RESET << std::endl;
-	}
+	this->_tempLocationBlock.setAutoindexStatus(true);
+	std::cout << CYAN "autoindex set to on" << RESET << std::endl;
 }
 
 void Parser::parseAllowedMethods(std::istringstream &iss)
@@ -599,7 +604,7 @@ bool Parser::isClosedCurlyBracket(std::string &line)
 	return false;
 }
 
-bool Parser::isValidStatusCode(int statusCode)
+bool Parser::isValidErrorStatusCode(int statusCode)
 {
 	int validStatusCodes[4] = {400, 401, 404, 409};
 	
