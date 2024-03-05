@@ -6,13 +6,14 @@
 /*   By: nwai-kea <nwai-kea@student.42kl.edu.my>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/19 15:42:11 by nwai-kea          #+#    #+#             */
-/*   Updated: 2024/02/28 19:29:56 by itan             ###   ########.fr       */
+/*   Updated: 2024/03/06 00:45:52 by nwai-kea         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 #include "IOAdaptor.hpp"
+#include "Cgi.hpp"
 
 #include <fstream>
 #include <map>

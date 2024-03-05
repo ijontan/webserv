@@ -6,7 +6,7 @@
 /*   By: nwai-kea <nwai-kea@student.42kl.edu.my>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/19 16:12:22 by nwai-kea          #+#    #+#             */
-/*   Updated: 2024/03/01 18:14:52 by nwai-kea         ###   ########.fr       */
+/*   Updated: 2024/03/06 01:04:37 by nwai-kea         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -207,10 +207,16 @@ std::string MethodIO::putMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::r
 std::string MethodIO::getMessageToSend(WebServer &ws)
 {
 	std::string word;
+	std::string path;
 	MethodIO::rInfo rqi;
 	MethodIO::rInfo rsi;
+	Cgi Cgi;
 
 	tokenize(getRaw(), rqi);
+	Cgi = Cgi::Cgi(rqi.request, rqi.headers, rqi.body);
+	path = rqi.request[1];
+	if (path.substr(path.find_last_of(".") + 1) == "py")
+		Cgi.runCgi();
 	std::string method = rqi.request[0];
 	rsi.headers["Date"] = getDate();
 	std::map<std::string, MethodPointer>::const_iterator it = methods.find(method);
