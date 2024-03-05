@@ -33,9 +33,9 @@ void ServerBlock::addPortsListeningOn(std::string port)
 	this->_portsListeningOn.push_back(port);
 }
 
-void ServerBlock::setServerName(std::string serverName)
+void ServerBlock::addServerName(std::string serverName)
 {
-	this->_serverName = serverName;
+	this->_serverName.push_back(serverName);
 }
 
 void ServerBlock::addLocationBlock(std::string path,
@@ -123,17 +123,22 @@ std::ostream &operator<<(std::ostream &os, const ServerBlock &serverBlock)
 {
 	// print ports:
 	os << "listen: ";
-	const std::vector<std::string> &ports = serverBlock.getPortsListeningOn();
-	for (std::vector<std::string>::const_iterator it = ports.begin();
-		 it != ports.end(); it++)
-	{
-		os << *it << " ";
-	}
+	print_vector(os, serverBlock.getPortsListeningOn());
 	os << std::endl;
 
-	os << "server_name: " << serverBlock.getServerName() << std::endl;
+	// server names:
+	os << "server_name: ";
+	print_vector(os, serverBlock.getServerName());
+	os << std::endl;
+
+	// root directory:
 	os << "root: " << serverBlock.getRootDirectory() << std::endl;
-	os << "index: " << serverBlock.getIndex() << std::endl;
+
+	// index:
+	os << "index: ";
+	print_vector(os, serverBlock.getIndex());
+	os << std::endl;
+
 	os << "client_max_body_size: " << serverBlock.getClientMaxBodySize()
 	   << std::endl;
 
@@ -152,4 +157,13 @@ std::ostream &operator<<(std::ostream &os, const ServerBlock &serverBlock)
 	   << std::endl;
 
 	return os;
+}
+
+void print_vector(std::ostream &os, const std::vector<std::string> &vector)
+{
+	for (std::vector<std::string>::const_iterator it = vector.begin();
+		 it != vector.end(); it++)
+	{
+		os << *it << " ";
+	}
 }
