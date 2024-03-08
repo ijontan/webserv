@@ -142,7 +142,7 @@ std::string MethodIO::delMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::r
 	std::ifstream file2;
 	std::stringstream ss;
 
-	if (rqi.request[1] != "HTTP/1.1\r")
+	if (rqi.request[1] != "HTTP/1.1")
 		return generateResponse(400, rsi);
 	std::string path = getPath(rqi.request[1], ws);
 	file.open(path.c_str(), std::ifstream::in);
@@ -216,7 +216,7 @@ std::string MethodIO::putMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::r
 	return (ss.str());
 }
 
-std::string MethodIO::getMessageToSend(WebServer &ws)
+std::string MethodIO::getMessageToSend(WebServer &ws, std::string port)
 {
 	std::string word;
 	std::string path;
@@ -242,6 +242,7 @@ std::string MethodIO::getMessageToSend(WebServer &ws)
 		return (it->second)(ws, requestInfo, responseInfo);
 	std::cerr << "methods not found" << std::endl;
 	return "bruh";
+	(void)port;
 }
 
 std::string MethodIO::getMessage(int code)

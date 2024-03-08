@@ -2,7 +2,7 @@
 #include "webserv.h"
 
 ABlock::ABlock()
-	: _portsListeningOn(), _serverName(""), _rootDirectory(""), _index(""),
+	: _portsListeningOn(), _serverName(), _rootDirectory(""), _index(),
 	  _clientMaxBodySize(0), _errorPages(), _redirection()
 {
 }
@@ -47,9 +47,9 @@ void ABlock::setRootDirectory(std::string rootDirectory)
 	this->_rootDirectory = rootDirectory;
 }
 
-void ABlock::setIndex(std::string index)
+void ABlock::addIndex(std::string index)
 {
-	this->_index = index;
+	this->_index.push_back(index);
 }
 
 void ABlock::setClientMaxBodySize(int clientMaxBodySize)
@@ -73,7 +73,7 @@ std::vector<std::string> ABlock::getPortsListeningOn() const
 	return this->_portsListeningOn;
 }
 
-std::string ABlock::getServerName() const
+std::vector<std::string> ABlock::getServerName() const
 {
 	return this->_serverName;
 }
@@ -83,7 +83,7 @@ std::string ABlock::getRootDirectory() const
 	return this->_rootDirectory;
 }
 
-std::string ABlock::getIndex() const
+std::vector<std::string> ABlock::getIndex() const
 {
 	return this->_index;
 }

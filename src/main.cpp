@@ -30,21 +30,28 @@ int main(int ac, char **av)
 	// 	}
 	// }
 
-	MethodIO io;
-	if (ac == 1)
+	try
 	{
-		WebServer webServer(DEFAULT_CONFIG_FILE_PATH, io);
-		webServer.loop();
+		MethodIO io;
+		if (ac == 1)
+		{
+			WebServer webServer(DEFAULT_CONFIG_FILE_PATH, io);
+			webServer.loop();
+		}
+		else if (ac == 2)
+		{
+			WebServer webServer(av[1], io);
+			webServer.loop();
+		}
+		else
+		{
+			std::cerr << "Error: please enter only the .conf file as the first "
+						"argument (./webserv [.conf])"
+					<< std::endl;
+		}
 	}
-	else if (ac == 2)
+	catch (const std::exception &e)
 	{
-		WebServer webServer(av[1], io);
-		webServer.loop();
-	}
-	else
-	{
-		std::cerr << "Error: please enter only the .conf file as the first "
-					 "argument (./webserv [.conf])"
-				  << std::endl;
+		std::cout << BRED << e.what() << RESET << std::endl;
 	}
 }

@@ -6,7 +6,7 @@
 /*   By: nwai-kea <nwai-kea@student.42kl.edu.my>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/19 15:42:11 by nwai-kea          #+#    #+#             */
-/*   Updated: 2024/03/06 22:53:37 by nwai-kea         ###   ########.fr       */
+/*   Updated: 2024/03/07 21:44:19 by itan             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,5 +70,5 @@ public:
 	MethodIO(const MethodIO &src);
 	MethodIO &operator=(const MethodIO &rhs);
 	static std::string generateResponse(int code, MethodIO::rInfo &ri);
-	std::string getMessageToSend(WebServer &ws);
+	std::string getMessageToSend(WebServer &ws, std::string port);
 };

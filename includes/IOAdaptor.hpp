@@ -4,6 +4,8 @@
 #include <string>
 #include "WebServer.hpp"
 
+class WebServer;
+
 class IOAdaptor
 {
 private:
@@ -15,7 +17,7 @@ public:
 	IOAdaptor(const IOAdaptor &src);
 	IOAdaptor &operator=(const IOAdaptor &rhs);
 	virtual void receiveMessage(std::string raw);
-	virtual std::string getMessageToSend(WebServer &ws);
+	virtual std::string getMessageToSend(WebServer &ws, std::string port);
 	std::string getRaw() const;
 };
 

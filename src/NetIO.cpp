@@ -26,9 +26,10 @@ NetIO::~NetIO(void)
 {
 }
 
-std::string NetIO::getMessageToSend(WebServer &ws)
+std::string NetIO::getMessageToSend(WebServer &ws, std::string port)
 {
 	(void)ws;
+	(void)port;
 	std::stringstream ss;
 	std::string path;
 
@@ -46,7 +47,7 @@ std::string NetIO::getMessageToSend(WebServer &ws)
 	{
 		path = "www" + ri.request[1];
 		ss << "HTTP/1.1 200 OK\r\n";
-		ss << "Content-Type: text/" << utils::split( ri.request[1], '.').back() << "\r\n";
+		ss << "Content-Type: text/" << utils::split(ri.request[1], '.').back() << "\r\n";
 	}
 	ss << "\n";
 	std::ifstream file(path.c_str());

@@ -33,9 +33,9 @@ void ServerBlock::addPortsListeningOn(std::string port)
 	this->_portsListeningOn.push_back(port);
 }
 
-void ServerBlock::setServerName(std::string serverName)
+void ServerBlock::addServerName(std::string serverName)
 {
-	this->_serverName = serverName;
+	this->_serverName.push_back(serverName);
 }
 
 void ServerBlock::addLocationBlock(std::string path,
@@ -44,96 +44,26 @@ void ServerBlock::addLocationBlock(std::string path,
 	this->_locationBlocks[path] = locationBlock;
 }
 
-std::vector<int> ServerBlock::getSockfds() const
-{
-	return sockfds;
-}
-
-void ServerBlock::initSocket(std::string port)
-{
-	struct addrinfo hints, *servInfo, *p;
-	int sockfd;
-
-	memset(&hints, 0, sizeof(hints));
-	servInfo = 0;
-	hints.ai_family = AF_UNSPEC;	 // AF_INET or AF_INET6 to force version
-	hints.ai_socktype = SOCK_STREAM; // TCP
-	hints.ai_flags = AI_PASSIVE;
-	std::cout << "port: " << port << std::endl;
-	if (getaddrinfo(NULL, port.c_str(), &hints, &servInfo) != 0)
-	{
-		std::cerr << "getaddrinfo error" << std::endl;
-		return;
-	}
-	for (p = servInfo; p != NULL; p = p->ai_next)
-	{
-		if ((sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) ==
-			-1)
-		{
-			std::cerr << "socket error" << std::endl;
-			continue;
-		}
-		fcntl(sockfd, F_SETFL, O_NONBLOCK, FD_CLOEXEC);
-
-		if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &sockfd,
-					   sizeof(int)) == -1)
-		{
-			std::cerr << "Error setting socket options" << std::endl;
-			close(
-				sockfd); // Don't forget to close the socket in case of an error
-			throw "Error setting socket options";
-		}
-
-		if (bind(sockfd, p->ai_addr, p->ai_addrlen) == -1)
-		{
-			close(sockfd);
-			std::cerr << "bind error" << std::endl;
-			continue;
-		}
-		break;
-	}
-	freeaddrinfo(servInfo); // free the linked list
-	if (p == NULL)
-	{
-		std::cerr << "failed to bind" << std::endl;
-		throw "fail to bind";
-	}
-	if (listen(sockfd, 10))
-	{
-		std::cerr << "listen error" << std::endl;
-		throw "fail to listen";
-	}
-	std::cout << HWHITE << "Server: waiting for connections..." << RESET
-			  << std::endl
-			  << std::endl;
-	sockfds.push_back(sockfd);
-}
-
-void ServerBlock::initSockets()
-{
-	std::vector<std::string> ports = getPortsListeningOn();
-	for (std::vector<std::string>::iterator it = ports.begin();
-		 it < ports.end(); it++)
-	{
-		initSocket(*it);
-	}
-}
-
 std::ostream &operator<<(std::ostream &os, const ServerBlock &serverBlock)
 {
 	// print ports:
 	os << "listen: ";
-	const std::vector<std::string> &ports = serverBlock.getPortsListeningOn();
-	for (std::vector<std::string>::const_iterator it = ports.begin();
-		 it != ports.end(); it++)
-	{
-		os << *it << " ";
-	}
+	print_vector(os, serverBlock.getPortsListeningOn());
 	os << std::endl;
 
-	os << "server_name: " << serverBlock.getServerName() << std::endl;
+	// server names:
+	os << "server_name: ";
+	print_vector(os, serverBlock.getServerName());
+	os << std::endl;
+
+	// root directory:
 	os << "root: " << serverBlock.getRootDirectory() << std::endl;
-	os << "index: " << serverBlock.getIndex() << std::endl;
+
+	// index:
+	os << "index: ";
+	print_vector(os, serverBlock.getIndex());
+	os << std::endl;
+
 	os << "client_max_body_size: " << serverBlock.getClientMaxBodySize()
 	   << std::endl;
 
@@ -152,4 +82,13 @@ std::ostream &operator<<(std::ostream &os, const ServerBlock &serverBlock)
 	   << std::endl;
 
 	return os;
+}
+
+void print_vector(std::ostream &os, const std::vector<std::string> &vector)
+{
+	for (std::vector<std::string>::const_iterator it = vector.begin();
+		 it != vector.end(); it++)
+	{
+		os << *it << " ";
+	}
 }
