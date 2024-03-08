@@ -6,7 +6,7 @@
 /*   By: rsoo <rsoo@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/19 16:12:22 by nwai-kea          #+#    #+#             */
-/*   Updated: 2024/03/08 16:41:19 by rsoo             ###   ########.fr       */
+/*   Updated: 2024/03/08 18:00:36 by itan             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,7 +108,7 @@ std::string MethodIO::getMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::r
 	else
 	{
 		size_t size = rsi.body.size();
-		std::string sizeString = std::to_string(size);
+		std::string sizeString = utils::to_string(size);
 		rsi.headers["Content-Length"] = sizeString.c_str();
 	}
 	file.close();
