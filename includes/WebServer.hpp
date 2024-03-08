@@ -4,10 +4,11 @@
 #include <vector>
 #include <string>
 #include <map>
-
+#include "Parser.hpp"
+#include "ServerBlock.hpp"
+#include "IOAdaptor.hpp"
 
 class Parser;
-class ServerBlock;
 class IOAdaptor;
 
 class WebServer
@@ -27,11 +28,13 @@ public:
 private:
 	WebServer(const WebServer &other);
 	WebServer &operator=(const WebServer &other);
-	void acceptConnection(int index, std::map<int, std::string> &buffMap);
+	void acceptConnection(int index, std::map<int, std::string> &buffMap, std::string port);
 	void handleIO(int index, std::map<int, std::string> &buffMap);
 
 	std::vector<ServerBlock> _serverBlocks;
 	std::vector<struct pollfd> _pfds;
+	std::map<int, std::string> _socketPortmap;
+	std::map<int, std::string> _connectionsPortMap;
 	IOAdaptor &_io;
 };
 

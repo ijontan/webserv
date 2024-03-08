@@ -6,7 +6,7 @@
 /*   By: nwai-kea <nwai-kea@student.42kl.edu.my>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/19 16:12:22 by nwai-kea          #+#    #+#             */
-/*   Updated: 2024/02/28 19:31:46 by itan             ###   ########.fr       */
+/*   Updated: 2024/03/07 21:48:11 by itan             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -133,7 +133,7 @@ std::string MethodIO::delMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::r
 	std::ifstream file2;
 	std::stringstream ss;
 
-	if (rqi.request[1] != "HTTP/1.1\r")
+	if (rqi.request[1] != "HTTP/1.1")
 		return generateResponse(400, rsi);
 	std::string path = getPath(rqi.request[1], ws);
 	file.open(path.c_str(), std::ifstream::in);
@@ -204,13 +204,14 @@ std::string MethodIO::putMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::r
 	return (ss.str());
 }
 
-std::string MethodIO::getMessageToSend(WebServer &ws)
+std::string MethodIO::getMessageToSend(WebServer &ws, std::string port)
 {
 	std::string word;
 	MethodIO::rInfo rqi;
 	MethodIO::rInfo rsi;
 
 	tokenize(getRaw(), rqi);
+	std::cout << "port: " << port << std::endl;
 	std::string method = rqi.request[0];
 	rsi.headers["Date"] = getDate();
 	std::map<std::string, MethodPointer>::const_iterator it = methods.find(method);
@@ -218,6 +219,7 @@ std::string MethodIO::getMessageToSend(WebServer &ws)
 		return (it->second)(ws, rqi, rsi);
 	std::cerr << "methods not found" << std::endl;
 	return "bruh";
+	(void)port;
 }
 
 std::string MethodIO::getMessage(int code)

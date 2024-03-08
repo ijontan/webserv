@@ -21,5 +21,5 @@ public:
 	~NetIO(void);
 	NetIO(const NetIO &src);
 	NetIO &operator=(const NetIO &rhs);
-	std::string getMessageToSend(WebServer &ws);
+	std::string getMessageToSend(WebServer &ws, std::string port);
 };

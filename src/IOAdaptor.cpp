@@ -1,6 +1,7 @@
 #include "IOAdaptor.hpp"
 #include "colors.h"
 #include <sstream>
+#include <string>
 
 IOAdaptor::IOAdaptor(void) : receivedRaw("")
 {
@@ -26,9 +27,10 @@ void IOAdaptor::receiveMessage(std::string raw)
 	receivedRaw = raw;
 }
 
-std::string IOAdaptor::getMessageToSend(WebServer &ws)
+std::string IOAdaptor::getMessageToSend(WebServer &ws, std::string port)
 {
 	(void)ws;
+	(void)port;
 	std::stringstream ss;
 	ss << BGREEN << "Received message:\n"
 	   << RESET << receivedRaw << BBLUE << "\nSending back: Hello, world!\n"
