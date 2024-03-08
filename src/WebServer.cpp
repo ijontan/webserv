@@ -187,7 +187,7 @@ void WebServer::loop()
 			if (port != _socketPortmap.end())
 				acceptConnection(i, buffMap, port->second);
 			else
-				handleIO(_pfds[i].fd, buffMap);
+				handleIO(i, buffMap);
 		}
 	}
 }
@@ -210,9 +210,10 @@ void WebServer::acceptConnection(int index, std::map<int, std::string> &buffMap,
 	addPfd(newFd);
 }
 
-void WebServer::handleIO(int fd, std::map<int, std::string> &buffMap)
+void WebServer::handleIO(int index, std::map<int, std::string> &buffMap)
 {
 	char buff[256];
+	int fd = _pfds[index].fd;
 
 	buff[255] = 0;
 	memset(buff, 0, sizeof(buff));
@@ -229,16 +230,11 @@ void WebServer::handleIO(int fd, std::map<int, std::string> &buffMap)
 		}
 		else
 			std::cerr << "recv error" << std::endl;
-		std::map<int, std::string>::iterator it = buffMap.find(fd);
-		if (it != buffMap.end())
-			buffMap.erase(buffMap.find(fd));
-
-		it = _connectionsPortMap.find(fd);
-		if (it != _connectionsPortMap.end())
-			_connectionsPortMap.erase(_connectionsPortMap.find(fd));
+		buffMap.erase(buffMap.find(fd));
+		_connectionsPortMap.erase(_connectionsPortMap.find(fd));
 		close(fd);
 		_io.receiveMessage("");
-		removePfd(fd);
+		removePfd(index);
 	}
 }
 
