@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   MethodIO.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nwai-kea <nwai-kea@student.42kl.edu.my>    +#+  +:+       +#+        */
+/*   By: rsoo <rsoo@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/19 16:12:22 by nwai-kea          #+#    #+#             */
-/*   Updated: 2024/03/08 13:10:14 by nwai-kea         ###   ########.fr       */
+/*   Updated: 2024/03/08 16:41:19 by rsoo             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -303,7 +303,7 @@ std::string MethodIO::generateResponse(int code, MethodIO::rInfo &rsi)
 std::string MethodIO::getPath(std::string basePath, WebServer &ws)
 {
 	(void)ws;
-	return basePath == "/" ? "cgi/test.py" : "www" + basePath;
+	return basePath == "/" ? "cgi-bin/capitalize/capitalize.html" : "www" + basePath;
 }
 
 void MethodIO::tokenize(std::string s, MethodIO::rInfo &rsi) const

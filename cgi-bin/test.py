@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 
-import cgi
+import cgi, cgitb
 import sys
-import os
+
 # Get data from fields
 first_name = "Bla"
 last_name = 2 + 3

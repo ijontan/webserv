@@ -89,7 +89,7 @@ std::string Cgi::runCgi()
 
 std::string Cgi::getPath() const
 {
-	return this->path == "/" ? "./cgi/test.py" : "www" + this->path;
+	return this->path == "/" ? "./cgi-bin/test.py" : "www" + this->path;
 	return this->path;
 }
 
