@@ -6,7 +6,7 @@
 /*   By: nwai-kea <nwai-kea@student.42kl.edu.my>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/19 16:12:22 by nwai-kea          #+#    #+#             */
-/*   Updated: 2024/03/08 17:31:45 by nwai-kea         ###   ########.fr       */
+/*   Updated: 2024/03/08 17:59:59 by nwai-kea         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,8 +107,10 @@ std::string MethodIO::getMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::r
 	}
 	else
 	{
+		std::ostringstream oss;
 		size_t size = rsi.body.size();
-		std::string sizeString = std::to_string(size);
+		oss << size;
+		std::string sizeString = oss.str();
 		rsi.headers["Content-Length"] = sizeString.c_str();
 	}
 	file.close();
