@@ -148,6 +148,7 @@ void WebServer::handleIO(int index, std::map<int, std::string> &buffMap)
 	if (bytes < 255)
 	{
 		_io.receiveMessage(buffMap[_pfds[index].fd]);
+		std::cout << bytes << std::endl;
 		if (bytes >= 0)
 		{
 			std::cout << _io;

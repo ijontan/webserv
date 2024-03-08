@@ -6,7 +6,7 @@
 /*   By: nwai-kea <nwai-kea@student.42kl.edu.my>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/19 16:12:22 by nwai-kea          #+#    #+#             */
-/*   Updated: 2024/03/06 01:04:37 by nwai-kea         ###   ########.fr       */
+/*   Updated: 2024/03/07 19:54:45 by nwai-kea         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,11 +97,20 @@ std::string MethodIO::getMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::r
 		if (file.fail())
 			return generateResponse(code, rsi);
 	}
-	rsi.headers["Content-Length"] = getLen(file);
 	rsi.headers["Content-Type"] = getType(path);
-	std::ostringstream body;
-	body << file.rdbuf();
-	rsi.body.append(body.str());
+	if (rsi.body == "")
+	{
+		rsi.headers["Content-Length"] = getLen(file);
+		std::ostringstream body;
+		body << file.rdbuf();
+		rsi.body.append(body.str());
+	}
+	else
+	{
+		size_t size = rsi.body.size();
+		std::string sizeString = std::to_string(size);
+		rsi.headers["Content-Length"] = sizeString.c_str();
+	}
 	file.close();
 	return (generateResponse(code, rsi));
 }
@@ -146,9 +155,12 @@ std::string MethodIO::delMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::r
 			ss << generateResponse(404, rsi);
 		else
 		{
-			std::ostringstream body;
-			body << file.rdbuf();
-			rsi.body.append(body.str());
+			if (rsi.body == "")
+			{
+				std::ostringstream body;
+				body << file.rdbuf();
+				rsi.body.append(body.str());
+			}
 			ss << generateResponse(404, rsi) << rsi.body;
 		}
 		file2.close();
@@ -208,23 +220,37 @@ std::string MethodIO::getMessageToSend(WebServer &ws)
 {
 	std::string word;
 	std::string path;
-	MethodIO::rInfo rqi;
-	MethodIO::rInfo rsi;
-	Cgi Cgi;
+	MethodIO::rInfo requestInfo;
+	MethodIO::rInfo responseInfo;
 
-	tokenize(getRaw(), rqi);
-	Cgi = Cgi::Cgi(rqi.request, rqi.headers, rqi.body);
-	path = rqi.request[1];
-	if (path.substr(path.find_last_of(".") + 1) == "py")
-		Cgi.runCgi();
-	std::string method = rqi.request[0];
-	rsi.headers["Date"] = getDate();
+	tokenize(getRaw(), requestInfo);
+	path = requestInfo.request[1];
+	std::string path2 = getPath(path, ws);
+	std::string test = path2.substr(path2.find_last_of(".") + 1);
+	if (test.compare("py") == 0)
+	{
+		Cgi cgi(requestInfo.request, requestInfo.headers, requestInfo.body);
+		responseInfo.body.append(cgi.runCgi());
+	}
+	std::string method = requestInfo.request[0];
+	responseInfo.headers["Date"] = getDate();
 	std::map<std::string, MethodPointer>::const_iterator it = methods.find(method);
 	if (it != methods.end())
-		return (it->second)(ws, rqi, rsi);
+		return (it->second)(ws, requestInfo, responseInfo);
 	std::cerr << "methods not found" << std::endl;
 	return "bruh";
 }
+// std::string MethodIO::getUpdatedContent(int fd)
+// {
+// 	std::string content;
+// 	char buffer[2048] = {0};
+// 	int byte;
+
+// 	byte = read(fd, buffer, 2048);
+// 	while (byte != 0)
+// 		content.append(buffer, byte);
+// 	return content;
+// }
 
 std::string MethodIO::getMessage(int code)
 {
@@ -266,7 +292,7 @@ std::string MethodIO::getType(std::string path)
 		extension = "txt";
 	std::map<std::string, std::string>::const_iterator it = contentTypes.find(extension);
 	if (it == contentTypes.end())
-		return "";
+		return "text/html";
 	return it->second;
 }
 
@@ -285,7 +311,7 @@ std::string MethodIO::generateResponse(int code, MethodIO::rInfo &rsi)
 std::string MethodIO::getPath(std::string basePath, WebServer &ws)
 {
 	(void)ws;
-	return basePath == "/" ? "www/index.html" : "www" + basePath;
+	return basePath == "/" ? "cgi/test.py" : "www" + basePath;
 }
 
 void MethodIO::tokenize(std::string s, MethodIO::rInfo &rsi) const

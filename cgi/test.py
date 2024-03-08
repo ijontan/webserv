@@ -1,10 +1,18 @@
 #!/usr/bin/python3
 
-import datetime
 import cgi
-
-print("HTTP/1.1 200 OK")
-print("Content-type: text/html\r\n\r\n")
+import sys
+import os
+# Get data from fields
+first_name = "Bla"
+last_name = 2 + 3
+# print("HTTP/1.1 200 OK")
+# print("Content-type: text/html\r\n\r\n")
 print("<html>")
 print("<head>")
-print(datetime.datetime.strftime(datetime.datetime.now(), "<h1>  %H:%M:%S </h1>"))
+print("<title>Hello - Second CGI Program</title>")
+print("<html>")
+print("<head>")
+print("<h2>Hello %s %s</h2>" % (first_name, last_name))
+print("</body>")
+print("</html>")

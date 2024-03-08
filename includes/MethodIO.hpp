@@ -6,7 +6,7 @@
 /*   By: nwai-kea <nwai-kea@student.42kl.edu.my>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/19 15:42:11 by nwai-kea          #+#    #+#             */
-/*   Updated: 2024/03/06 00:45:52 by nwai-kea         ###   ########.fr       */
+/*   Updated: 2024/03/06 22:53:37 by nwai-kea         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,8 @@ private:
 
 	// void setCode(int code) const;
 	static std::string getMessage(int code);
+
+	std::string getUpdatedContent(int fd);
 
 public:
 	MethodIO(void);
