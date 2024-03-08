@@ -3,10 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   MethodIO.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rsoo <rsoo@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: nwai-kea <nwai-kea@student.42kl.edu.my>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/19 16:12:22 by nwai-kea          #+#    #+#             */
+<<<<<<< HEAD
 /*   Updated: 2024/03/08 18:00:36 by itan             ###   ########.fr       */
+=======
+/*   Updated: 2024/03/08 17:59:59 by nwai-kea         ###   ########.fr       */
+>>>>>>> 89630134b2fffb2a1defa625e744ef673818e651
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -224,6 +228,7 @@ std::string MethodIO::getMessageToSend(WebServer &ws, std::string port)
 	MethodIO::rInfo responseInfo;
 
 	tokenize(getRaw(), requestInfo);
+	std::cout << getRaw() << std::endl;
 	path = requestInfo.request[1];
 	std::string path2 = getPath(path, ws);
 	std::string test = path2.substr(path2.find_last_of(".") + 1);
