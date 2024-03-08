@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   MethodIO.cpp                                       :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: rsoo <rsoo@student.42.fr>                  +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/02/19 16:12:22 by nwai-kea          #+#    #+#             */
-/*   Updated: 2024/03/08 16:41:19 by rsoo             ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "MethodIO.hpp"
 #include "utils.hpp"
 #include <cstddef>
@@ -108,7 +96,7 @@ std::string MethodIO::getMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::r
 	else
 	{
 		size_t size = rsi.body.size();
-		std::string sizeString = std::to_string(size);
+		std::string sizeString = utils::to_string(size);
 		rsi.headers["Content-Length"] = sizeString.c_str();
 	}
 	file.close();
@@ -224,6 +212,7 @@ std::string MethodIO::getMessageToSend(WebServer &ws, std::string port)
 	MethodIO::rInfo responseInfo;
 
 	tokenize(getRaw(), requestInfo);
+	std::cout << getRaw() << std::endl;
 	path = requestInfo.request[1];
 	std::string path2 = getPath(path, ws);
 	std::string test = path2.substr(path2.find_last_of(".") + 1);

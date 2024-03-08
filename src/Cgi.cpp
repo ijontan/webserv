@@ -2,8 +2,10 @@
 #include "colors.h"
 #include "IOAdaptor.hpp"
 #include "utils.hpp"
+#include <cstring>
 #include <sstream>
 #include <stdlib.h>
+#include <sys/wait.h>
 
 Cgi::Cgi()
 {}

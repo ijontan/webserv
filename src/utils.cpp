@@ -51,7 +51,8 @@ bool utils::find(std::vector<T> arr, T value)
 	return false;
 }
 
-int utils::stoi(std::string s){
+int utils::stoi(std::string s)
+{
 	std::stringstream ss(s);
 	int value;
 
@@ -59,4 +60,11 @@ int utils::stoi(std::string s){
 	if (ss.fail())
 		throw "Not and integer";
 	return value;
+}
+
+std::string utils::to_string(int value)
+{
+	std::stringstream ss;
+	ss << value;
+	return ss.str();
 }
