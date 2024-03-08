@@ -13,20 +13,13 @@
 
 WebServer::WebServer(const std::string &filePath, IOAdaptor &io) : _io(io)
 {
-	try
-	{
-		Parser parser(filePath);
+	Parser parser(filePath);
 
-		parser.parseServerBlocks(this->_serverBlocks);
-		std::cout << GREEN "Server blocks created" RESET << std::endl << std::endl;
+	parser.parseServerBlocks(this->_serverBlocks);
+	std::cout << GREEN "Server blocks created" RESET << std::endl << std::endl;
 
-		printServerBlocksInfo();
-		initSockets();
-	}
-	catch (const std::exception &e)
-	{
-		std::cout << BRED << e.what() << RESET << std::endl;
-	}
+	printServerBlocksInfo();
+	initSockets();
 }
 
 WebServer::~WebServer()

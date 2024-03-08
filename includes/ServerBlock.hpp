@@ -14,7 +14,7 @@ public:
 	~ServerBlock();
 
 	void addPortsListeningOn(std::string port);
-	void setServerName(std::string serverName);
+	void addServerName(std::string serverName);
 
 	void addLocationBlock(std::string path, LocationBlock locationBlock);
 
@@ -23,3 +23,5 @@ private:
 };
 
 std::ostream &operator<<(std::ostream &os, const ServerBlock &serverBlock);
+
+void print_vector(std::ostream &os, const std::vector<std::string> &vector);
