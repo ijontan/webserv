@@ -446,7 +446,7 @@ void Parser::parseClientMaxBodySize(T &block, std::istringstream &iss)
 			<< "): client_body_max_size [int] (needs only one integer)";
 		throw CustomException(ss.str());
 	}
-	num = std::stoi(clientMaxBodySize);
+	num = utils::stoi(clientMaxBodySize);
 	block.setClientMaxBodySize(num);
 	std::cout << MAGENTA "set limit client body size: " << num
 			  << RESET << std::endl;
@@ -483,9 +483,10 @@ void Parser::parseRedirection(T &block, std::istringstream &iss)
 	std::string path;
 	std::string temp;
 
+	statusCode = 0;
 	iss >> statusCode >> path >> temp;
 	// statusCode checking subject to change
-	if (statusCode.empty() || path.empty() || !temp.empty())
+	if (!statusCode || path.empty() || !temp.empty())
 	{
 		std::stringstream ss;
 		ss << "Error (line " << this->_lineNum
@@ -585,7 +586,7 @@ bool Parser::isValidPort(std::string &port)
 		return (false);
 	}
 
-	int portNum = std::stoi(port);
+	int portNum = utils::stoi(port);
 
 	if (portNum < 0 || portNum > 65536)
 		return (false);

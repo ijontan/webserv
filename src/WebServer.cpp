@@ -230,7 +230,7 @@ void WebServer::handleIO(int fd, std::map<int, std::string> &buffMap)
 			std::cerr << "recv error" << std::endl;
 		buffMap.erase(buffMap.find(fd));
 		_connectionsPortMap.erase(_connectionsPortMap.find(fd));
-		close(_pfds[fd].fd);
+		close(fd);
 		_io.receiveMessage("");
 		removePfd(fd);
 	}
