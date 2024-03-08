@@ -207,15 +207,16 @@ std::string MethodIO::putMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::r
 std::string MethodIO::getMessageToSend(WebServer &ws, std::string port)
 {
 	std::string word;
-	std::string path;
 	MethodIO::rInfo requestInfo;
 	MethodIO::rInfo responseInfo;
 
 	tokenize(getRaw(), requestInfo);
-	std::cout << getRaw() << std::endl;
-	path = requestInfo.request[1];
-	std::string path2 = getPath(path, ws);
-	std::string test = path2.substr(path2.find_last_of(".") + 1);
+	std::cout << getRaw() << requestInfo.request[1] << std::endl;
+	std::string path = getPath(requestInfo.request[1], ws);
+	std::string test = path.substr(path.find_last_of(".") + 1);
+
+	std::cout << "	Path: " << path << std::endl;
+	std::cout << "	Test: " << test << std::endl;
 	// check if extension is python (if possible change this so it detects if script is from cgi folder)
 	if (test.compare("py") == 0)
 	{
@@ -293,7 +294,21 @@ std::string MethodIO::generateResponse(int code, MethodIO::rInfo &rsi)
 std::string MethodIO::getPath(std::string basePath, WebServer &ws)
 {
 	(void)ws;
-	return basePath == "/" ? "cgi-bin/capitalize/capitalize.html" : "www" + basePath;
+	if (basePath == "/")
+		return "www/index.html";
+	else if (basePath == "/style.css")
+		return "www/style.css";
+	else if (basePath == "/index.js")
+		return "www/index.js";
+	else if (basePath == "/cgi-bin")
+		return "cgi-bin/test.py";
+	else if (basePath == "/cgi-bin/capitalize")
+		return "cgi-bin/capitalize/capitalize.html";
+	else if (basePath == "/cgi-bin/capitalize.css")
+		return "cgi-bin/capitalize/capitalize.css";
+	else if (basePath == "/cgi-bin/capitalize.js")
+		return "cgi-bin/capitalize/capitalize.js";
+	return (NULL);
 }
 
 void MethodIO::tokenize(std::string s, MethodIO::rInfo &rsi) const

@@ -55,6 +55,9 @@ std::string Cgi::runCgi()
 	// dir = file directory
 	std::string dir = getPath().substr(0, getPath().find_first_of("/", 2) + 1);
 	this->path = getPath();
+
+	std::cout << "	CGI dir: " << dir << std::endl;
+	std::cout << "	CGI path: " << this->path << std::endl;
 	char *av[3] = {(char *)this->path.c_str(), (char *)dir.c_str(), NULL};
 
 	if (pipe(fd) == -1)
@@ -91,8 +94,9 @@ std::string Cgi::runCgi()
 
 std::string Cgi::getPath() const
 {
+	if (this->path == "/cgi-bin")
+		return "./cgi-bin/test.py";
 	return this->path == "/" ? "./cgi-bin/test.py" : "www" + this->path;
-	return this->path;
 }
 
 void Cgi::setPath(const std::string path)
