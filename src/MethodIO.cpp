@@ -213,12 +213,12 @@ std::string MethodIO::getMessageToSend(WebServer &ws, std::string port)
 	tokenize(getRaw(), requestInfo);
 	std::cout << getRaw() << requestInfo.request[1] << std::endl;
 	std::string path = getPath(requestInfo.request[1], ws);
-	std::string test = path.substr(path.find_last_of(".") + 1);
+	std::string fileExtension = path.substr(path.find_last_of(".") + 1);
 
 	std::cout << "	Path: " << path << std::endl;
-	std::cout << "	Test: " << test << std::endl;
+	std::cout << "	File Extension: " << fileExtension << std::endl;
 	// check if extension is python (if possible change this so it detects if script is from cgi folder)
-	if (test.compare("py") == 0)
+	if (fileExtension.compare("py") == 0)
 	{
 		// Cgi constructor
 		Cgi cgi(requestInfo.request, requestInfo.headers, requestInfo.body);

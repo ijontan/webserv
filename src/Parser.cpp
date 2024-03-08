@@ -4,7 +4,8 @@
 Parser::Parser(const std::string &filePath)
 	: _filePath(filePath), _fileStream(filePath.c_str()), _tempLine(""),
 	  _lineNum(1), _serverBlockNum(1), _locationBlockNum(1), _bracketPairing(0),
-	  _tempServerBlock(), _tempLocationBlock(this->_tempServerBlock)
+	  _isFileEmpty(true), _hasDirectives(false), _tempServerBlock(),
+	  _tempLocationBlock(this->_tempServerBlock)
 {}
 
 /*
@@ -62,10 +63,15 @@ void Parser::parseServerBlocks(std::vector<ServerBlock> &serverBlocks)
 			this->_lineNum++;
 			this->_serverBlockNum++;
 			this->_bracketPairing++;
+			this->_isFileEmpty = false;
 
 			this->_tempServerBlock = ServerBlock();
 
 			parseServerBlockDirectives(this->_tempServerBlock);
+
+			// checks if the server block has directives
+			if (this->_hasDirectives == false)
+				throw CustomException("Error: Server block cannot be empty\nserver {\n  directive1\n  directive2\n  ...\n}");
 
 			serverBlocks.push_back(this->_tempServerBlock);
 		}
@@ -77,6 +83,13 @@ void Parser::parseServerBlocks(std::vector<ServerBlock> &serverBlocks)
 				  "format:\nserver {\n...\n}";
 			throw CustomException(ss.str());
 		}
+	}
+	// checks if the file is empty or not
+	if (this->_isFileEmpty == true)
+	{
+		std::stringstream ss;
+		ss << "Error: " << this->_filePath << " is empty";
+		throw CustomException(ss.str());
 	}
 }
 
@@ -206,6 +219,7 @@ void Parser::parseServerBlockDirectives(ServerBlock &block)
 		}
 		if (directive != "location")
 			this->_lineNum++;
+		this->_hasDirectives = true;
 	}
 	if (this->_bracketPairing != 0)
 	{
@@ -326,6 +340,9 @@ bool Parser::isValidSemicolonFormat(std::string &line)
 	size_t semicolonPos = line.find(';');
 	unsigned int lineLen = line.length();
 
+	// std::cout << "	line: " << line << std::endl;
+	std::cout << "	SemicolonPos: " << semicolonPos << std::endl;
+	std::cout << "	LineLen: " << lineLen << std::endl;
 	if (semicolonPos == lineLen - 1 && semicolonPos != std::string::npos)
 		return (true);
 	return (false);
