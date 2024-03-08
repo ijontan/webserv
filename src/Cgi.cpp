@@ -20,6 +20,7 @@ Cgi::Cgi(const Cgi &src)
 	*this = src; 
 }
 
+// set env variables for execve
 void Cgi::setEnv()
 {
 	this->envVariables["PATH_INFO"] = getPath();
@@ -43,14 +44,13 @@ std::string Cgi::runCgi()
 {
 	pid_t pid;
 	int fd[2];
-	// int input[2];
-	// int output[2];
 	int status;
 	std::string output;
 	char buf[2048] = {0};
 
 	setPath(this->request[1]);
 	setEnv();
+	// dir = file directory
 	std::string dir = getPath().substr(0, getPath().find_first_of("/", 2) + 1);
 	this->path = getPath();
 	char *av[3] = {(char *)this->path.c_str(), (char *)dir.c_str(), NULL};
@@ -90,7 +90,6 @@ std::string Cgi::runCgi()
 std::string Cgi::getPath() const
 {
 	return this->path == "/" ? "./cgi/test.py" : "www" + this->path;
-	// std::cout << this->path;
 	return this->path;
 }
 

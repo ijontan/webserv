@@ -6,7 +6,7 @@
 /*   By: nwai-kea <nwai-kea@student.42kl.edu.my>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/19 16:12:22 by nwai-kea          #+#    #+#             */
-/*   Updated: 2024/03/07 19:54:45 by nwai-kea         ###   ########.fr       */
+/*   Updated: 2024/03/08 13:10:14 by nwai-kea         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -227,9 +227,12 @@ std::string MethodIO::getMessageToSend(WebServer &ws)
 	path = requestInfo.request[1];
 	std::string path2 = getPath(path, ws);
 	std::string test = path2.substr(path2.find_last_of(".") + 1);
+	// check if extension is python (if possible change this so it detects if script is from cgi folder)
 	if (test.compare("py") == 0)
 	{
+		// Cgi constructor
 		Cgi cgi(requestInfo.request, requestInfo.headers, requestInfo.body);
+		// adds output (runCgi returns a string which is the python script output) into body
 		responseInfo.body.append(cgi.runCgi());
 	}
 	std::string method = requestInfo.request[0];
@@ -240,17 +243,6 @@ std::string MethodIO::getMessageToSend(WebServer &ws)
 	std::cerr << "methods not found" << std::endl;
 	return "bruh";
 }
-// std::string MethodIO::getUpdatedContent(int fd)
-// {
-// 	std::string content;
-// 	char buffer[2048] = {0};
-// 	int byte;
-
-// 	byte = read(fd, buffer, 2048);
-// 	while (byte != 0)
-// 		content.append(buffer, byte);
-// 	return content;
-// }
 
 std::string MethodIO::getMessage(int code)
 {
