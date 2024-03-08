@@ -115,10 +115,11 @@ void WebServer::initSockets()
 			int port;
 			ss >> port;
 			std::map<int, std::string>::iterator it;
-			for ( it = _socketPortmap.begin(); it!= _socketPortmap.end(); it++) 
-				if  (it->second == ports[i]) break;
-			
-			if (it== _socketPortmap.end())
+			for (it = _socketPortmap.begin(); it != _socketPortmap.end(); it++)
+				if (it->second == ports[i])
+					break;
+
+			if (it == _socketPortmap.end())
 			{
 				try
 				{
@@ -228,8 +229,13 @@ void WebServer::handleIO(int fd, std::map<int, std::string> &buffMap)
 		}
 		else
 			std::cerr << "recv error" << std::endl;
-		buffMap.erase(buffMap.find(fd));
-		_connectionsPortMap.erase(_connectionsPortMap.find(fd));
+		std::map<int, std::string>::iterator it = buffMap.find(fd);
+		if (it != buffMap.end())
+			buffMap.erase(buffMap.find(fd));
+
+		it = _connectionsPortMap.find(fd);
+		if (it != _connectionsPortMap.end())
+			_connectionsPortMap.erase(_connectionsPortMap.find(fd));
 		close(fd);
 		_io.receiveMessage("");
 		removePfd(fd);
