@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   MethodIO.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nwai-kea <nwai-kea@student.42kl.edu.my>    +#+  +:+       +#+        */
+/*   By: rsoo <rsoo@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/19 16:12:22 by nwai-kea          #+#    #+#             */
-/*   Updated: 2024/03/07 21:48:11 by itan             ###   ########.fr       */
+/*   Updated: 2024/03/08 16:41:19 by rsoo             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,11 +97,20 @@ std::string MethodIO::getMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::r
 		if (file.fail())
 			return generateResponse(code, rsi);
 	}
-	rsi.headers["Content-Length"] = getLen(file);
 	rsi.headers["Content-Type"] = getType(path);
-	std::ostringstream body;
-	body << file.rdbuf();
-	rsi.body.append(body.str());
+	if (rsi.body == "")
+	{
+		rsi.headers["Content-Length"] = getLen(file);
+		std::ostringstream body;
+		body << file.rdbuf();
+		rsi.body.append(body.str());
+	}
+	else
+	{
+		size_t size = rsi.body.size();
+		std::string sizeString = std::to_string(size);
+		rsi.headers["Content-Length"] = sizeString.c_str();
+	}
 	file.close();
 	return (generateResponse(code, rsi));
 }
@@ -146,9 +155,12 @@ std::string MethodIO::delMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::r
 			ss << generateResponse(404, rsi);
 		else
 		{
-			std::ostringstream body;
-			body << file.rdbuf();
-			rsi.body.append(body.str());
+			if (rsi.body == "")
+			{
+				std::ostringstream body;
+				body << file.rdbuf();
+				rsi.body.append(body.str());
+			}
 			ss << generateResponse(404, rsi) << rsi.body;
 		}
 		file2.close();
@@ -207,16 +219,27 @@ std::string MethodIO::putMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::r
 std::string MethodIO::getMessageToSend(WebServer &ws, std::string port)
 {
 	std::string word;
-	MethodIO::rInfo rqi;
-	MethodIO::rInfo rsi;
+	std::string path;
+	MethodIO::rInfo requestInfo;
+	MethodIO::rInfo responseInfo;
 
-	tokenize(getRaw(), rqi);
-	std::cout << "port: " << port << std::endl;
-	std::string method = rqi.request[0];
-	rsi.headers["Date"] = getDate();
+	tokenize(getRaw(), requestInfo);
+	path = requestInfo.request[1];
+	std::string path2 = getPath(path, ws);
+	std::string test = path2.substr(path2.find_last_of(".") + 1);
+	// check if extension is python (if possible change this so it detects if script is from cgi folder)
+	if (test.compare("py") == 0)
+	{
+		// Cgi constructor
+		Cgi cgi(requestInfo.request, requestInfo.headers, requestInfo.body);
+		// adds output (runCgi returns a string which is the python script output) into body
+		responseInfo.body.append(cgi.runCgi());
+	}
+	std::string method = requestInfo.request[0];
+	responseInfo.headers["Date"] = getDate();
 	std::map<std::string, MethodPointer>::const_iterator it = methods.find(method);
 	if (it != methods.end())
-		return (it->second)(ws, rqi, rsi);
+		return (it->second)(ws, requestInfo, responseInfo);
 	std::cerr << "methods not found" << std::endl;
 	return "bruh";
 	(void)port;
@@ -262,7 +285,7 @@ std::string MethodIO::getType(std::string path)
 		extension = "txt";
 	std::map<std::string, std::string>::const_iterator it = contentTypes.find(extension);
 	if (it == contentTypes.end())
-		return "";
+		return "text/html";
 	return it->second;
 }
 
@@ -281,7 +304,7 @@ std::string MethodIO::generateResponse(int code, MethodIO::rInfo &rsi)
 std::string MethodIO::getPath(std::string basePath, WebServer &ws)
 {
 	(void)ws;
-	return basePath == "/" ? "www/index.html" : "www" + basePath;
+	return basePath == "/" ? "cgi-bin/capitalize/capitalize.html" : "www" + basePath;
 }
 
 void MethodIO::tokenize(std::string s, MethodIO::rInfo &rsi) const

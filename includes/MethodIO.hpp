@@ -13,6 +13,7 @@
 #pragma once
 
 #include "IOAdaptor.hpp"
+#include "Cgi.hpp"
 
 #include <fstream>
 #include <map>
@@ -60,6 +61,8 @@ private:
 
 	// void setCode(int code) const;
 	static std::string getMessage(int code);
+
+	std::string getUpdatedContent(int fd);
 
 public:
 	MethodIO(void);
