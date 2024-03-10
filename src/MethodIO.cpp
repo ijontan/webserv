@@ -208,15 +208,16 @@ std::string MethodIO::putMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::r
 std::string MethodIO::getMessageToSend(WebServer &ws, std::string port)
 {
 	std::string word;
-	std::string path;
 	MethodIO::rInfo requestInfo;
 	MethodIO::rInfo responseInfo;
 
 	tokenize(getRaw(), requestInfo);
-	std::cout << getRaw() << std::endl;
-	path = requestInfo.request[1];
-	std::string path2 = getPath(path, ws, port);
-	std::string test = path2.substr(path2.find_last_of(".") + 1);
+	std::cout << getRaw() << requestInfo.request[1] << std::endl;
+	std::string path = getPath(requestInfo.request[1], ws, port);
+	std::string test = path.substr(path.find_last_of(".") + 1);
+
+	std::cout << "	Path: " << path << std::endl;
+	std::cout << "	Test: " << test << std::endl;
 	// check if extension is python (if possible change this so it detects if script is from cgi folder)
 	if (test.compare("py") == 0)
 	{

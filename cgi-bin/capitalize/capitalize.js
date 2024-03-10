@@ -1,5 +1,6 @@
 
 function displayResult() {
+	console.log("Hello")
 	// get the input value
 	var inputValue = document.getElementById('fname').value;
 	
