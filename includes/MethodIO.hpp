@@ -6,7 +6,7 @@
 /*   By: nwai-kea <nwai-kea@student.42kl.edu.my>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/19 15:42:11 by nwai-kea          #+#    #+#             */
-/*   Updated: 2024/03/07 21:44:19 by itan             ###   ########.fr       */
+/*   Updated: 2024/03/09 01:26:05 by itan             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ private:
 		std::string body;
 	};
 	std::string statusLine;
-	typedef std::string (*MethodPointer)(WebServer &, struct rInfo &, struct rInfo &);
+	typedef std::string (*MethodPointer)(WebServer &, struct rInfo &, struct rInfo &, std::string &);
 	// std::map<std::string, std::string> responseHeader;
 	std::string response;
 	static const std::map<int, std::string> errCodeMessages;
@@ -48,16 +48,16 @@ private:
 	static std::map<std::string, MethodPointer> initMethodsMap();
 	static std::map<int, std::string> initErrCodeMessages();
 	static std::map<std::string, std::string> initContentTypes();
-	static std::string getMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::rInfo &rsi);
-	static std::string postMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::rInfo &rsi);
-	static std::string headMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::rInfo &rsi);
-	static std::string delMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::rInfo &rsi);
-	static std::string putMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::rInfo &rsi);
+	static std::string getMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::rInfo &rsi, std::string &port);
+	static std::string postMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::rInfo &rsi, std::string &port);
+	static std::string headMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::rInfo &rsi, std::string &port);
+	static std::string delMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::rInfo &rsi, std::string &port);
+	static std::string putMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::rInfo &rsi, std::string &port);
 
 	static std::string getDate();
 	static std::string getLen(std::ifstream &file);
 	static std::string getType(std::string path);
-	static std::string getPath(std::string basePath, WebServer &ws);
+	static std::string getPath(std::string basePath, WebServer &ws, std::string &port);
 
 	// void setCode(int code) const;
 	static std::string getMessage(int code);

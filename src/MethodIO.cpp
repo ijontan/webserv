@@ -1,4 +1,5 @@
 #include "MethodIO.hpp"
+#include "ServerBlock.hpp"
 #include "utils.hpp"
 #include <cstddef>
 #include <ctime>
@@ -69,18 +70,18 @@ MethodIO::~MethodIO(void)
 {
 }
 
-std::string MethodIO::getMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::rInfo &rsi)
+std::string MethodIO::getMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::rInfo &rsi, std::string &port)
 {
 	int code = 200;
 	if (rqi.request[2] != "HTTP/1.1")
 		return generateResponse(400, rsi);
-	std::string path = getPath(rqi.request[1], ws);
+	std::string path = getPath(rqi.request[1], ws, port);
 	std::ifstream file(path.c_str());
 	if (file.fail())
 	{
 		code = 404;
 		file.close();
-		path = getPath("/notfound.html", ws);
+		path = getPath("/notfound.html", ws, port);
 		file.open(path.c_str());
 		if (file.fail())
 			return generateResponse(code, rsi);
@@ -103,18 +104,18 @@ std::string MethodIO::getMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::r
 	return (generateResponse(code, rsi));
 }
 
-std::string MethodIO::headMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::rInfo &rsi)
+std::string MethodIO::headMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::rInfo &rsi, std::string &port)
 {
 	int code = 200;
 	if (rqi.request[2] != "HTTP/1.1")
 		return generateResponse(400, rsi);
-	std::string path = getPath(rqi.request[1], ws);
+	std::string path = getPath(rqi.request[1], ws, port);
 	std::ifstream file(path.c_str());
 	if (file.fail())
 	{
 		code = 404;
 		file.close();
-		path = getPath("/notfound.html", ws);
+		path = getPath("/notfound.html", ws, port);
 		file.open(path.c_str());
 		if (file.fail())
 			return generateResponse(code, rsi);
@@ -124,7 +125,7 @@ std::string MethodIO::headMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::
 	return (generateResponse(code, rsi));
 }
 
-std::string MethodIO::delMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::rInfo &rsi)
+std::string MethodIO::delMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::rInfo &rsi, std::string &port)
 {
 	std::ifstream file;
 	std::ifstream file2;
@@ -132,13 +133,13 @@ std::string MethodIO::delMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::r
 
 	if (rqi.request[1] != "HTTP/1.1")
 		return generateResponse(400, rsi);
-	std::string path = getPath(rqi.request[1], ws);
+	std::string path = getPath(rqi.request[1], ws, port);
 	file.open(path.c_str(), std::ifstream::in);
 	if (file.fail())
 	{
-		if (access(getPath(rqi.request[1], ws).c_str(), W_OK) != 0)
+		if (access(getPath(rqi.request[1], ws, port).c_str(), W_OK) != 0)
 			return generateResponse(403, rsi);
-		file2.open(getPath("/notfound.html", ws).c_str(), std::ifstream::in);
+		file2.open(getPath("/notfound.html", ws, port).c_str(), std::ifstream::in);
 		if (file2.fail())
 			ss << generateResponse(404, rsi);
 		else
@@ -164,19 +165,19 @@ std::string MethodIO::delMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::r
 	return (ss.str());
 }
 
-std::string MethodIO::postMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::rInfo &rsi)
+std::string MethodIO::postMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::rInfo &rsi, std::string &port)
 {
 	std::ifstream file;
 	std::stringstream ss;
 
 	if (rqi.request[2] != "HTTP/1.1")
 		return generateResponse(400, rsi);
-	file.open(getPath(rqi.request[1], ws).c_str(), std::ifstream::in);
+	file.open(getPath(rqi.request[1], ws, port).c_str(), std::ifstream::in);
 	if (file.fail())
 		ss << generateResponse(204, rsi);
 	else
 	{
-		std::ofstream output(getPath(rqi.request[1], ws).c_str());
+		std::ofstream output(getPath(rqi.request[1], ws, port).c_str());
 
 		if (output.fail())
 			ss << generateResponse(403, rsi);
@@ -188,14 +189,14 @@ std::string MethodIO::postMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::
 	return (ss.str());
 }
 
-std::string MethodIO::putMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::rInfo &rsi)
+std::string MethodIO::putMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::rInfo &rsi, std::string &port)
 {
 	std::ifstream file;
 	std::stringstream ss;
 
 	if (rqi.request[2] != "HTTP/1.1")
 		return generateResponse(400, rsi);
-	file.open(getPath(rqi.request[1], ws).c_str(), std::ifstream::in);
+	file.open(getPath(rqi.request[1], ws, port).c_str(), std::ifstream::in);
 	if (file.fail())
 		ss << generateResponse(403, rsi);
 	else
@@ -214,7 +215,7 @@ std::string MethodIO::getMessageToSend(WebServer &ws, std::string port)
 	tokenize(getRaw(), requestInfo);
 	std::cout << getRaw() << std::endl;
 	path = requestInfo.request[1];
-	std::string path2 = getPath(path, ws);
+	std::string path2 = getPath(path, ws, port);
 	std::string test = path2.substr(path2.find_last_of(".") + 1);
 	// check if extension is python (if possible change this so it detects if script is from cgi folder)
 	if (test.compare("py") == 0)
@@ -228,7 +229,7 @@ std::string MethodIO::getMessageToSend(WebServer &ws, std::string port)
 	responseInfo.headers["Date"] = getDate();
 	std::map<std::string, MethodPointer>::const_iterator it = methods.find(method);
 	if (it != methods.end())
-		return (it->second)(ws, requestInfo, responseInfo);
+		return (it->second)(ws, requestInfo, responseInfo, port);
 	std::cerr << "methods not found" << std::endl;
 	return "bruh";
 	(void)port;
@@ -290,10 +291,25 @@ std::string MethodIO::generateResponse(int code, MethodIO::rInfo &rsi)
 	return (ss.str());
 }
 
-std::string MethodIO::getPath(std::string basePath, WebServer &ws)
+std::string MethodIO::getPath(std::string basePath, WebServer &ws, std::string &port)
 {
-	(void)ws;
-	return basePath == "/" ? "cgi-bin/capitalize/capitalize.html" : "www" + basePath;
+	std::vector<ServerBlock> servers = ws.getServers();
+	std::string root = "www";
+
+	for (std::vector<ServerBlock>::iterator it = servers.begin(); it != servers.end(); it++)
+	{
+		std::vector<std::string > ports = it->getPortsListeningOn();
+		bool found = false;
+		for (size_t i = 0; i < ports.size(); i++) {
+			if (ports[i] == port)
+				found = true;
+		}
+		if (!found)
+			continue;
+		root = it->getRootDirectory();
+		break;
+	}
+	return root + "/" + (basePath == "/" ? "index.html" : basePath);
 }
 
 void MethodIO::tokenize(std::string s, MethodIO::rInfo &rsi) const

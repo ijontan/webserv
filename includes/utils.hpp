@@ -1,5 +1,4 @@
-#ifndef UTILS_HPP
-#define UTILS_HPP
+#pragma once
 
 #include <string>
 #include <utility>
@@ -16,4 +15,3 @@ int stoi (std::string s);
 std::string to_string(int value);
 } // namespace utils
 
-#endif
