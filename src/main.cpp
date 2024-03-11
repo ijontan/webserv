@@ -45,9 +45,8 @@ int main(int ac, char **av)
 		}
 		else
 		{
-			std::cerr << "Error: please enter only the .conf file as the first "
-						"argument (./webserv [.conf])"
-					<< std::endl;
+			throw CustomException("Error: please enter only the .conf file as the first \
+argument (./webserv [.conf])");
 		}
 	}
 	catch (const std::exception &e)

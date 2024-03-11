@@ -63,6 +63,8 @@ private:
 	int _serverBlockNum;
 	int _locationBlockNum;
 	int _bracketPairing;
+	bool _isFileEmpty;
+	bool _hasDirectives;
 	ServerBlock _tempServerBlock;
 	LocationBlock _tempLocationBlock;
 };
