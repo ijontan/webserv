@@ -340,7 +340,7 @@ bool Parser::isValidSemicolonFormat(std::string &line)
 	size_t semicolonPos = line.find(';');
 	unsigned int lineLen = line.length();
 
-	// std::cout << "	line: " << line << std::endl;
+	std::cout << "	line: " << line << std::endl;
 	std::cout << "	SemicolonPos: " << semicolonPos << std::endl;
 	std::cout << "	LineLen: " << lineLen << std::endl;
 	if (semicolonPos == lineLen - 1 && semicolonPos != std::string::npos)
@@ -351,8 +351,6 @@ bool Parser::isValidSemicolonFormat(std::string &line)
 /*
 - check if there's at least 1 port
 - check if the port's within range, and does not have any special symbols
-- check if 
-
 */
 void Parser::parsePortsListeningOn(std::istringstream &iss)
 {
