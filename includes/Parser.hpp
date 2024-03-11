@@ -49,7 +49,8 @@ public:
 	bool isValidPort(std::string &port);
 	bool isValidErrorStatusCode(int statusCode);
 	bool isValidMethod(std::string &method);
-	bool isValidNumber(std::string num);
+	bool isValidNumber(std::string &num);
+	bool isUniqueServerName(std::string &serverName);
 
 private:
 	Parser(const Parser &other);
@@ -65,6 +66,7 @@ private:
 	int _bracketPairing;
 	bool _isFileEmpty;
 	bool _hasDirectives;
+	std::vector<std::string> _serverNames;
 	ServerBlock _tempServerBlock;
 	LocationBlock _tempLocationBlock;
 };

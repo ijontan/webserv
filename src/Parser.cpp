@@ -4,8 +4,8 @@
 Parser::Parser(const std::string &filePath)
 	: _filePath(filePath), _fileStream(filePath.c_str()), _tempLine(""),
 	  _lineNum(1), _serverBlockNum(1), _locationBlockNum(1), _bracketPairing(0),
-	  _isFileEmpty(true), _hasDirectives(false), _tempServerBlock(),
-	  _tempLocationBlock(this->_tempServerBlock)
+	  _isFileEmpty(true), _hasDirectives(false), _serverNames(), 
+	  _tempServerBlock(), _tempLocationBlock(this->_tempServerBlock)
 {}
 
 /*
@@ -398,7 +398,15 @@ void Parser::parseServerName(std::istringstream &iss)
 	}
 	while (!serverName.empty())
 	{
+		if (!isUniqueServerName(serverName))
+		{
+			std::stringstream ss;
+			ss << "Error (line " << this->_lineNum
+				<< "): server name duplicate found (all server names have to be unique)";
+			throw CustomException(ss.str());
+		}
 		this->_tempServerBlock.addServerName(serverName);
+		this->_serverNames.push_back(serverName);
 		std::cout << CYAN "added server name: " << serverName << RESET << std::endl;
 		if (!(iss >> serverName))
 			break;
@@ -648,7 +656,7 @@ bool Parser::isValidMethod(std::string &method)
 	return (false);
 }
 
-bool Parser::isValidNumber(std::string num)
+bool Parser::isValidNumber(std::string &num)
 {
 	for (unsigned int i = 0; i < num.length(); i++)
 	{
@@ -656,4 +664,16 @@ bool Parser::isValidNumber(std::string num)
 			return (false);
 	}
 	return (true);
+}
+
+bool Parser::isUniqueServerName(std::string &serverName)
+{
+	if (this->_serverNames.empty())
+		return true;
+	for (unsigned int i = 0; i < this->_serverNames.size(); i++)
+	{
+		if (serverName == this->_serverNames[i])
+			return false;
+	}
+	return true;
 }
