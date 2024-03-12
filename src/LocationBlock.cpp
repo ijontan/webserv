@@ -1,5 +1,7 @@
 
 #include "webserv.h"
+#include <iostream>
+#include <ostream>
 
 LocationBlock::LocationBlock()
 	: ABlock(), _autoindexStatus(false), _allowedMethods(), _cgiPass("")
@@ -16,7 +18,7 @@ LocationBlock::~LocationBlock()
 {
 }
 
-LocationBlock::LocationBlock(const LocationBlock &other) : ABlock()
+LocationBlock::LocationBlock(const LocationBlock &other) : ABlock(other)
 {
 	*this = other;
 }

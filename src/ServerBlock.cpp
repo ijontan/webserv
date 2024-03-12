@@ -3,8 +3,12 @@
 #include "LocationBlock.hpp"
 #include "utils.hpp"
 #include "webserv.h"
+#include <cstddef>
+#include <cstdio>
 #include <iostream>
+#include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 ServerBlock::ServerBlock() : ABlock(), _locationBlocks()
@@ -45,6 +49,23 @@ void ServerBlock::addServerName(std::string serverName)
 void ServerBlock::addLocationBlock(std::string path, LocationBlock locationBlock)
 {
 	this->_locationBlocks[path] = locationBlock;
+}
+
+std::pair<std::string, ABlock> ServerBlock::getLocationBlockPair(std::string basePath) const
+{
+	std::map<std::string, LocationBlock>::const_iterator it = _locationBlocks.find(basePath);
+	if (it != _locationBlocks.end())
+		return *it;
+	std::vector<std::string> pathToken = utils::split(basePath, '/');
+	for (size_t i = pathToken.size(); i > 0; i--)
+	{
+		std::string possiblePath = utils::join(pathToken, "/", i);
+		it = _locationBlocks.find(possiblePath);
+		if (it != _locationBlocks.end())
+			return *it;
+	}
+
+	return std::make_pair("/", *this);
 }
 
 std::ostream &operator<<(std::ostream &os, const ServerBlock &serverBlock)
