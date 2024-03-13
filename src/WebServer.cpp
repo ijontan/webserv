@@ -1,5 +1,6 @@
 
 #include "IOAdaptor.hpp"
+#include "ServerBlock.hpp"
 #include "colors.h"
 #include "webserv.h"
 #include <cstddef>
@@ -60,11 +61,13 @@ int initSocket(std::string port)
 	hints.ai_socktype = SOCK_STREAM; // TCP
 	hints.ai_flags = AI_PASSIVE;
 	std::cout << "port: " << port << std::endl;
+	// get info of address that can be bind
 	if (getaddrinfo(NULL, port.c_str(), &hints, &servInfo) != 0)
 	{
 		std::cerr << "getaddrinfo error" << std::endl;
 		throw "error";
 	}
+	// loop through all address and bind to the first
 	for (p = servInfo; p != NULL; p = p->ai_next)
 	{
 		if ((sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1)
@@ -145,19 +148,6 @@ static void *get_in_addr(struct sockaddr *sa)
 	}
 
 	return &(((struct sockaddr_in6 *)sa)->sin6_addr);
-}
-
-template <typename T>
-static bool find(std::vector<T> arr, T value)
-{
-	for (size_t i = 0; i < arr.size(); i++)
-	{
-		if (arr[i] == value)
-		{
-			return true;
-		}
-	}
-	return false;
 }
 
 void WebServer::loop()
@@ -259,3 +249,9 @@ void WebServer::removePfd(int index)
 {
 	_pfds.erase(_pfds.begin() + index);
 }
+
+std::vector<ServerBlock> &WebServer::getServers()
+{
+	return _serverBlocks;
+}
+

@@ -23,6 +23,7 @@ private:
 	std::map<std::string, std::string> envVariables;
 	char **envV;
 	void setEnv();
+	void	setBody(std::string body);
 
 public:
 	Cgi();
@@ -32,7 +33,8 @@ public:
 	Cgi(const Cgi &src);
 	Cgi &operator=(const Cgi &rhs);
 	
-	virtual std::string runCgi();
+	virtual int runCgi();
 	std::string getPath() const;
+	std::string getBody();
 	void setPath(const std::string path);
 };

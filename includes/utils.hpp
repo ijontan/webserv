@@ -1,6 +1,6 @@
-#ifndef UTILS_HPP
-#define UTILS_HPP
+#pragma once
 
+#include <cstddef>
 #include <string>
 #include <utility>
 #include <vector>
@@ -11,9 +11,19 @@ std::vector<std::string> split(std::string s, char c);
 std::vector<std::string> split(std::string s, std::string delS);
 std::pair<std::string, std::string> splitPair(std::string s, std::string delS);
 template <typename T>
-bool find(std::vector<T> arr, T value);
-int stoi (std::string s);
-std::string to_string(int value);
-} // namespace utils
+bool find(std::vector<T> arr, T value)
+{
+	for (size_t i = 0; i < arr.size(); i++)
+	{
+		if (arr[i] == value)
+		{
+			return true;
+		}
+	}
+	return false;
+}
 
-#endif
+int stoi(std::string s);
+std::string to_string(int value);
+std::string join(std::vector<std::string> strs, std::string sep, size_t n);
+} // namespace utils
