@@ -4,6 +4,7 @@
 Parser::Parser(const std::string &filePath)
 	: _filePath(filePath), _fileStream(filePath.c_str()), _tempLine(""),
 	  _lineNum(1), _serverBlockNum(1), _locationBlockNum(1), _bracketPairing(0),
+	  _isFileEmpty(true), _hasDirectives(false), _serverNames(), 
 	  _tempServerBlock(), _tempLocationBlock(this->_tempServerBlock)
 {}
 
@@ -62,10 +63,15 @@ void Parser::parseServerBlocks(std::vector<ServerBlock> &serverBlocks)
 			this->_lineNum++;
 			this->_serverBlockNum++;
 			this->_bracketPairing++;
+			this->_isFileEmpty = false;
 
 			this->_tempServerBlock = ServerBlock();
 
 			parseServerBlockDirectives(this->_tempServerBlock);
+
+			// checks if the server block has directives
+			if (this->_hasDirectives == false)
+				throw CustomException("Error: Server block cannot be empty\nserver {\n  directive1\n  directive2\n  ...\n}");
 
 			serverBlocks.push_back(this->_tempServerBlock);
 		}
@@ -77,6 +83,13 @@ void Parser::parseServerBlocks(std::vector<ServerBlock> &serverBlocks)
 				  "format:\nserver {\n...\n}";
 			throw CustomException(ss.str());
 		}
+	}
+	// checks if the file is empty or not
+	if (this->_isFileEmpty == true)
+	{
+		std::stringstream ss;
+		ss << "Error: " << this->_filePath << " is empty";
+		throw CustomException(ss.str());
 	}
 }
 
@@ -206,6 +219,7 @@ void Parser::parseServerBlockDirectives(ServerBlock &block)
 		}
 		if (directive != "location")
 			this->_lineNum++;
+		this->_hasDirectives = true;
 	}
 	if (this->_bracketPairing != 0)
 	{
@@ -326,6 +340,9 @@ bool Parser::isValidSemicolonFormat(std::string &line)
 	size_t semicolonPos = line.find(';');
 	unsigned int lineLen = line.length();
 
+	std::cout << "	line: " << line << std::endl;
+	std::cout << "	SemicolonPos: " << semicolonPos << std::endl;
+	std::cout << "	LineLen: " << lineLen << std::endl;
 	if (semicolonPos == lineLen - 1 && semicolonPos != std::string::npos)
 		return (true);
 	return (false);
@@ -334,8 +351,6 @@ bool Parser::isValidSemicolonFormat(std::string &line)
 /*
 - check if there's at least 1 port
 - check if the port's within range, and does not have any special symbols
-- check if 
-
 */
 void Parser::parsePortsListeningOn(std::istringstream &iss)
 {
@@ -383,7 +398,15 @@ void Parser::parseServerName(std::istringstream &iss)
 	}
 	while (!serverName.empty())
 	{
+		if (!isUniqueServerName(serverName))
+		{
+			std::stringstream ss;
+			ss << "Error (line " << this->_lineNum
+				<< "): server name duplicate found (all server names have to be unique)";
+			throw CustomException(ss.str());
+		}
 		this->_tempServerBlock.addServerName(serverName);
+		this->_serverNames.push_back(serverName);
 		std::cout << CYAN "added server name: " << serverName << RESET << std::endl;
 		if (!(iss >> serverName))
 			break;
@@ -633,7 +656,7 @@ bool Parser::isValidMethod(std::string &method)
 	return (false);
 }
 
-bool Parser::isValidNumber(std::string num)
+bool Parser::isValidNumber(std::string &num)
 {
 	for (unsigned int i = 0; i < num.length(); i++)
 	{
@@ -641,4 +664,16 @@ bool Parser::isValidNumber(std::string num)
 			return (false);
 	}
 	return (true);
+}
+
+bool Parser::isUniqueServerName(std::string &serverName)
+{
+	if (this->_serverNames.empty())
+		return true;
+	for (unsigned int i = 0; i < this->_serverNames.size(); i++)
+	{
+		if (serverName == this->_serverNames[i])
+			return false;
+	}
+	return true;
 }
