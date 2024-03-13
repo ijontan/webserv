@@ -350,12 +350,13 @@ std::string MethodIO::readFile(MethodIO::rInfo &rqi, ServerBlock &block)
 			throw RequestException("File doesn't exist", 404);
 	}
 	std::ostringstream oss;
+
+	// NOTE: Tmp fix for cgi issue, please remove this code if new solution is found!
 	size_t dirPos = rqi.path.find_first_of("/");
-	if ((dirPos != std::string::npos) && (rqi.path.substr(0, dirPos) == "cgi-bin"))
+	std::string ext = rqi.path.substr(rqi.path.find_last_of(".") + 1);
+	if ((dirPos != std::string::npos) && (rqi.path.substr(0, dirPos) == "cgi-bin") && (ext == "py"))
 	{
-			// Cgi constructor
 		Cgi cgi(rqi.request, rqi.headers, rqi.body);
-			// adds output (runCgi returns a string which is the python script output) into body
 		if (cgi.runCgi() == 200)
 			oss << cgi.getBody();
 		else
@@ -363,6 +364,7 @@ std::string MethodIO::readFile(MethodIO::rInfo &rqi, ServerBlock &block)
 	}
 	else
 		oss << file.rdbuf();
+	// NOTE: Tmp fix for cgi issue, please remove this code if new solution is found!
 
 	return oss.str();
 }
