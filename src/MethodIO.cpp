@@ -127,16 +127,18 @@ std::string MethodIO::getMessageToSend(WebServer &ws, std::string port)
 	{
 		requestInfo.port = port;
 		block = getServerBlock(requestInfo, ws);
-		std::cout << getRaw() << requestInfo.request[1] << std::endl;
+		// std::cout << getRaw() << requestInfo.request[1] << std::endl;
 		std::string path = getPath(requestInfo.request[1], ws, port);
 		path = requestInfo.path;
 		std::string test = path.substr(path.find_last_of(".") + 1);
 
+		std::cout << requestInfo.request[1] << std::endl;
 		std::cout << "	Path: " << path << std::endl;
 		std::cout << "	Test: " << test << std::endl;
 		// check if extension is python (if possible change this so it detects if script is from cgi folder)
 		if (test.compare("py") == 0)
 		{
+			std::cout << "test" << std::endl;
 			// Cgi constructor
 			Cgi cgi(requestInfo.request, requestInfo.headers, requestInfo.body);
 			// adds output (runCgi returns a string which is the python script output) into body
@@ -323,14 +325,14 @@ std::string MethodIO::readFile(MethodIO::rInfo &rqi, ServerBlock &block)
 			throw RequestException("File doesn't exist", 404);
 		if (access(ss.str().c_str(), R_OK))
 			throw RequestException("File read forbidden", 403);
-		std::cout << "path: " << rqi.path << std::endl;
+		// std::cout << "path: " << rqi.path << std::endl;
 		file.open(ss.str().c_str());
 		ss.clear();
 	}
 	if (!file.is_open())
 	{
 		file.close();
-		std::cout << "path: " << rqi.path << std::endl;
+		// std::cout << "path: " << rqi.path << std::endl;
 		for (i = 0; i < index.size(); i++)
 		{
 			std::stringstream ss;
@@ -348,7 +350,19 @@ std::string MethodIO::readFile(MethodIO::rInfo &rqi, ServerBlock &block)
 			throw RequestException("File doesn't exist", 404);
 	}
 	std::ostringstream oss;
-	oss << file.rdbuf();
+	size_t dirPos = rqi.path.find_first_of("/");
+	if ((dirPos != std::string::npos) && (rqi.path.substr(0, dirPos) == "cgi-bin"))
+	{
+			// Cgi constructor
+		Cgi cgi(rqi.request, rqi.headers, rqi.body);
+			// adds output (runCgi returns a string which is the python script output) into body
+		if (cgi.runCgi() == 200)
+			oss << cgi.getBody();
+		else
+			throw RequestException("Internal Server Error", 500);
+	}
+	else
+		oss << file.rdbuf();
 
 	return oss.str();
 }
