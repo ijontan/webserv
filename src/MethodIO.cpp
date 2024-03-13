@@ -319,7 +319,7 @@ std::string MethodIO::readFile(MethodIO::rInfo &rqi, ServerBlock &block)
 	{
 		std::stringstream ss;
 		ss << root << rqi.request[1];
-		std::cout << root<< std::endl;
+		std::cout << root << std::endl;
 		rqi.path = ss.str();
 		if (access(ss.str().c_str(), F_OK))
 			throw RequestException("File doesn't exist", 404);
