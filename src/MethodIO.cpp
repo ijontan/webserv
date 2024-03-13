@@ -124,38 +124,28 @@ std::string MethodIO::getMessageToSend(WebServer &ws, std::string port)
 	ServerBlock block;
 	try
 	{
+		requestInfo.port = port;
+		block = getServerBlock(requestInfo, ws);
 		std::cout << getRaw() << requestInfo.request[1] << std::endl;
 		std::string path = getPath(requestInfo.request[1], ws, port);
-		std::string fileExtension = path.substr(path.find_last_of(".") + 1);
+		path = requestInfo.path;
+		std::string test = path.substr(path.find_last_of(".") + 1);
 
 		std::cout << "	Path: " << path << std::endl;
-		std::cout << "	File Extension: " << fileExtension << std::endl;
+		std::cout << "	Test: " << test << std::endl;
 		// check if extension is python (if possible change this so it detects if script is from cgi folder)
-		if (fileExtension.compare("py") == 0)
+		if (test.compare("py") == 0)
 		{
-			requestInfo.port = port;
-			block = getServerBlock(requestInfo, ws);
-			std::cout << getRaw() << requestInfo.request[1] << std::endl;
-			std::string path = getPath(requestInfo.request[1], ws, port);
-			path = requestInfo.path;
-			std::string test = path.substr(path.find_last_of(".") + 1);
-
-			std::cout << "	Path: " << path << std::endl;
-			std::cout << "	Test: " << test << std::endl;
-			// check if extension is python (if possible change this so it detects if script is from cgi folder)
-			if (test.compare("py") == 0)
-			{
-				// Cgi constructor
-				Cgi cgi(requestInfo.request, requestInfo.headers, requestInfo.body);
-				// adds output (runCgi returns a string which is the python script output) into body
-				responseInfo.body.append(cgi.runCgi());
-			}
-			std::string method = requestInfo.request[0];
-			responseInfo.headers["Date"] = getDate();
-			std::map<std::string, MethodPointer>::const_iterator it = methods.find(method);
-			if (it != methods.end())
-				return (it->second)(block, requestInfo, responseInfo);
+			// Cgi constructor
+			Cgi cgi(requestInfo.request, requestInfo.headers, requestInfo.body);
+			// adds output (runCgi returns a string which is the python script output) into body
+			responseInfo.body.append(cgi.runCgi());
 		}
+		std::string method = requestInfo.request[0];
+		responseInfo.headers["Date"] = getDate();
+		std::map<std::string, MethodPointer>::const_iterator it = methods.find(method);
+		if (it != methods.end())
+			return (it->second)(block, requestInfo, responseInfo);
 	}
 	catch (RequestException &e)
 	{
