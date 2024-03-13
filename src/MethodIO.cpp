@@ -140,7 +140,11 @@ std::string MethodIO::getMessageToSend(WebServer &ws, std::string port)
 			// Cgi constructor
 			Cgi cgi(requestInfo.request, requestInfo.headers, requestInfo.body);
 			// adds output (runCgi returns a string which is the python script output) into body
-			responseInfo.body.append(cgi.runCgi());
+			if (cgi.runCgi() == 200)
+				responseInfo.body.append(cgi.getBody());
+			else
+				generateResponse(500, responseInfo);
+			
 		}
 		std::string method = requestInfo.request[0];
 		responseInfo.headers["Date"] = getDate();
