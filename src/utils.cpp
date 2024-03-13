@@ -1,4 +1,5 @@
 #include "utils.hpp"
+#include <cstddef>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -38,19 +39,6 @@ std::pair<std::string, std::string> utils::splitPair(std::string s, std::string 
 	return pair;
 }
 
-template <typename T>
-bool utils::find(std::vector<T> arr, T value)
-{
-	for (size_t i = 0; i < arr.size(); i++)
-	{
-		if (arr[i] == value)
-		{
-			return true;
-		}
-	}
-	return false;
-}
-
 int utils::stoi(std::string s)
 {
 	std::stringstream ss(s);
@@ -66,5 +54,14 @@ std::string utils::to_string(int value)
 {
 	std::stringstream ss;
 	ss << value;
+	return ss.str();
+}
+
+std::string utils::join(std::vector<std::string> strs, std::string sep, size_t n)
+{
+	std::ostringstream ss;
+
+	for (size_t i = 0; i < n && i < strs.size(); i++)
+		ss << strs[i] << sep;
 	return ss.str();
 }

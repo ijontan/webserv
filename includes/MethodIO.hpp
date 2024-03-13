@@ -1,19 +1,11 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   MethodIO.hpp                                       :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: nwai-kea <nwai-kea@student.42kl.edu.my>    +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/02/19 15:42:11 by nwai-kea          #+#    #+#             */
-/*   Updated: 2024/03/07 21:44:19 by itan             ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
 
 #pragma once
 
-#include "IOAdaptor.hpp"
+#include "ABlock.hpp"
 #include "Cgi.hpp"
+#include "IOAdaptor.hpp"
+#include "ServerBlock.hpp"
+#include "WebServer.hpp"
 
 #include <fstream>
 #include <map>
@@ -34,30 +26,36 @@ private:
 		std::vector<std::string> request;
 		std::map<std::string, std::string> headers;
 		std::string body;
+		std::string port;
+		std::string path;
 	};
 	std::string statusLine;
-	typedef std::string (*MethodPointer)(WebServer &, struct rInfo &, struct rInfo &);
+	typedef std::string (*MethodPointer)(ServerBlock &, struct rInfo &, struct rInfo &);
 	// std::map<std::string, std::string> responseHeader;
 	std::string response;
 	static const std::map<int, std::string> errCodeMessages;
-		static const std::map<std::string, MethodPointer> methods;
-		static const std::map<std::string, std::string> contentTypes;
+	static const std::map<std::string, MethodPointer> methods;
+	static const std::map<std::string, std::string> contentTypes;
 
 	void tokenize(std::string s, MethodIO::rInfo &ri) const;
 
 	static std::map<std::string, MethodPointer> initMethodsMap();
 	static std::map<int, std::string> initErrCodeMessages();
 	static std::map<std::string, std::string> initContentTypes();
-	static std::string getMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::rInfo &rsi);
-	static std::string postMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::rInfo &rsi);
-	static std::string headMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::rInfo &rsi);
-	static std::string delMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::rInfo &rsi);
-	static std::string putMethod(WebServer &ws, MethodIO::rInfo &rqi, MethodIO::rInfo &rsi);
+	static std::string getMethod(ServerBlock &block, MethodIO::rInfo &rqi, MethodIO::rInfo &rsi);
+	static std::string postMethod(ServerBlock &block, MethodIO::rInfo &rqi, MethodIO::rInfo &rsi);
+	static std::string headMethod(ServerBlock &block, MethodIO::rInfo &rqi, MethodIO::rInfo &rsi);
+	static std::string delMethod(ServerBlock &block, MethodIO::rInfo &rqi, MethodIO::rInfo &rsi);
+	static std::string putMethod(ServerBlock &block, MethodIO::rInfo &rqi, MethodIO::rInfo &rsi);
 
 	static std::string getDate();
 	static std::string getLen(std::ifstream &file);
 	static std::string getType(std::string path);
-	static std::string getPath(std::string basePath, WebServer &ws);
+	static std::string getPath(std::string basePath, WebServer &ws, std::string &port);
+	static ServerBlock getServerBlock(MethodIO::rInfo &rqi, WebServer &ws);
+	static std::string readFile(MethodIO::rInfo &rqi, ServerBlock &block);
+	static void writeFile(MethodIO::rInfo &rqi, ServerBlock &block, bool createNew);
+	static std::ifstream *getFile(MethodIO::rInfo &rqi, WebServer &ws);
 
 	// void setCode(int code) const;
 	static std::string getMessage(int code);

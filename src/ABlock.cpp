@@ -1,4 +1,5 @@
 
+#include "ABlock.hpp"
 #include "webserv.h"
 
 ABlock::ABlock()
@@ -22,7 +23,14 @@ ABlock::~ABlock()
 {
 }
 
-ABlock::ABlock(const ABlock &other)
+ABlock::ABlock(const ABlock &other)	
+	: _portsListeningOn(other.getPortsListeningOn()),
+	  _serverName(other.getServerName()),
+	  _rootDirectory(other.getRootDirectory()),
+	  _index(other.getIndex()),
+	  _clientMaxBodySize(other.getClientMaxBodySize()),
+	  _errorPages(other.getErrorPages()),
+	  _redirection(other.getRedirection())
 {
 	*this = other;
 }

@@ -1,12 +1,12 @@
 
 #pragma once
 
-#include <vector>
-#include <string>
-#include <map>
+#include "IOAdaptor.hpp"
 #include "Parser.hpp"
 #include "ServerBlock.hpp"
-#include "IOAdaptor.hpp"
+#include <map>
+#include <string>
+#include <vector>
 
 class Parser;
 class IOAdaptor;
@@ -24,6 +24,7 @@ public:
 	void removePfd(int index);
 	void addPfd(int fd);
 	void addPfds(std::vector<int> fds);
+	std::vector<ServerBlock> &getServers();
 
 private:
 	WebServer(const WebServer &other);
@@ -37,4 +38,3 @@ private:
 	std::map<int, std::string> _connectionsPortMap;
 	IOAdaptor &_io;
 };
-
