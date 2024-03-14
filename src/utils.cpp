@@ -36,7 +36,7 @@ std::pair<std::string, std::string> utils::splitPair(std::string s, std::string 
 	int end = s.find(delS);
 	if (end == -1)
 		return std::pair<std::string, std::string>(s, "");
-	std::pair<std::string, std::string> pair(s.substr(0, end), s.substr(end + 2));
+	std::pair<std::string, std::string> pair(s.substr(0, end), s.substr(end + delS.size()));
 	return pair;
 }
 

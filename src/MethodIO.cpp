@@ -321,9 +321,11 @@ std::string MethodIO::readFile(MethodIO::rInfo &rqi, ServerBlock &block)
 	{
 		std::stringstream ss;
 		// ss << root << rqi.queryPath;
-		ss << root << "/" << rqi.queryPath.substr(1);
+		std::cout << "block first:" << blockPair.first << std::endl;
+		std::pair<std::string, std::string> pair = utils::splitPair(rqi.queryPath, blockPair.first);
+		ss << root << "/" << pair.second;
 		rqi.path = ss.str();
-		// std::cout << rqi.path << std::endl;
+		std::cout << "path :: "<< rqi.path << std::endl;
 		// std::cout << "1: " << rqi.path << std::endl;
 		// std::cout << "2: " << ss.str().c_str() << std::endl;
 		// std::cout << "3: " << rqi.queryPath << std::endl;
