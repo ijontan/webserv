@@ -310,21 +310,29 @@ ServerBlock MethodIO::getServerBlock(MethodIO::rInfo &rqi, WebServer &ws)
 std::string MethodIO::readFile(MethodIO::rInfo &rqi, ServerBlock &block)
 {
 	// try all indexes in the config
-	std::pair<std::string, ABlock> blockPair = block.getLocationBlockPair(rqi.request[1]);
+	std::pair<std::string, ABlock> blockPair = block.getLocationBlockPair(rqi.queryPath);
 	std::vector<std::string> index = blockPair.second.getIndex();
 	std::string root = blockPair.second.getRootDirectory();
 	std::ifstream file;
 	size_t i;
-	if (rqi.request[1] != blockPair.first)
+
+	std::cout << rqi.queryPath << " " << blockPair.first << std::endl;
+	if (rqi.queryPath != blockPair.first)
 	{
 		std::stringstream ss;
-		ss << root << rqi.request[1];
-		std::cout << root << std::endl;
+		// ss << root << rqi.queryPath;
+		ss << root << "/" << rqi.queryPath.substr(1);
 		rqi.path = ss.str();
+		// std::cout << rqi.path << std::endl;
+		// std::cout << "1: " << rqi.path << std::endl;
+		// std::cout << "2: " << ss.str().c_str() << std::endl;
+		// std::cout << "3: " << rqi.queryPath << std::endl;
+		// std::cout << "4: " << blockPair.first << std::endl;
 		if (access(ss.str().c_str(), F_OK))
 			throw RequestException("File doesn't exist", 404);
 		if (access(ss.str().c_str(), R_OK))
 			throw RequestException("File read forbidden", 403);
+		std::cout << ss.str().c_str() << std::endl;
 		// std::cout << "path: " << rqi.path << std::endl;
 		file.open(ss.str().c_str());
 		ss.clear();
@@ -332,7 +340,7 @@ std::string MethodIO::readFile(MethodIO::rInfo &rqi, ServerBlock &block)
 	if (!file.is_open())
 	{
 		file.close();
-		// std::cout << "path: " << rqi.path << std::endl;
+		std::cout << "path: " << rqi.path << std::endl;
 		for (i = 0; i < index.size(); i++)
 		{
 			std::stringstream ss;
@@ -426,4 +434,13 @@ void MethodIO::tokenize(std::string s, MethodIO::rInfo &rsi) const
 	for (size_t i = 1; i < requestHeader.size(); i++)
 		rsi.headers.insert(utils::splitPair(requestHeader[i], ": "));
 	rsi.body = headerBody.second;
+	size_t q = rsi.request[1].find_first_of("?");
+	if (q != std::string::npos)
+	{
+		rsi.query = rsi.request[1].substr(q + 1);
+		rsi.queryPath = rsi.request[1].substr(0, q);
+	}
+	else
+		rsi.queryPath = rsi.request[1];
+	std::cout << rsi.queryPath << std::endl;
 }
