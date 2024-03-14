@@ -7,6 +7,7 @@
 #include <cstdio>
 #include <iostream>
 #include <map>
+#include <ostream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -64,6 +65,9 @@ std::pair<std::string, ABlock> ServerBlock::getLocationBlockPair(std::string bas
 		if (it != _locationBlocks.end())
 			return *it;
 	}
+	it = _locationBlocks.find("/");
+	if (it != _locationBlocks.end())
+		return *it;
 
 	return std::make_pair("/", *this);
 }
