@@ -11,8 +11,9 @@ Cgi::Cgi()
 {}
 
 Cgi::Cgi(std::vector<std::string> request, std::map<std::string, std::string> headers
-	, std::string body) : request(request), header(headers), body(body)
+	, std::string path, std::string body, std::string query) : request(request), header(headers), body(body), query(query)
 {
+	setPath(path);
 }
 
 Cgi::~Cgi()
@@ -32,6 +33,7 @@ void Cgi::setEnv()
 {
 	this->envVariables["PATH_INFO"] = getPath();
 	this->envVariables["REQUEST_METHOD"] = this->request[0];
+	this->envVariables["QUERY_STRING"] = this->query;
 	this->envV = (char **)calloc(sizeof(char *), this->envVariables.size() + 1);
 	std::map<std::string, std::string>::const_iterator it = this->envVariables.begin();
 	for (int i = 0; it != this->envVariables.end(); i++, it++)
@@ -55,14 +57,11 @@ int Cgi::runCgi()
 	std::string outputString;
 	char buf[2048] = {0};
 
-	setPath(this->request[1]);
 	setEnv();
 	// dir = file directory
 	std::string dir = getPath().substr(0, getPath().find_first_of("/", 2) + 1);
 	this->path = getPath();
 
-	std::cout << "	CGI dir: " << dir << std::endl;
-	std::cout << "	CGI path: " << this->path << std::endl;
 	char *av[3] = {(char *)this->path.c_str(), (char *)dir.c_str(), NULL};
 
 	if (pipe(fd) == -1)
@@ -73,6 +72,7 @@ int Cgi::runCgi()
 		if (close(fd[0]) == -1 )
 			return (500);
 		dup2(fd[1], STDOUT_FILENO);
+		std::cout << this->envV[1] << std::cout;
 		int i = execve(this->path.c_str(), av, this->envV);
 		exit(i);
 	}
@@ -103,9 +103,7 @@ int Cgi::runCgi()
 
 std::string Cgi::getPath() const
 {
-	if (this->path == "/cgi-bin")
-		return "./cgi-bin/test.py";
-	return this->path == "/" ? "./cgi-bin/test.py" : "www" + this->path;
+	return (this->path);
 }
 
 std::string Cgi::getBody()
@@ -115,6 +113,7 @@ std::string Cgi::getBody()
 
 void Cgi::setPath(const std::string path)
 {
+	std::cout << "PATH: " << path << std::endl;
 	this->path = path;
 }
 

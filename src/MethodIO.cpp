@@ -132,22 +132,22 @@ std::string MethodIO::getMessageToSend(WebServer &ws, std::string port)
 		path = requestInfo.path;
 		std::string test = path.substr(path.find_last_of(".") + 1);
 
-		std::cout << requestInfo.request[1] << std::endl;
-		std::cout << "	Path: " << path << std::endl;
-		std::cout << "	Test: " << test << std::endl;
+		// std::cout << requestInfo.request[1] << std::endl;
+		// std::cout << "	Path: " << path << std::endl;
+		// std::cout << "	Test: " << test << std::endl;
 		// check if extension is python (if possible change this so it detects if script is from cgi folder)
-		if (test.compare("py") == 0)
-		{
-			std::cout << "test" << std::endl;
-			// Cgi constructor
-			Cgi cgi(requestInfo.request, requestInfo.headers, requestInfo.body);
-			// adds output (runCgi returns a string which is the python script output) into body
-			if (cgi.runCgi() == 200)
-				responseInfo.body.append(cgi.getBody());
-			else
-				generateResponse(500, responseInfo);
+		// if (test.compare("py") == 0)
+		// {
+		// 	std::cout << "test" << std::endl;
+		// 	// Cgi constructor
+		// 	Cgi cgi(requestInfo.request, requestInfo.headers, requestInfo.body);
+		// 	// adds output (runCgi returns a string which is the python script output) into body
+		// 	if (cgi.runCgi() == 200)
+		// 		responseInfo.body.append(cgi.getBody());
+		// 	else
+		// 		generateResponse(500, responseInfo);
 			
-		}
+		// }
 		std::string method = requestInfo.request[0];
 		responseInfo.headers["Date"] = getDate();
 		std::map<std::string, MethodPointer>::const_iterator it = methods.find(method);
@@ -157,7 +157,7 @@ std::string MethodIO::getMessageToSend(WebServer &ws, std::string port)
 	catch (RequestException &e)
 	{
 		int code = e.getCode();
-		std::cerr << BRED << "What: " << e.what() << std::endl
+		std::cerr << BRED << "Error: " << e.what() << std::endl
 				  << "Error Code: " << code << " " << errCodeMessages.find(code)->second << RESET << std::endl;
 		if (block.getRootDirectory() == "")
 			return generateResponse(code, responseInfo);
@@ -249,6 +249,7 @@ std::string MethodIO::getPath(std::string basePath, WebServer &ws, std::string &
 		root = it->getRootDirectory();
 		break;
 	}
+	// std::cout << root << std::endl;
 	return root + "/" + (basePath == "/" ? "index.html" : basePath);
 }
 
@@ -316,39 +317,30 @@ std::string MethodIO::readFile(MethodIO::rInfo &rqi, ServerBlock &block)
 	std::ifstream file;
 	size_t i;
 
-	std::cout << rqi.queryPath << " " << blockPair.first << std::endl;
+	std::cout << blockPair.first << std::endl;
 	if (rqi.queryPath != blockPair.first)
 	{
 		std::stringstream ss;
 		// ss << root << rqi.queryPath;
-		std::cout << "block first:" << blockPair.first << std::endl;
 		std::pair<std::string, std::string> pair = utils::splitPair(rqi.queryPath, blockPair.first);
 		ss << root << "/" << pair.second;
 		rqi.path = ss.str();
-		std::cout << "path :: "<< rqi.path << std::endl;
-		// std::cout << "1: " << rqi.path << std::endl;
-		// std::cout << "2: " << ss.str().c_str() << std::endl;
-		// std::cout << "3: " << rqi.queryPath << std::endl;
-		// std::cout << "4: " << blockPair.first << std::endl;
 		if (access(ss.str().c_str(), F_OK))
 			throw RequestException("File doesn't exist", 404);
 		if (access(ss.str().c_str(), R_OK))
 			throw RequestException("File read forbidden", 403);
-		std::cout << ss.str().c_str() << std::endl;
-		// std::cout << "path: " << rqi.path << std::endl;
 		file.open(ss.str().c_str());
 		ss.clear();
 	}
 	if (!file.is_open())
 	{
 		file.close();
-		std::cout << "path: " << rqi.path << std::endl;
 		for (i = 0; i < index.size(); i++)
 		{
 			std::stringstream ss;
 			ss << root << "/" << index[i];
 			rqi.path = ss.str();
-			std::cout << "path: " << rqi.path << std::endl;
+			std::cout << "path2 : " << rqi.path << std::endl;
 			if (!access(ss.str().c_str(), F_OK) && access(ss.str().c_str(), R_OK))
 				throw RequestException("File read forbidden", 403);
 			file.open(ss.str().c_str());
@@ -364,9 +356,9 @@ std::string MethodIO::readFile(MethodIO::rInfo &rqi, ServerBlock &block)
 	// NOTE: Tmp fix for cgi issue, please remove this code if new solution is found!
 	size_t dirPos = rqi.path.find_first_of("/");
 	std::string ext = rqi.path.substr(rqi.path.find_last_of(".") + 1);
-	if ((dirPos != std::string::npos) && (rqi.path.substr(0, dirPos) == "cgi-bin") && (ext == "py"))
+	if ((dirPos != std::string::npos) && (ext == "py"))
 	{
-		Cgi cgi(rqi.request, rqi.headers, rqi.body);
+		Cgi cgi(rqi.request, rqi.headers, rqi.path, rqi.body, rqi.query);
 		if (cgi.runCgi() == 200)
 			oss << cgi.getBody();
 		else
