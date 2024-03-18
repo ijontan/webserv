@@ -1,9 +1,9 @@
 #!/usr/bin/python3
 
 import cgi
-import cgitb
-import sys
-import os
+# import cgitb
+# import sys
+# import os
 # Create instance of FieldStorage
 form = cgi.FieldStorage()
 

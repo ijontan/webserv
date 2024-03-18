@@ -61,6 +61,7 @@ int Cgi::runCgi()
 	// dir = file directory
 	std::string dir = getPath().substr(0, getPath().find_first_of("/", 2) + 1);
 	this->path = getPath();
+	std::cout << this->path << " TEST" << std::endl;
 
 	char *av[3] = {(char *)this->path.c_str(), (char *)dir.c_str(), NULL};
 
