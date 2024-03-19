@@ -11,7 +11,8 @@ std::vector<std::string> utils::split(std::string s, char c)
 	std::vector<std::string> ret;
 
 	while (std::getline(iss, token, c))
-		ret.push_back(token);
+		if (!token.empty())
+			ret.push_back(token);
 	return ret;
 }
 
@@ -35,7 +36,7 @@ std::pair<std::string, std::string> utils::splitPair(std::string s, std::string 
 	int end = s.find(delS);
 	if (end == -1)
 		return std::pair<std::string, std::string>(s, "");
-	std::pair<std::string, std::string> pair(s.substr(0, end), s.substr(end + 2));
+	std::pair<std::string, std::string> pair(s.substr(0, end), s.substr(end + delS.size()));
 	return pair;
 }
 
@@ -62,6 +63,6 @@ std::string utils::join(std::vector<std::string> strs, std::string sep, size_t n
 	std::ostringstream ss;
 
 	for (size_t i = 0; i < n && i < strs.size(); i++)
-		ss << strs[i] << sep;
+		ss << sep << strs[i];
 	return ss.str();
 }

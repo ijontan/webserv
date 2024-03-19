@@ -28,6 +28,8 @@ private:
 		std::string body;
 		std::string port;
 		std::string path;
+		std::string queryPath;
+		std::string query;
 	};
 	std::string statusLine;
 	typedef std::string (*MethodPointer)(ServerBlock &, struct rInfo &, struct rInfo &);
