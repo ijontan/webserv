@@ -61,7 +61,7 @@ int Cgi::runCgi()
 	// dir = file directory
 	std::string dir = getPath().substr(0, getPath().find_first_of("/", 2) + 1);
 	this->path = getPath();
-	std::cout << this->path << " TEST" << std::endl;
+	// std::cout << this->path << " TEST" << std::endl;
 
 	char *av[3] = {(char *)this->path.c_str(), (char *)dir.c_str(), NULL};
 
@@ -73,7 +73,7 @@ int Cgi::runCgi()
 		if (close(fd[0]) == -1 )
 			return (500);
 		dup2(fd[1], STDOUT_FILENO);
-		std::cout << this->envV[1] << std::cout;
+		// std::cout << this->envV[2] << " TEST" << std::cout;
 		int i = execve(this->path.c_str(), av, this->envV);
 		exit(i);
 	}

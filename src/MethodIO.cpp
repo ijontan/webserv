@@ -323,7 +323,7 @@ std::string MethodIO::readFile(MethodIO::rInfo &rqi, ServerBlock &block)
 		std::stringstream ss;
 		// ss << root << rqi.queryPath;
 		std::pair<std::string, std::string> pair = utils::splitPair(rqi.queryPath, blockPair.first);
-		ss << root << "/" << pair.second;
+		ss << root << pair.second;
 		rqi.path = ss.str();
 		if (access(ss.str().c_str(), F_OK))
 			throw RequestException("File doesn't exist", 404);
@@ -356,7 +356,7 @@ std::string MethodIO::readFile(MethodIO::rInfo &rqi, ServerBlock &block)
 	// NOTE: Tmp fix for cgi issue, please remove this code if new solution is found!
 	size_t dirPos = rqi.path.find_first_of("/");
 	std::string ext = rqi.path.substr(rqi.path.find_last_of(".") + 1);
-	if ((dirPos != std::string::npos) && (ext == "py"))
+	if ((dirPos != std::string::npos) && (ext == "py" || ext == "cgi"))
 	{
 		Cgi cgi(rqi.request, rqi.headers, rqi.path, rqi.body, rqi.query);
 		if (cgi.runCgi() == 200)
