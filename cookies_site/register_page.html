@@ -4,14 +4,14 @@
 <head>
 	<title>Webserv Login</title>
 	<link rel="stylesheet"
-		href="/cookies_site/register_page.css">
+		href="/cookies_site/style.css">
 </head>
 
 <body>
 	<div class="main">
 		<h1>Webserv Registration</h1>
 		<h3>Enter your credentials</h3>
-		<form action="" method="get">
+		<form action="cookies_site/database_handler.py" method="post">
 			<label for="username">
 				Username:
 			</label>
@@ -44,7 +44,16 @@
 		</form>
 	</div>
 
-	<script src="utils.js"></script>
+	<script>		
+		function showPassword() {
+			var x = document.getElementById("password");
+			if (x.type === "password") {
+			x.type = "text";
+			} else {
+			x.type = "password";
+			}
+		}
+	</script>
 </body>
 
 </html>

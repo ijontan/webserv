@@ -4,7 +4,7 @@
 <head>
 	<title>Webserv Login</title>
 	<link rel="stylesheet"
-		href="/cookies_site/register_page.css">
+		href="/cookies_site/style.css">
 </head>
 
 <body>
@@ -19,7 +19,7 @@
 				id="username"
 				name="username"
 				placeholder="Enter your Username" required>
-			<input type="checkbox" onclick="showPassword()">Show Password
+			
 			<label for="password">
 				Password:
 			</label>
@@ -27,7 +27,13 @@
 				id="password"
 				name="password"
 				placeholder="Enter your Password" required>
-
+			<div style="display: flex; align-items: center; margin: -20px;">
+				<div style="height: 2vh; width: 3vw;">
+					<input type="checkbox" onclick="showPassword()">	
+				</div>
+				<div>
+					<h5>Show Password</h5>
+				</div>
 			<div class="wrap">
 				<button type="login"
 						onclick="solve()">
@@ -37,7 +43,16 @@
 		</form>
 	</div>
 	
-	<script src="utils.js"></script>
+	<script>		
+		function showPassword() {
+			var x = document.getElementById("password");
+			if (x.type === "password") {
+			x.type = "text";
+			} else {
+			x.type = "password";
+			}
+		}
+	</script>
 </body>
 
 </html>

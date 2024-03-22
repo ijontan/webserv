@@ -9,10 +9,25 @@ def main():
 	form = cgi.FieldStorage()
 
 	# Get data from fields
-	username = form.getvalue('username')
-	password = form.getvalue('password')
-	# print("HTTP/1.1 200 OK")
-	# print("Content-type: text/html\r\n\r\n")
+	input_username = form.getvalue('username')
+	input_password = form.getvalue('password')
+
+	file = open("user_credentials.txt", "r")
+	for line in file:
+		username, password = line.strip().split(',')
+
+		if input_username == username:
+			if input_password == password:
+				return True
+			else:
+				return False
+
+	# creates new user if username does not exist
+	if input_username and input_password:
+		file = open("user_credentials.txt", "a")
+		file.write(f"{input_username},{input_password}\n")
+		return True
+
 
 if __name__ == 'main':
 	main()
