@@ -318,13 +318,15 @@ std::string MethodIO::readFile(MethodIO::rInfo &rqi, ServerBlock &block)
 	size_t i;
 
 	std::cout << blockPair.first << std::endl;
+	std::cout << "query: " << rqi.queryPath << ", block.pair: " << blockPair.first << std::endl;
 	if (rqi.queryPath != blockPair.first)
 	{
 		std::stringstream ss;
 		// ss << root << rqi.queryPath;
 		std::pair<std::string, std::string> pair = utils::splitPair(rqi.queryPath, blockPair.first);
-		ss << root << pair.second;
+		ss << "./" << root << "/" << pair.second;
 		rqi.path = ss.str();
+		std::cout << "path: " << ss.str() << std::endl;
 		if (access(ss.str().c_str(), F_OK))
 			throw RequestException("File doesn't exist", 404);
 		if (access(ss.str().c_str(), R_OK))
@@ -379,6 +381,7 @@ void MethodIO::writeFile(MethodIO::rInfo &rqi, ServerBlock &block, bool createNe
 	std::string root = blockPair.second.getRootDirectory() + blockPair.first;
 	std::ofstream file;
 	size_t i;
+
 	if (rqi.request[1] != blockPair.first)
 	{
 		std::stringstream ss;
@@ -386,13 +389,11 @@ void MethodIO::writeFile(MethodIO::rInfo &rqi, ServerBlock &block, bool createNe
 		rqi.path = ss.str();
 		if (access(ss.str().c_str(), F_OK) && !createNew)
 			throw RequestException("File doesn't exist", 404);
-		if (access(ss.str().c_str(), W_OK))
-			throw RequestException("File write forbidden", 403);
 		std::cout << "path: " << rqi.path << std::endl;
 		file.open(ss.str().c_str());
 		ss.clear();
 	}
-	if (!file.is_open())
+	if (!file.is_open() && false)
 	{
 		file.close();
 		for (i = 0; i < index.size(); i++)
