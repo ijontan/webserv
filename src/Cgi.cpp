@@ -1,6 +1,6 @@
 #include "Cgi.hpp"
-#include "colors.h"
 #include "IOAdaptor.hpp"
+#include "colors.h"
 #include "utils.hpp"
 #include <cstring>
 #include <sstream>
@@ -8,24 +8,28 @@
 #include <sys/wait.h>
 
 Cgi::Cgi()
-{}
+{
+}
 
-Cgi::Cgi(std::vector<std::string> request, std::map<std::string, std::string> headers
-	, std::string path, std::string body, std::string query) : request(request), header(headers), body(body), query(query)
+Cgi::Cgi(std::vector<std::string> request, std::map<std::string, std::string> headers, std::string path,
+		 std::string body, std::string query)
+	: request(request), header(headers), body(body), query(query)
 {
 	setPath(path);
 }
 
 Cgi::~Cgi()
 {
+	if (!envV)
+		return;
 	for (int i = 0; i < (int)(this->envVariables.size() + 1); i++)
 		free(this->envV[i]);
-	delete[] this->envV;
+	free(this->envV);
 }
 
 Cgi::Cgi(const Cgi &src)
 {
-	*this = src; 
+	*this = src;
 }
 
 // set env variables for execve
@@ -70,7 +74,7 @@ int Cgi::runCgi()
 	pid = fork();
 	if (pid == 0)
 	{
-		if (close(fd[0]) == -1 )
+		if (close(fd[0]) == -1)
 			return (500);
 		dup2(fd[1], STDOUT_FILENO);
 		// std::cout << this->envV[2] << " TEST" << std::cout;
@@ -118,7 +122,7 @@ void Cgi::setPath(const std::string path)
 	this->path = path;
 }
 
-void	Cgi::setBody(std::string body)
+void Cgi::setBody(std::string body)
 {
 	std::cout << "test" << std::endl;
 	std::cout << body << std::endl;

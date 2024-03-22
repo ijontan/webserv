@@ -202,14 +202,14 @@ void WebServer::acceptConnection(int index, std::map<int, std::string> &buffMap,
 
 void WebServer::handleIO(int index, std::map<int, std::string> &buffMap)
 {
-	char buff[256];
+	char buff[4096];
 	int fd = _pfds[index].fd;
 
-	buff[255] = 0;
+	buff[4095] = 0;
 	memset(buff, 0, sizeof(buff));
 	int bytes = recv(fd, buff, sizeof(buff) - 1, 0);
 	buffMap[fd] += buff;
-	if (bytes < 255)
+	if (bytes < 4095)
 	{
 		_io.receiveMessage(buffMap[fd]);
 		if (bytes >= 0)
