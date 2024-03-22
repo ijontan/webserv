@@ -5,20 +5,19 @@
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		
-		<link href="capitalize.css" rel="stylesheet">
+		<link href="capitalize/capitalize.css" rel="stylesheet">
 		<title>Capitalize</title>
 	</head>
 	<body>
 		<h2 class="capitalize">Hello, please enter a string!</h2>
 		<div class="row">
-			<form>
+			<form action="capitalize/capitalize.cgi" method="get">
 				<input type="text" id="fname" name="fname"><br>
-				<button type="button" class="button" id="enter" onclick="displayResult()">Enter</button>	
+				<input type="submit">	
 			</form>
 		</div>
 
 		<div id="result"></div>
 
-		<script src="capitalize.js"></script>
 	</body>
 </html>

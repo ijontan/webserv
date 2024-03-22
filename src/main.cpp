@@ -1,6 +1,5 @@
 
 #include "IOAdaptor.hpp"
-#include "NetIO.hpp"
 #include "MethodIO.hpp"
 #include "webserv.h"
 #include <vector>
