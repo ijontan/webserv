@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Webserv Login</title>
+	<link rel="stylesheet"
+		href="/cookies_site/register_page.css">
+</head>
+
+<body>
+	<div class="main">
+		<h1>Webserv Login</h1>
+		<h3>Enter your credentials</h3>
+		<form action="" method="get">
+			<label for="username">
+				Username:
+			</label>
+			<input type="text"
+				id="username"
+				name="username"
+				placeholder="Enter your Username" required>
+			<input type="checkbox" onclick="showPassword()">Show Password
+			<label for="password">
+				Password:
+			</label>
+			<input type="password"
+				id="password"
+				name="password"
+				placeholder="Enter your Password" required>
+
+			<div class="wrap">
+				<button type="login"
+						onclick="solve()">
+					Login
+				</button>
+			</div>
+		</form>
+	</div>
+	
+	<script src="utils.js"></script>
+</body>
+
+</html>

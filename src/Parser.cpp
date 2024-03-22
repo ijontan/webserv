@@ -273,7 +273,7 @@ void Parser::parseLocationBlockDirectives(LocationBlock &block)
 				  " can only exist in the server blocks";
 			throw CustomException(ss.str());
 		}
-		else if (directive == "root")
+		if (directive == "root")
 		{
 			parseRoot(block, iss);
 		}
