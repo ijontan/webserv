@@ -30,6 +30,7 @@ private:
 		std::string path;
 		std::string queryPath;
 		std::string query;
+		bool exist;
 	};
 	std::string statusLine;
 	typedef std::string (*MethodPointer)(ServerBlock &, struct rInfo &, struct rInfo &);

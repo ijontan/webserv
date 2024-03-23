@@ -6,6 +6,8 @@
 #include <sstream>
 #include <stdlib.h>
 #include <sys/wait.h>
+#include <unistd.h>
+#include <stdio.h>
 
 Cgi::Cgi()
 {
@@ -35,9 +37,19 @@ Cgi::Cgi(const Cgi &src)
 // set env variables for execve
 void Cgi::setEnv()
 {
+	std::stringstream convert;
+	convert << this->query.size();
+
+
 	this->envVariables["PATH_INFO"] = getPath();
 	this->envVariables["REQUEST_METHOD"] = this->request[0];
-	this->envVariables["QUERY_STRING"] = this->query;
+	if (this->envVariables["REQUEST_METHOD"] == "GET")
+		this->envVariables["QUERY_STRING"] = this->query;
+	if (this->envVariables["REQUEST_METHOD"] == "POST")
+	{
+		this->envVariables["CONTENT_LENGTH"] = convert.str();
+		this->envVariables["CONTENT_TYPE"] = "application/x-www-form-urlencoded";
+	}
 	this->envV = (char **)calloc(sizeof(char *), this->envVariables.size() + 1);
 	std::map<std::string, std::string>::const_iterator it = this->envVariables.begin();
 	for (int i = 0; it != this->envVariables.end(); i++, it++)
@@ -65,8 +77,6 @@ int Cgi::runCgi()
 	// dir = file directory
 	std::string dir = getPath().substr(0, getPath().find_first_of("/", 2) + 1);
 	this->path = getPath();
-	// std::cout << this->path << " TEST" << std::endl;
-
 	char *av[3] = {(char *)this->path.c_str(), (char *)dir.c_str(), NULL};
 
 	if (pipe(fd) == -1)
@@ -74,35 +84,44 @@ int Cgi::runCgi()
 	pid = fork();
 	if (pid == 0)
 	{
-		if (close(fd[0]) == -1)
-			return (500);
+		// if (close(fd[0]) == -1)
+		// 	return (500);
+		// std::cout << "test1" << std::endl;
 		dup2(fd[1], STDOUT_FILENO);
-		// std::cout << this->envV[2] << " TEST" << std::cout;
-		int i = execve(this->path.c_str(), av, this->envV);
-		exit(i);
-	}
-	else if (pid > 0)
-	{
-		waitpid(pid, &status, 0);
-		if (close(fd[1]) == -1)
-			return (500);
+		// std::cout << "test2" << std::endl;
+		close(fd[1]);
 		dup2(fd[0], STDIN_FILENO);
+		close(fd[0]);
+		// dup2(fd[1], STDERR_FILENO);
+		execve(this->path.c_str(), av, this->envV);
+		exit(-1);
+	}
+	else
+	{
+		std::cout << this->query << std::endl;
+		if (write(fd[1], this->query.c_str() ,this->query.size()) == -1)
+			return (500);
+		waitpid(pid, &status, 0);
+		close(fd[1]);
 		int read_bytes;
 
-		if (WEXITSTATUS(status) && WIFEXITED(status) != 0)
+		if (!WIFEXITED(status))
 			return (500);
 		read_bytes = 1;
 		while (read_bytes > 0)
 		{
 			memset(buf, 0, 2048);
 			read_bytes = read(fd[0], buf, 2048);
+			std::cout << buf << "\n";
 			outputString += buf;
 		}
+		close(fd[0]);
 	}
-	// if (close(output[0]) == -1 || close(output[1]) == -1 || close(input[0]) == -1 || close(input[1]) == -1)
+	// if (close(fd[0]) == -1)
 	// 	return (500);
-	std::cout << outputString << std::endl;
 	setBody(outputString);
+	// close(fd[0]);
+	// close(fd[1]);
 	return (200);
 }
 
@@ -118,13 +137,10 @@ std::string Cgi::getBody()
 
 void Cgi::setPath(const std::string path)
 {
-	std::cout << "PATH: " << path << std::endl;
 	this->path = path;
 }
 
 void Cgi::setBody(std::string body)
 {
-	std::cout << "test" << std::endl;
-	std::cout << body << std::endl;
 	this->body = body;
 }
