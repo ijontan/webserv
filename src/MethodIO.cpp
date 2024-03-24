@@ -318,11 +318,11 @@ std::string MethodIO::readFile(MethodIO::rInfo &rqi, MethodIO::rInfo &rsi, Serve
 	std::string root = blockPair.second.getRootDirectory();
 	std::ifstream file;
 	std::string path = root +"/"+ utils::splitPair(rqi.queryPath, blockPair.first).second;
+	std::cout << "block path: " << blockPair.first << std::endl;
 	size_t i;
 
 	if (rqi.queryPath.at(rqi.queryPath.length() - 1) == '/' && rqi.queryPath.length() > 1)
 	{
-		std::cout << "query: " << block.getRootDirectory() << ", block.pair: " << blockPair.second.getRootDirectory() << std::endl;
 		AutoIndex indexes(path, rqi.queryPath);
 		rsi.headers["Content-Type"] = "text/html";
 		return indexes.getBody();
