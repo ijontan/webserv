@@ -34,22 +34,29 @@ Cgi::Cgi(const Cgi &src)
 	*this = src;
 }
 
-// set env variables for execve
+// set env variables for execvpe
 void Cgi::setEnv()
 {
 	std::stringstream convert;
 	convert << this->query.size();
 
-
 	this->envVariables["PATH_INFO"] = getPath();
 	this->envVariables["REQUEST_METHOD"] = this->request[0];
+
 	if (this->envVariables["REQUEST_METHOD"] == "GET")
 		this->envVariables["QUERY_STRING"] = this->query;
+	
 	if (this->envVariables["REQUEST_METHOD"] == "POST")
 	{
 		this->envVariables["CONTENT_LENGTH"] = convert.str();
 		this->envVariables["CONTENT_TYPE"] = "application/x-www-form-urlencoded";
+		// this->envVariables["QUERY_STRING"] = this->query;
 	}
+
+	std::cout << "	content length: " << this->envVariables["CONTENT_LENGTH"] << std::endl;
+	std::cout << "	content type: " << this->envVariables["CONTENT_TYPE"] << std::endl;
+	std::cout << "	query: " << this->envVariables["QUERY_STRING"] << std::endl;
+	
 	this->envV = (char **)calloc(sizeof(char *), this->envVariables.size() + 1);
 	std::map<std::string, std::string>::const_iterator it = this->envVariables.begin();
 	for (int i = 0; it != this->envVariables.end(); i++, it++)

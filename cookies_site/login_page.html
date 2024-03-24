@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 
@@ -11,7 +12,7 @@
 	<div class="main">
 		<h1>Webserv Login</h1>
 		<h3>Enter your credentials</h3>
-		<form action="" method="get">
+		<form action="database_handler.py" method="post">
 			<label for="username">
 				Username:
 			</label>
@@ -19,7 +20,7 @@
 				id="username"
 				name="username"
 				placeholder="Enter your Username" required>
-			
+
 			<label for="password">
 				Password:
 			</label>
@@ -34,15 +35,15 @@
 				<div>
 					<h5>Show Password</h5>
 				</div>
+			</div>
 			<div class="wrap">
-				<button type="login"
-						onclick="solve()">
+				<button type="submit">
 					Login
 				</button>
 			</div>
 		</form>
 	</div>
-	
+
 	<script>		
 		function showPassword() {
 			var x = document.getElementById("password");
