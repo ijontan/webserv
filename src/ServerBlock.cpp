@@ -54,7 +54,6 @@ void ServerBlock::addLocationBlock(std::string path, LocationBlock locationBlock
 
 std::pair<std::string, ABlock> ServerBlock::getLocationBlockPair(std::string basePath) const
 {
-	std::cout << "basepath: " << basePath << std::endl;
 	std::map<std::string, LocationBlock>::const_iterator it = _locationBlocks.find(basePath);
 	if (it != _locationBlocks.end())
 		return *it;

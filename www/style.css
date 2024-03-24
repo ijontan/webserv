@@ -1,9 +1,24 @@
 .title {
 	font-size: 5em;
+	line-height: 0.7em;
 }
 
 p {
 	font-size: 3em;
+}
+
+img {
+	width: 100%;
+	height: auto;
+	border-radius: 20px;
+}
+
+section {
+	max-width: 1080px;
+	margin: auto;
+	background: #efefef;
+	padding: 20px;
+	border-radius: 10px;
 }
 
 .button {
@@ -31,4 +46,8 @@ p {
 	color: #ffffff;
 	background-color: #202020;
 	border-radius: 15px 15px 15px 15px;
+}
+
+.form {
+	padding-top: 30px;
 }

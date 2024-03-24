@@ -202,24 +202,23 @@ void WebServer::acceptConnection(int index, std::map<int, std::string> &buffMap,
 
 void WebServer::handleIO(int index, std::map<int, std::string> &buffMap)
 {
-	char buff[256];
+	char buff[4096];
 	int fd = _pfds[index].fd;
 
-	buff[255] = 0;
+	buff[4095] = 0;
 	memset(buff, 0, sizeof(buff));
 	int bytes = recv(fd, buff, sizeof(buff) - 1, 0);
 	buffMap[fd] += buff;
-	if (bytes < 255)
+	if (bytes < 4095)
 	{
 		_io.receiveMessage(buffMap[fd]);
 		if (bytes >= 0)
 		{
-			std::cout << _io;
 			std::string toSend = _io.getMessageToSend(*this, _connectionsPortMap[fd]);
 			send(fd, toSend.c_str(), toSend.length(), 0);
 		}
 		else
-			std::cerr << "recv error" << std::endl;
+			std::cerr << "recv error: " << strerror(errno) << std::endl;
 		buffMap.erase(buffMap.find(fd));
 		_connectionsPortMap.erase(_connectionsPortMap.find(fd));
 		close(fd);
