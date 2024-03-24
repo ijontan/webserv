@@ -315,9 +315,9 @@ std::string MethodIO::readFile(MethodIO::rInfo &rqi, MethodIO::rInfo &rsi, Serve
 	// try all indexes in the config
 	std::pair<std::string, ABlock> blockPair = block.getLocationBlockPair(rqi.queryPath);
 	std::vector<std::string> index = blockPair.second.getIndex();
-	std::string root = "./" + blockPair.second.getRootDirectory();
+	std::string root = blockPair.second.getRootDirectory();
 	std::ifstream file;
-	std::string path = (block.getRootDirectory() != blockPair.second.getRootDirectory() ? "." : root) + rqi.queryPath;
+	std::string path = root +"/"+ utils::splitPair(rqi.queryPath, blockPair.first).second;
 	size_t i;
 
 	if (rqi.queryPath.at(rqi.queryPath.length() - 1) == '/' && rqi.queryPath.length() > 1)
