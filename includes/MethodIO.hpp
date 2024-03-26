@@ -17,6 +17,9 @@
 #define POST 1
 #define DELETE 2
 
+#define MAX_URL_LENGTH 2048
+#define MAX_CONTENT_LENGTH 1000000
+
 class MethodIO;
 class MethodIO : public IOAdaptor
 {

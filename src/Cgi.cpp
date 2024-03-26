@@ -49,8 +49,7 @@ void Cgi::setEnv()
 	if (this->envVariables["REQUEST_METHOD"] == "POST")
 	{
 		this->envVariables["CONTENT_LENGTH"] = convert.str();
-		this->envVariables["CONTENT_TYPE"] = "application/x-www-form-urlencoded";
-		// this->envVariables["QUERY_STRING"] = this->query;
+		this->envVariables["CONTENT_TYPE"] = this->header["Content-Type"];
 	}
 
 	// std::cout << "	content length: " << this->envVariables["CONTENT_LENGTH"] << std::endl;
