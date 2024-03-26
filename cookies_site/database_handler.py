@@ -13,7 +13,7 @@ def generate_response(file_path, cookies=False):
 	file = open(file_path, "r")
 	
 	print("HTTP/1.1 200 OK")
-	print("Content-type: text/html\r\n\r\n")
+	print("Content-type: text/html")
 	if cookies == True:
 		cookie_string = generate_cookie()
 		print(cookie_string)
@@ -22,12 +22,12 @@ def generate_response(file_path, cookies=False):
 
 def generate_cookie():
 	session_id = generate_session_id(20)
-	file = open("cookies_site/session.txt", "a")
+	file = open("cookies_site/sessions.txt", "a")
 
 	# creates a session (entry) in the sessions database
 	file.write(f"{input_username},{session_id}\n")
 
-	return "Set-Cookie: sid=" + session_id + "; Expires=" + generate_expiry_date(1)
+	return ("Set-Cookie: sid=" + session_id + "; Expires=" + generate_expiry_date(1) + "\r\n")
 
 # by default it creates a expiry date in the form of a cookie string
 # - expires in N days
@@ -65,10 +65,25 @@ def authenticate_user():
 def create_new_user():
 	# creates new user if username does not exist
 	if input_username and input_password:
-		file = open("cookies_site/user_credentials.txt", "a")
-		file.write(f"{input_username},{input_password}\n")
+		if check_if_user_already_exists() == False:
+			file = open("cookies_site/user_credentials.txt", "a")
+			file.write(f"{input_username},{input_password}\n")
 
-		generate_response("cookies_site/login_page.html")
+			generate_response("cookies_site/login_page.html")
+		else:
+			generate_response("cookies_site/register_page.html")
+			print('<script>alert("User already exists. Try again.");</script>')
+
+
+def check_if_user_already_exists():
+	file = open("cookies_site/user_credentials.txt", "r")
+	for line in file:
+		username, password = line.strip().split(',')
+
+		if input_username == username:
+			return True
+	
+	return False
 
 #____________________________________________________________________
 form = cgi.FieldStorage()
@@ -93,6 +108,5 @@ elif request_method == "GET":
 		print('<script>alert("Wrong password. Try again.");</script>')
 	
 	elif auth_result == "User Not Found":
-		print("HTTP/1.1 200 OK")
-		print("Content-type: text/html\r\n\r\n")
+		generate_response("cookies_site/register_page.html")
 		print('<script>alert("User not found. Please register.");</script>')
