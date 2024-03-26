@@ -12,7 +12,7 @@
 	<div class="main">
 		<h1>Webserv Login</h1>
 		<h3>Enter your credentials</h3>
-		<form action="database_handler.py" method="post">
+		<form action="database_handler.py" method="get">
 			<label for="username">
 				Username:
 			</label>
@@ -20,7 +20,6 @@
 				id="username"
 				name="username"
 				placeholder="Enter your Username" required>
-
 			<label for="password">
 				Password:
 			</label>
@@ -37,23 +36,14 @@
 				</div>
 			</div>
 			<div class="wrap">
-				<button type="submit">
+				<button type="submit" onclick="setCookie(username, user, 1)">
 					Login
 				</button>
 			</div>
 		</form>
 	</div>
 
-	<script>		
-		function showPassword() {
-			var x = document.getElementById("password");
-			if (x.type === "password") {
-			x.type = "text";
-			} else {
-			x.type = "password";
-			}
-		}
-	</script>
+	<script src="login_page.js"></script>
 </body>
 
 </html>
