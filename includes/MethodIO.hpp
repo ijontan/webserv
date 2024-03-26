@@ -2,10 +2,8 @@
 #pragma once
 
 #include "ABlock.hpp"
-#include "Cgi.hpp"
 #include "IOAdaptor.hpp"
 #include "ServerBlock.hpp"
-#include "WebServer.hpp"
 
 #include <fstream>
 #include <map>
@@ -17,20 +15,14 @@
 #define POST 1
 #define DELETE 2
 
+class WebServer;
+
 class MethodIO;
 class MethodIO : public IOAdaptor
 {
+public:
+	struct rInfo;
 private:
-	struct rInfo
-	{
-		std::vector<std::string> request;
-		std::map<std::string, std::string> headers;
-		std::string body;
-		std::string port;
-		std::string path;
-		std::string queryPath;
-		std::string query;
-	};
 	std::string statusLine;
 	typedef std::string (*MethodPointer)(ServerBlock &, struct rInfo &, struct rInfo &);
 	// std::map<std::string, std::string> responseHeader;
@@ -55,9 +47,9 @@ private:
 	static std::string getType(std::string path);
 	static std::string getPath(std::string basePath, WebServer &ws, std::string &port);
 	static ServerBlock getServerBlock(MethodIO::rInfo &rqi, WebServer &ws);
-	static std::string readFile(MethodIO::rInfo &rqi, ServerBlock &block);
+	static std::string readFile(MethodIO::rInfo &rqi, MethodIO::rInfo &rsi, ServerBlock &block);
 	static void writeFile(MethodIO::rInfo &rqi, ServerBlock &block, bool createNew);
-	static std::ifstream *getFile(MethodIO::rInfo &rqi, WebServer &ws);
+	static std::ifstream *getFile(MethodIO::rInfo &rqi, MethodIO::rInfo &rsi, WebServer &ws);
 
 	// void setCode(int code) const;
 	static std::string getMessage(int code);
@@ -65,6 +57,16 @@ private:
 	std::string getUpdatedContent(int fd);
 
 public:
+	struct rInfo
+	{
+		std::vector<std::string> request;
+		std::map<std::string, std::string> headers;
+		std::string body;
+		std::string port;
+		std::string path;
+		std::string queryPath;
+		std::string query;
+	};
 	MethodIO(void);
 	~MethodIO(void);
 	MethodIO(const MethodIO &src);

@@ -1,5 +1,6 @@
 
 #include "IOAdaptor.hpp"
+#include "MethodIO.hpp"
 #include "ServerBlock.hpp"
 #include "colors.h"
 #include "webserv.h"
@@ -168,6 +169,7 @@ void WebServer::loop()
 
 		for (size_t i = 0; i < _pfds.size(); i++)
 		{
+			std::cout << "revents" << i << ": " << _pfds[i].revents << std::endl;
 			if (!(_pfds[i].revents & POLLIN))
 				continue;
 
@@ -204,10 +206,12 @@ void WebServer::handleIO(int index, std::map<int, std::string> &buffMap)
 {
 	char buff[4096];
 	int fd = _pfds[index].fd;
+	MethodIO::rInfo info;
 
 	buff[4095] = 0;
 	memset(buff, 0, sizeof(buff));
 	int bytes = recv(fd, buff, sizeof(buff) - 1, 0);
+	info = parseHeader(buff);
 	buffMap[fd] += buff;
 	if (bytes < 4095)
 	{
@@ -255,3 +259,17 @@ std::vector<ServerBlock> &WebServer::getServers()
 	return _serverBlocks;
 }
 
+MethodIO::rInfo WebServer::parseHeader(const char *buff)
+{
+	MethodIO::rInfo info;
+	std::string str(buff);
+	std::pair<std::string, std::string> headerBody = utils::splitPair(str, "\r\n\n");
+	std::vector<std::string> requestHeader = utils::split(headerBody.first, "\r\n");
+
+	info.request = utils::split(requestHeader[0], ' ');
+	for (size_t i = 1; i < requestHeader.size(); i++)
+		info.headers.insert(utils::splitPair(requestHeader[i], ": "));
+	info.body = headerBody.second;
+
+	return info;
+}
