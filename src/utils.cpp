@@ -33,8 +33,8 @@ std::vector<std::string> utils::split(std::string s, std::string delS)
 
 std::pair<std::string, std::string> utils::splitPair(std::string s, std::string delS)
 {
-	int end = s.find(delS);
-	if (end == -1)
+	size_t end = s.find(delS);
+	if (end == std::string::npos)
 		return std::pair<std::string, std::string>(s, "");
 	std::pair<std::string, std::string> pair(s.substr(0, end), s.substr(end + delS.size()));
 	return pair;
