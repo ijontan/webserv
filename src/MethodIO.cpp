@@ -258,7 +258,8 @@ std::string MethodIO::generateResponse(int code, MethodIO::rInfo &rsi)
 	for (it = rsi.headers.begin(); it != rsi.headers.end(); it++)
 		ss << it->first << ": " << it->second << "\r\n";
 	// if (rsi.request[1] == "GET")
-	ss << "\r\n" << rsi.body << "\r\n";
+	ss << "\r\n" << rsi.body;
+	std::cout << "RESPONSE: \n" << ss.str() << std::endl; 
 	return (ss.str());
 }
 
@@ -281,7 +282,6 @@ std::string MethodIO::getPath(std::string basePath, WebServer &ws, std::string &
 		root = it->getRootDirectory();
 		break;
 	}
-	// std::cout << root << std::endl;
 	return root + "/" + (basePath == "/" ? "index.html" : basePath);
 }
 
