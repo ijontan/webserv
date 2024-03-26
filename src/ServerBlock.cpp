@@ -54,7 +54,6 @@ void ServerBlock::addLocationBlock(std::string path, LocationBlock locationBlock
 
 std::pair<std::string, ABlock> ServerBlock::getLocationBlockPair(std::string basePath) const
 {
-	bool isdir = basePath.at(basePath.length() - 1) == '/';
 	std::map<std::string, LocationBlock>::const_iterator it = _locationBlocks.find(basePath);
 	if (it != _locationBlocks.end())
 		return *it;
@@ -62,12 +61,6 @@ std::pair<std::string, ABlock> ServerBlock::getLocationBlockPair(std::string bas
 	for (size_t i = pathToken.size(); i > 0; i--)
 	{
 		std::string possiblePath = utils::join(pathToken, "/", i);
-		it = _locationBlocks.find(possiblePath);
-		if (it != _locationBlocks.end())
-			return *it;
-		if (!isdir && pathToken.size() <= 1)
-			continue;
-		possiblePath = possiblePath + "/";
 		it = _locationBlocks.find(possiblePath);
 		if (it != _locationBlocks.end())
 			return *it;
