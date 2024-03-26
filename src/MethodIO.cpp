@@ -258,8 +258,7 @@ std::string MethodIO::generateResponse(int code, MethodIO::rInfo &rsi)
 	for (it = rsi.headers.begin(); it != rsi.headers.end(); it++)
 		ss << it->first << ": " << it->second << "\r\n";
 	// if (rsi.request[1] == "GET")
-	ss << "\r\n" << rsi.body;
-	std::cout << ss.str() << std::endl;
+	ss << "\r\n" << rsi.body << "\r\n";
 	return (ss.str());
 }
 
@@ -360,6 +359,19 @@ std::string MethodIO::readFile(MethodIO::rInfo &rqi, ServerBlock &block)
 			throw RequestException("File doesn't exist", 404);
 		if (access(ss.str().c_str(), R_OK))
 			throw RequestException("File read forbidden", 403);
+		// size_t dirPos = rqi.path.find_first_of("/");
+		std::string ext = rqi.path.substr(rqi.path.find_last_of(".") + 1);
+		if (access(ss.str().c_str(), R_OK) == 0 && (ext == "py" || ext == "cgi"))
+		{
+			Cgi cgi(rqi.request, rqi.headers, rqi.path, rqi.body, rqi.query);
+			if (cgi.runCgi() == 200)
+			{
+				rqi.exist = true;
+				return(cgi.getBody());
+			}
+			else
+				throw RequestException("Internal Server Error", 500);
+		}
 		file.open(ss.str().c_str());
 		ss.clear();
 	}
@@ -382,20 +394,22 @@ std::string MethodIO::readFile(MethodIO::rInfo &rqi, ServerBlock &block)
 			throw RequestException("File doesn't exist", 404);
 	}
 	std::ostringstream oss;
-
 	// NOTE: Tmp fix for cgi issue, please remove this code if new solution is found!
-	size_t dirPos = rqi.path.find_first_of("/");
-	std::string ext = rqi.path.substr(rqi.path.find_last_of(".") + 1);
-	if ((dirPos != std::string::npos) && (ext == "py" || ext == "cgi"))
-	{
-		Cgi cgi(rqi.request, rqi.headers, rqi.path, rqi.body, rqi.query);
-		if (cgi.runCgi() == 200)
-			oss << cgi.getBody();
-		else
-			throw RequestException("Internal Server Error", 500);
-	}
-	else
-		oss << file.rdbuf();
+	// size_t dirPos = rqi.path.find_first_of("/");
+	// std::string ext = rqi.path.substr(rqi.path.find_last_of(".") + 1);
+	// if ((dirPos != std::string::npos) && (ext == "py" || ext == "cgi"))
+	// {
+	// 	Cgi cgi(rqi.request, rqi.headers, rqi.path, rqi.body, rqi.query);
+	// 	if (cgi.runCgi() == 200)
+	// 	{
+	// 		rqi.exist = true;
+	// 		return(cgi.getBody());
+	// 	}
+	// 	else
+	// 		throw RequestException("Internal Server Error", 500);
+	// }
+	// else
+	oss << file.rdbuf();
 	// NOTE: Tmp fix for cgi issue, please remove this code if new solution is found!
 
 	return oss.str();

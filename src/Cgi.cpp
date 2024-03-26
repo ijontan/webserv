@@ -53,9 +53,9 @@ void Cgi::setEnv()
 		// this->envVariables["QUERY_STRING"] = this->query;
 	}
 
-	std::cout << "	content length: " << this->envVariables["CONTENT_LENGTH"] << std::endl;
-	std::cout << "	content type: " << this->envVariables["CONTENT_TYPE"] << std::endl;
-	std::cout << "	query: " << this->envVariables["QUERY_STRING"] << std::endl;
+	// std::cout << "	content length: " << this->envVariables["CONTENT_LENGTH"] << std::endl;
+	// std::cout << "	content type: " << this->envVariables["CONTENT_TYPE"] << std::endl;
+	// std::cout << "	query: " << this->envVariables["QUERY_STRING"] << std::endl;
 	
 	this->envV = (char **)calloc(sizeof(char *), this->envVariables.size() + 1);
 	std::map<std::string, std::string>::const_iterator it = this->envVariables.begin();
@@ -105,9 +105,11 @@ int Cgi::runCgi()
 	}
 	else
 	{
-		std::cout << this->query << std::endl;
-		if (write(fd[1], this->query.c_str() ,this->query.size()) == -1)
-			return (500);
+		if (this->request[0] == "POST")
+		{
+			if (write(fd[1], this->query.c_str() ,this->query.size()) == -1)
+				return (500);
+		}
 		waitpid(pid, &status, 0);
 		close(fd[1]);
 		int read_bytes;
@@ -119,7 +121,6 @@ int Cgi::runCgi()
 		{
 			memset(buf, 0, 2048);
 			read_bytes = read(fd[0], buf, 2048);
-			std::cout << buf << "\n";
 			outputString += buf;
 		}
 		close(fd[0]);

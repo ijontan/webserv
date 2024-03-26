@@ -32,9 +32,10 @@ int main()
 	inputString = trimString(queryString);
 	capitalizedString = capitalizeString(inputString);
 
+	// std::cout << "Content-type: text/html\r\n\r\n" << std::endl;
 	std::cout << "<html>" << std::endl;
 	std::cout << "<head>" << std::endl;
-	std::cout << "<meta charset=\"utf-8\">" << std::endl;
+	// std::cout << "<meta charset=\"utf-8\">" << std::endl;
 	std::cout << "<title>Result</title>" << std::endl;
 	std::cout << "</head>" << std::endl;
 	std::cout << "<body>" << std::endl;
