@@ -3,6 +3,7 @@
 #include "AutoIndex.hpp"
 #include "RequestException.hpp"
 #include "ServerBlock.hpp"
+#include "LocationBlock.hpp"
 #include "WebServer.hpp"
 #include "colors.h"
 #include "utils.hpp"
@@ -154,7 +155,6 @@ std::string MethodIO::getMessageToSend(WebServer &ws, std::string port)
 	MethodIO::rInfo requestInfo;
 	MethodIO::rInfo responseInfo;
 
-	std::cout << getRaw() << std::endl;
 	tokenize(getRaw(), requestInfo);
 	if (requestInfo.request[2] != "HTTP/1.1")
 		return generateResponse(400, responseInfo);
@@ -264,7 +264,6 @@ std::string MethodIO::generateResponse(int code, MethodIO::rInfo &rsi)
 		ss << it->first << ": " << it->second << "\r\n";
 	// if (rsi.request[1] == "GET")
 	ss << "\r\n" << rsi.body;
-	std::cout << "RESULT:  " << ss.str() << std::endl;
 	return (ss.str());
 }
 
@@ -293,7 +292,7 @@ std::string MethodIO::getPath(std::string basePath, WebServer &ws, std::string &
 std::ifstream *MethodIO::getFile(MethodIO::rInfo &rqi, WebServer &ws)
 {
 	std::vector<ServerBlock> servers = ws.getServers();
-	std::string root = "www";
+	std::string root = "www"; 
 	std::vector<std::string> index;
 	LocationBlock block;
 	std::string host = utils::splitPair(rqi.headers["Host"], ":").first;

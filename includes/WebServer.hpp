@@ -32,7 +32,7 @@ private:
 	WebServer &operator=(const WebServer &other);
 	void acceptConnection(int index, std::map<int, std::string> &buffMap, std::string port);
 	void handleIO(int index, std::map<int, std::string> &buffMap);
-	MethodIO::rInfo parseHeader(const char *buff);
+	MethodIO::rInfo parseHeader(std::string str);
 
 	std::vector<ServerBlock> _serverBlocks;
 	std::vector<struct pollfd> _pfds;

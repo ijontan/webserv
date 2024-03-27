@@ -69,6 +69,7 @@ public:
 		std::string path;
 		std::string queryPath;
 		std::string query;
+		bool exist;
 	};
 	MethodIO(void);
 	~MethodIO(void);

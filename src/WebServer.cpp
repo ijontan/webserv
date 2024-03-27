@@ -3,6 +3,7 @@
 #include "MethodIO.hpp"
 #include "ServerBlock.hpp"
 #include "colors.h"
+#include "utils.hpp"
 #include "webserv.h"
 #include <cstddef>
 #include <iostream>
@@ -10,6 +11,7 @@
 #include <ostream>
 #include <sstream>
 #include <string>
+#include <sys/poll.h>
 #include <utility>
 #include <vector>
 
@@ -169,8 +171,7 @@ void WebServer::loop()
 
 		for (size_t i = 0; i < _pfds.size(); i++)
 		{
-			std::cout << "revents" << i << ": " << _pfds[i].revents << std::endl;
-			if (!(_pfds[i].revents & POLLIN))
+			if (!(_pfds[i].revents & POLLIN || _pfds[i].revents & POLLOUT))
 				continue;
 
 			// find if socket exist
@@ -204,30 +205,45 @@ void WebServer::acceptConnection(int index, std::map<int, std::string> &buffMap,
 
 void WebServer::handleIO(int index, std::map<int, std::string> &buffMap)
 {
-	char buff[4096];
+	char buff[4096] = {0};
 	int fd = _pfds[index].fd;
-	MethodIO::rInfo info;
+	MethodIO::rInfo info = parseHeader(buffMap[fd]);
 
-	buff[4095] = 0;
-	memset(buff, 0, sizeof(buff));
-	int bytes = recv(fd, buff, sizeof(buff) - 1, 0);
-	info = parseHeader(buff);
-	buffMap[fd] += buff;
-	if (bytes < 4095)
+	if (_pfds[index].revents & POLLIN)
 	{
-		_io.receiveMessage(buffMap[fd]);
-		if (bytes >= 0)
+		std::map<std::string, std::string>::iterator it = info.headers.find("Content-Length");
+		std::cout << "hello" << (it == info.headers.end()) << std::endl;
+		if (it == info.headers.end() || info.body.length() < (size_t)utils::stoi(it->second))
 		{
-			std::string toSend = _io.getMessageToSend(*this, _connectionsPortMap[fd]);
-			send(fd, toSend.c_str(), toSend.length(), 0);
+			int bytes = recv(fd, buff, sizeof(buff) - 1, 0);
+			if (bytes < 0)
+				std::cerr << "recv error" << std::endl;
+			buffMap[fd] += buff;
+			if (bytes == 0)
+				return;
+		}
+		_pfds[index].events = POLLOUT;
+		_io.receiveMessage(buffMap[fd]);
+		std::cout << _io;
+		buffMap[fd] = _io.getMessageToSend(*this, _connectionsPortMap[fd]);
+	}
+	else if (_pfds[index].revents & POLLOUT)
+	{
+		std::string toSend = buffMap[fd];
+		if (toSend.length())
+		{
+			int byteSent = send(fd, toSend.c_str(), toSend.length(), 0);
+			std::cout << "byteSent: " << byteSent << std::endl;
+			buffMap[fd] = buffMap[fd].substr(byteSent);
 		}
 		else
-			std::cerr << "recv error: " << strerror(errno) << std::endl;
-		buffMap.erase(buffMap.find(fd));
-		_connectionsPortMap.erase(_connectionsPortMap.find(fd));
-		close(fd);
-		_io.receiveMessage("");
-		removePfd(index);
+		{
+			buffMap.erase(buffMap.find(fd));
+			_connectionsPortMap.erase(_connectionsPortMap.find(fd));
+			close(fd);
+			_io.receiveMessage("");
+			removePfd(index);
+		}
 	}
 }
 
@@ -258,10 +274,9 @@ std::vector<ServerBlock> &WebServer::getServers()
 	return _serverBlocks;
 }
 
-MethodIO::rInfo WebServer::parseHeader(const char *buff)
+MethodIO::rInfo WebServer::parseHeader(std::string str)
 {
 	MethodIO::rInfo info;
-	std::string str(buff);
 	std::pair<std::string, std::string> headerBody = utils::splitPair(str, "\r\n\n");
 	std::vector<std::string> requestHeader = utils::split(headerBody.first, "\r\n");
 
