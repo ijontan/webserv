@@ -1,5 +1,6 @@
 #include "MethodIO.hpp"
 #include "ABlock.hpp"
+#include "AutoIndex.hpp"
 #include "RequestException.hpp"
 #include "ServerBlock.hpp"
 #include "WebServer.hpp"
@@ -9,7 +10,6 @@
 #include <ctime>
 #include <fcntl.h>
 #include <fstream>
-#include <ios>
 #include <iostream>
 #include <map>
 #include <ostream>
@@ -18,6 +18,7 @@
 #include <unistd.h>
 #include <utility>
 #include <vector>
+#include "Cgi.hpp"
 
 const std::map<std::string, MethodIO::MethodPointer> MethodIO::methods = initMethodsMap();
 const std::map<int, std::string> MethodIO::errCodeMessages = initErrCodeMessages();
