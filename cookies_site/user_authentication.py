@@ -107,10 +107,10 @@ elif request_method == "GET":
 		file_text = file_text.replace("USERNAME", input_username)
 		generate_response(file_text, True)
 
-	# elif auth_result == "User Found, Wrong Password":
-	# 	generate_response("cookies_site/login_page.html", False)
-	# 	print('<script>alert("Wrong password. Try again.");</script>')
+	elif auth_result == "User Found, Wrong Password":
+		generate_response(get_file_text("cookies_site/login_page.html"))
+		print('<script>alert("Wrong password. Try again.");</script>')
 	
-	# elif auth_result == "User Not Found":
-	# 	generate_response("cookies_site/register_page.html")
-	# 	print('<script>alert("User not found. Please register.");</script>')
+	elif auth_result == "User Not Found":
+		generate_response(get_file_text("cookies_site/register_page.html"))
+		print('<script>alert("User not found. Please register.");</script>')

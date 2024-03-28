@@ -1,6 +1,8 @@
+#!/usr/bin/python3
 
 import cgi
 import os
+from user_authentication import generate_response, get_file_text
 
 def get_username_from_sessions_database(current_session_id):
 	file = open("cookies_site/databases/sessions.txt", "r")
@@ -10,28 +12,16 @@ def get_username_from_sessions_database(current_session_id):
 		if current_session_id == session_id:
 			return username
 
-def add_user_preference(current_user, info):
-	file = open("cookies_site/databases/user_info.txt", "a")
-	for line in file:
-		username, password = line.strip().split(',')
-
-		if current_user == username:
-		                                 
-			
-
 #_________________________________________________________________
-form = cgi.FieldStorage()
-
-input_color = str(form.getvalue('color'))
 
 request_method = os.environ.get("REQUEST_METHOD").upper()
-request_cookie = os.environ.get("HTTP_COOKIE").upper()
+request_cookie = os.environ.get("HTTP_COOKIE")
 
-
-if request_method == "POST":
-	if input_color:
-		# extracts the session_id: sid=...
-		session_id = request_cookie[4:-1]
-		current_user = get_username_from_sessions_database(session_id)
-
-		add_user_preference(current_user, input_color)
+if request_method == "GET":
+	# extracts the session_id: sid=...
+	session_id = request_cookie[4:]
+	current_user = get_username_from_sessions_database(session_id)
+ 
+	file_text = get_file_text("cookies_site/profile_page.html")
+	file_text = file_text.replace("USERNAME", current_user)
+	generate_response(file_text, False)

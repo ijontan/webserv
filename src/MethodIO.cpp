@@ -85,7 +85,6 @@ std::string MethodIO::getMethod(ServerBlock &block, MethodIO::rInfo &rqi, Method
 	rsi.body = readFile(rqi, block);
 	rsi.headers["Content-Type"] = getType(rqi.path);
 	rsi.headers["Content-Length"] = utils::to_string(rsi.body.size());
-	std::cout << "	rqipath: " << rqi.path << std::endl;
 	std::string ext = rqi.path.substr(rqi.path.find_last_of(".") + 1);
 	if (rqi.exist == true && (ext == "py" || ext == "cgi"))
 		return rsi.body;
