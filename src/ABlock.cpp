@@ -5,7 +5,7 @@
 
 ABlock::ABlock()
 	: _portsListeningOn(), _serverName(), _rootDirectory(""), _index(),
-	  _clientMaxBodySize(MAX_CONTENT_LENGTH), _errorPages(), _redirection()
+	  _clientMaxBodySize(0), _errorPages(), _redirection()
 {
 }
 

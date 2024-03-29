@@ -14,8 +14,10 @@
 				Last Name: <input type="text" id="lname" name="lname"><br>
 				<input type="submit">	
 			</form>
-			<form action="cgi-bin/upload.py" method="post" enctype="multipart/form-data"></form>
-				Upload: <input type="file" id="myFile" name="filename">
+		</div>
+		<div class="row">
+			<form action="../cgi-bin/upload.py" method="post" enctype="multipart/form-data">
+				Upload: <input type="file" name="file">
 				<input type="submit" value="Upload File">	
 			</form>
 		</div>

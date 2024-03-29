@@ -1,16 +1,25 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 import cgi
-import cgitb
-import os
-
-cgitb.enable()
 
 form = cgi.FieldStorage()
-ip = form.getvalue('ip')
-fileitem = form['file']
-data = fileitem.file.read()
-filename = os.path.basename(fileitem.filename)
-with open(filename, 'wb') as f:
-    f.write(data)
-print('Content-Type: text/plain\r\n\r\n', end='')
-print('Success!')
+print("Content-type: text/html\n")
+print("<html>")
+print("<head>")
+print("<title>File Upload Result</title>")
+print("</head>")
+print("<body>")
+if "file" in form:
+    fileitem = form["file"]
+    if fileitem.filename:
+        name = fileitem.filename
+        path = "uploads/" + name
+        data = fileitem.file.read()
+        with open(path, 'wb') as f:
+            f.write(data)
+        print("<h1>Success</h1>")
+    else:
+        print("<h1 class='error'>Error: No file was uploaded.</h1>")
+else:
+    print("<h1>Fail</h1>")
+print("</body>")
+print("</html>")

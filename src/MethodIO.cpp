@@ -1,6 +1,7 @@
 #include "MethodIO.hpp"
 #include "ABlock.hpp"
 #include "AutoIndex.hpp"
+#include "Cgi.hpp"
 #include "RequestException.hpp"
 #include "ServerBlock.hpp"
 #include "LocationBlock.hpp"
@@ -19,7 +20,6 @@
 #include <unistd.h>
 #include <utility>
 #include <vector>
-#include "Cgi.hpp"
 
 const std::map<std::string, MethodIO::MethodPointer> MethodIO::methods = initMethodsMap();
 const std::map<int, std::string> MethodIO::errCodeMessages = initErrCodeMessages();
@@ -60,6 +60,9 @@ std::map<std::string, std::string> MethodIO::initContentTypes()
 	m["css"] = "text/css";
 	m["js"] = "text/javascript";
 	m["png"] = "image/png";
+	m["ico"] = "image/ico";
+	m["cpp"] = "text/cpp";
+
 	return m;
 }
 
@@ -154,18 +157,18 @@ std::string MethodIO::getMessageToSend(WebServer &ws, std::string port)
 {
 	MethodIO::rInfo requestInfo;
 	MethodIO::rInfo responseInfo;
-
-	tokenize(getRaw(), requestInfo);
-	if (requestInfo.request[2] != "HTTP/1.1")
-		return generateResponse(400, responseInfo);
 	ServerBlock block;
+
 	try
 	{
+		tokenize(getRaw(), requestInfo);
+		if (requestInfo.request[2] != "HTTP/1.1")
+			return generateResponse(400, responseInfo);
 		requestInfo.port = port;
 		block = getServerBlock(requestInfo, ws);
 		// std::cout << getRaw() << requestInfo.request[1] << std::endl;
-		std::string path = getPath(requestInfo.request[1], ws, port);
-		requestInfo.path = path;
+		// std::string path = getPath(requestInfo.request[1], ws, port);
+		// requestInfo.path = path;
 		// std::string test = path.substr(path.find_last_of(".") + 1);
 
 		// check if extension is python (if possible change this so it detects if script is from cgi folder)
@@ -229,17 +232,6 @@ std::string MethodIO::getDate()
 	return (dateStr);
 }
 
-std::string MethodIO::getLen(std::ifstream &file)
-{
-	std::stringstream ss;
-
-	file.seekg(0, std::ios::end);
-	std::streampos fileSize = file.tellg();
-	file.seekg(0, std::ios::beg);
-	ss << fileSize;
-	return ss.str();
-}
-
 std::string MethodIO::getType(std::string path)
 {
 	std::string p;
@@ -250,7 +242,7 @@ std::string MethodIO::getType(std::string path)
 		extension = "txt";
 	std::map<std::string, std::string>::const_iterator it = contentTypes.find(extension);
 	if (it == contentTypes.end())
-		return "text/html";
+		return "text/plain";
 	return it->second;
 }
 
@@ -267,69 +259,28 @@ std::string MethodIO::generateResponse(int code, MethodIO::rInfo &rsi)
 	return (ss.str());
 }
 
-std::string MethodIO::getPath(std::string basePath, WebServer &ws, std::string &port)
-{
-	std::vector<ServerBlock> servers = ws.getServers();
-	std::string root = "www";
-
-	for (std::vector<ServerBlock>::iterator it = servers.begin(); it != servers.end(); it++)
-	{
-		std::vector<std::string> ports = it->getPortsListeningOn();
-		bool found = false;
-		for (size_t i = 0; i < ports.size(); i++)
-		{
-			if (ports[i] == port)
-				found = true;
-		}
-		if (!found)
-			continue;
-		root = it->getRootDirectory();
-		break;
-	}
-	return root + "/" + (basePath == "/" ? "index.html" : basePath);
-}
-
-std::ifstream *MethodIO::getFile(MethodIO::rInfo &rqi, WebServer &ws)
-{
-	std::vector<ServerBlock> servers = ws.getServers();
-	std::string root = "www"; 
-	std::vector<std::string> index;
-	LocationBlock block;
-	std::string host = utils::splitPair(rqi.headers["Host"], ":").first;
-
-	// loop through all server to check if it's listening on the port requested
-	for (std::vector<ServerBlock>::iterator it = servers.begin(); it != servers.end(); it++)
-	{
-		if (!utils::find(it->getPortsListeningOn(), rqi.port) || !utils::find(it->getServerName(), host))
-			continue;
-		root = it->getRootDirectory();
-		index = block.getIndex();
-		break;
-	}
-
-	// try all indexes in the config
-	std::ifstream *file = new std::ifstream();
-	size_t i;
-	for (i = 0; i < index.size(); i++)
-	{
-		std::stringstream ss;
-		ss << root << "/" << index[i];
-		file->open(ss.str().c_str());
-		if (!file->fail())
-			break;
-		file->close();
-	}
-	// try relative path from request
-	if (i == index.size())
-	{
-		std::stringstream ss;
-		ss << root << rqi.request[1];
-		file->open(ss.str().c_str());
-	}
-
-	// return the pointer to opened file
-	return file;
-}
+// std::string MethodIO::getPath(std::string basePath, WebServer &ws, std::string &port)
+// {
+// 	std::vector<ServerBlock> servers = ws.getServers();
+// 	std::string root = "www";
+//
+// 	for (std::vector<ServerBlock>::iterator it = servers.begin(); it != servers.end(); it++)
+// 	{
+// 		std::vector<std::string> ports = it->getPortsListeningOn();
+// 		bool found = false;
+// 		for (size_t i = 0; i < ports.size(); i++)
+// 		{
+// 			if (ports[i] == port)
+// 				found = true;
+// 		}
+// 		if (!found)
+// 			continue;
+// 		root = it->getRootDirectory();
+// 		break;
+// 	}
+// 	// std::cout << root << std::endl;
+// 	return root + "/" + (basePath == "/" ? "index.html" : basePath);
+// }
 
 ServerBlock MethodIO::getServerBlock(MethodIO::rInfo &rqi, WebServer &ws)
 {
@@ -350,6 +301,8 @@ std::string MethodIO::readFile(MethodIO::rInfo &rqi, ServerBlock &block)
 	std::vector<std::string> index = blockPair.second.getIndex();
 	std::string root = blockPair.second.getRootDirectory();
 	std::ifstream file;
+	std::string path = root + "/" + utils::splitPair(rqi.queryPath, blockPair.first).second;
+	std::cout << "block path: " << blockPair.first << std::endl;
 	size_t i;
 
 	if (rqi.queryPath != blockPair.first)
@@ -482,6 +435,8 @@ void MethodIO::tokenize(std::string s, MethodIO::rInfo &rsi) const
 	rsi.request = utils::split(requestHeader[0], ' ');
 	for (size_t i = 1; i < requestHeader.size(); i++)
 		rsi.headers.insert(utils::splitPair(requestHeader[i], ": "));
+	if (!rsi.request.size())
+		throw RequestException("Bad Request", 400);
 	if (rsi.request[0] == "GET")
 	{
 		size_t q = rsi.request[1].find_first_of("?");
@@ -502,4 +457,6 @@ void MethodIO::tokenize(std::string s, MethodIO::rInfo &rsi) const
 	}
 	else 
 		rsi.queryPath = rsi.request[1];
+	if (rsi.queryPath.back() == '/' && rsi.queryPath != "/")
+		rsi.queryPath = rsi.queryPath.substr(0, rsi.queryPath.size() - 1);
 }

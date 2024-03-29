@@ -3,6 +3,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <iostream>
 
 std::vector<std::string> utils::split(std::string s, char c)
 {
