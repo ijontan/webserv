@@ -212,7 +212,6 @@ void WebServer::handleIO(int index, std::map<int, std::string> &buffMap)
 	if (_pfds[index].revents & POLLIN)
 	{
 		std::map<std::string, std::string>::iterator it = info.headers.find("Content-Length");
-		std::cout << "hello" << (it == info.headers.end()) << std::endl;
 		if (it == info.headers.end() || info.body.length() < (size_t)utils::stoi(it->second))
 		{
 			int bytes = recv(fd, buff, sizeof(buff) - 1, 0);

@@ -1,6 +1,7 @@
 #include "MethodIO.hpp"
 #include "ABlock.hpp"
 #include "AutoIndex.hpp"
+#include "Cgi.hpp"
 #include "RequestException.hpp"
 #include "ServerBlock.hpp"
 #include "WebServer.hpp"
@@ -18,7 +19,6 @@
 #include <unistd.h>
 #include <utility>
 #include <vector>
-#include "Cgi.hpp"
 
 const std::map<std::string, MethodIO::MethodPointer> MethodIO::methods = initMethodsMap();
 const std::map<int, std::string> MethodIO::errCodeMessages = initErrCodeMessages();
@@ -56,6 +56,8 @@ std::map<std::string, std::string> MethodIO::initContentTypes()
 	m["html"] = "text/html";
 	m["css"] = "text/css";
 	m["js"] = "text/javascript";
+	m["png"] = "image/png";
+	m["ico"] = "image/ico";
 	m["cpp"] = "text/cpp";
 
 	return m;
@@ -119,13 +121,13 @@ std::string MethodIO::getMessageToSend(WebServer &ws, std::string port)
 {
 	MethodIO::rInfo requestInfo;
 	MethodIO::rInfo responseInfo;
-
-	tokenize(getRaw(), requestInfo);
-	if (requestInfo.request[2] != "HTTP/1.1")
-		return generateResponse(400, responseInfo);
 	ServerBlock block;
+
 	try
 	{
+		tokenize(getRaw(), requestInfo);
+		if (requestInfo.request[2] != "HTTP/1.1")
+			return generateResponse(400, responseInfo);
 		requestInfo.port = port;
 		block = getServerBlock(requestInfo, ws);
 		// std::cout << getRaw() << requestInfo.request[1] << std::endl;
@@ -194,17 +196,6 @@ std::string MethodIO::getDate()
 	return (dateStr);
 }
 
-// std::string MethodIO::getLen(std::ifstream &file)
-// {
-// 	std::stringstream ss;
-//
-// 	file.seekg(0, std::ios::end);
-// 	std::streampos fileSize = file.tellg();
-// 	file.seekg(0, std::ios::beg);
-// 	ss << fileSize;
-// 	return ss.str();
-// }
-
 std::string MethodIO::getType(std::string path)
 {
 	std::string p;
@@ -215,7 +206,7 @@ std::string MethodIO::getType(std::string path)
 		extension = "txt";
 	std::map<std::string, std::string>::const_iterator it = contentTypes.find(extension);
 	if (it == contentTypes.end())
-		return "text/html";
+		return "text/plain";
 	return it->second;
 }
 
@@ -254,49 +245,6 @@ std::string MethodIO::generateResponse(int code, MethodIO::rInfo &rsi)
 // 	return root + "/" + (basePath == "/" ? "index.html" : basePath);
 // }
 
-// std::ifstream *MethodIO::getFile(MethodIO::rInfo &rqi, WebServer &ws)
-// {
-// 	std::vector<ServerBlock> servers = ws.getServers();
-// 	std::string root = "www";
-// 	std::vector<std::string> index;
-// 	LocationBlock block;
-// 	std::string host = utils::splitPair(rqi.headers["Host"], ":").first;
-//
-// 	// loop through all server to check if it's listening on the port requested
-// 	for (std::vector<ServerBlock>::iterator it = servers.begin(); it != servers.end(); it++)
-// 	{
-// 		if (!utils::find(it->getPortsListeningOn(), rqi.port) || !utils::find(it->getServerName(), host))
-// 			continue;
-// 		root = it->getRootDirectory();
-// 		index = block.getIndex();
-// 		break;
-// 	}
-//
-// 	// try all indexes in the config
-// 	std::ifstream *file = new std::ifstream();
-// 	size_t i;
-// 	for (i = 0; i < index.size(); i++)
-// 	{
-// 		std::stringstream ss;
-// 		ss << root << "/" << index[i];
-// 		file->open(ss.str().c_str());
-// 		if (!file->fail())
-// 			break;
-// 		file->close();
-// 	}
-// 	// try relative path from request
-// 	if (i == index.size())
-// 	{
-// 		std::stringstream ss;
-// 		ss << root << rqi.request[1];
-// 		std::cout << ss.str() << std::endl;
-// 		file->open(ss.str().c_str());
-// 	}
-//
-// 	// return the pointer to opened file
-// 	return file;
-// }
-
 ServerBlock MethodIO::getServerBlock(MethodIO::rInfo &rqi, WebServer &ws)
 {
 	std::vector<ServerBlock> servers = ws.getServers();
@@ -316,7 +264,7 @@ std::string MethodIO::readFile(MethodIO::rInfo &rqi, MethodIO::rInfo &rsi, Serve
 	std::vector<std::string> index = blockPair.second.getIndex();
 	std::string root = blockPair.second.getRootDirectory();
 	std::ifstream file;
-	std::string path = root +"/"+ utils::splitPair(rqi.queryPath, blockPair.first).second;
+	std::string path = root + "/" + utils::splitPair(rqi.queryPath, blockPair.first).second;
 	std::cout << "block path: " << blockPair.first << std::endl;
 	size_t i;
 
@@ -432,6 +380,8 @@ void MethodIO::tokenize(std::string s, MethodIO::rInfo &rsi) const
 	for (size_t i = 1; i < requestHeader.size(); i++)
 		rsi.headers.insert(utils::splitPair(requestHeader[i], ": "));
 	rsi.body = headerBody.second;
+	if (!rsi.request.size())
+		throw RequestException("bad request", 400);
 	std::pair<std::string, std::string> pair = utils::splitPair(rsi.request[1], "?");
 	rsi.query = pair.second;
 	rsi.queryPath = pair.first;
