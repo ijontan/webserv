@@ -340,9 +340,6 @@ bool Parser::isValidSemicolonFormat(std::string &line)
 	size_t semicolonPos = line.find(';');
 	unsigned int lineLen = line.length();
 
-	std::cout << "	line: " << line << std::endl;
-	std::cout << "	SemicolonPos: " << semicolonPos << std::endl;
-	std::cout << "	LineLen: " << lineLen << std::endl;
 	if (semicolonPos == lineLen - 1 && semicolonPos != std::string::npos)
 		return (true);
 	return (false);

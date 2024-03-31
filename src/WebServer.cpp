@@ -157,8 +157,8 @@ void WebServer::loop()
 {
 	std::map<int, std::string> buffMap;
 
-	for (size_t j = 0; j < _serverBlocks.size(); j++)
-		std::cout << _serverBlocks[j];
+	// for (size_t j = 0; j < _serverBlocks.size(); j++)
+	// 	std::cout << _serverBlocks[j];
 
 	for (;;)
 	{
