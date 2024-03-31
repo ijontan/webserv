@@ -59,9 +59,9 @@ private:
 	static std::string getType(std::string path);
 	static std::string getPath(std::string basePath, WebServer &ws, std::string &port);
 	static ServerBlock getServerBlock(MethodIO::rInfo &rqi, WebServer &ws);
-	static std::string readFile(MethodIO::rInfo &rqi, ServerBlock &block);
+	static std::string readFile(MethodIO::rInfo &rqi, MethodIO::rInfo &rsi, ServerBlock &block);
 	static void writeFile(MethodIO::rInfo &rqi, ServerBlock &block, bool createNew);
-	static std::ifstream *getFile(MethodIO::rInfo &rqi, WebServer &ws);
+	static std::ifstream *getFile(MethodIO::rInfo &rqi, MethodIO::rInfo &rsi, WebServer &ws);
 
 	// void setCode(int code) const;
 	static std::string getMessage(int code);
