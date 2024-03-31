@@ -104,7 +104,7 @@ int Cgi::runCgi()
 		close(fd[0]);
 		// dup2(fd[1], STDERR_FILENO);
 		execve(this->path.c_str(), av, this->envV);
-		std::cerr << "error: " << errno << std::endl;
+		// std::cerr << "error: " << errno << std::endl;
 		exit(-1);
 	}
 	else

@@ -2,12 +2,9 @@
 #pragma once
 
 #include "ABlock.hpp"
-#include "Cgi.hpp"
 #include "IOAdaptor.hpp"
 #include "ServerBlock.hpp"
-#include "WebServer.hpp"
 
-#include <fstream>
 #include <map>
 #include <string>
 #include <unistd.h>
@@ -19,22 +16,14 @@
 
 #define MAX_URL_LENGTH 2048
 #define MAX_CONTENT_LENGTH 1000000
+class WebServer;
 
 class MethodIO;
 class MethodIO : public IOAdaptor
 {
+public:
+	struct rInfo;
 private:
-	struct rInfo
-	{
-		std::vector<std::string> request;
-		std::map<std::string, std::string> headers;
-		std::string body;
-		std::string port;
-		std::string path;
-		std::string queryPath;
-		std::string query;
-		bool exist;
-	};
 	std::string statusLine;
 	typedef std::string (*MethodPointer)(ServerBlock &, struct rInfo &, struct rInfo &);
 	// std::map<std::string, std::string> responseHeader;
@@ -55,7 +44,6 @@ private:
 	static std::string putMethod(ServerBlock &block, MethodIO::rInfo &rqi, MethodIO::rInfo &rsi);
 
 	static std::string getDate();
-	static std::string getLen(std::ifstream &file);
 	static std::string getType(std::string path);
 	static std::string getPath(std::string basePath, WebServer &ws, std::string &port);
 	static ServerBlock getServerBlock(MethodIO::rInfo &rqi, WebServer &ws);
@@ -69,6 +57,17 @@ private:
 	std::string getUpdatedContent(int fd);
 
 public:
+	struct rInfo
+	{
+		std::vector<std::string> request;
+		std::map<std::string, std::string> headers;
+		std::string body;
+		std::string port;
+		std::string path;
+		std::string queryPath;
+		std::string query;
+		bool exist;
+	};
 	MethodIO(void);
 	~MethodIO(void);
 	MethodIO(const MethodIO &src);

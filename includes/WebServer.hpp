@@ -2,7 +2,7 @@
 #pragma once
 
 #include "IOAdaptor.hpp"
-#include "Parser.hpp"
+#include "MethodIO.hpp"
 #include "ServerBlock.hpp"
 #include <map>
 #include <string>
@@ -10,6 +10,7 @@
 
 class Parser;
 class IOAdaptor;
+class MethodIO;
 
 class WebServer
 {
@@ -31,6 +32,7 @@ private:
 	WebServer &operator=(const WebServer &other);
 	void acceptConnection(int index, std::map<int, std::string> &buffMap, std::string port);
 	void handleIO(int index, std::map<int, std::string> &buffMap);
+	MethodIO::rInfo parseHeader(std::string str);
 
 	std::vector<ServerBlock> _serverBlocks;
 	std::vector<struct pollfd> _pfds;
