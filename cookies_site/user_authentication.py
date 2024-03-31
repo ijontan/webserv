@@ -4,6 +4,7 @@ import cgi
 import os
 import random
 import string
+import sys
 from datetime import datetime, timedelta, timezone
 
 def generate_cookie():
@@ -71,9 +72,6 @@ def create_new_user():
 			file.write(f"{input_username},{input_password}\n")
 
 			generate_response(get_file_text("cookies_site/login_page.html"))
-		else:
-			generate_response(get_file_text("cookies_site/register_page.html"))
-			print('<script>alert("User already exists. Try again.");</script>')
 
 
 def check_if_user_already_exists():
@@ -106,11 +104,3 @@ elif request_method == "GET":
 		file_text = get_file_text("cookies_site/landing_page.html")
 		file_text = file_text.replace("USERNAME", input_username)
 		generate_response(file_text, True)
-
-	elif auth_result == "User Found, Wrong Password":
-		generate_response(get_file_text("cookies_site/login_page.html"))
-		print('<script>alert("Wrong password. Try again.");</script>')
-	
-	elif auth_result == "User Not Found":
-		generate_response(get_file_text("cookies_site/register_page.html"))
-		print('<script>alert("User not found. Please register.");</script>')

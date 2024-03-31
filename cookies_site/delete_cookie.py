@@ -24,7 +24,7 @@ if request_method == "GET":
 	# extracts the session_id: sid=...
 	session_id = request_cookie[4:]
 	delete_session(session_id)
- 
+
 	print("HTTP/1.1 200 OK")
 	print("Content-type: text/html")
 	print("Set-Cookie: sid=" + session_id + "; Expires=" + generate_expiry_date(0))
