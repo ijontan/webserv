@@ -2,16 +2,18 @@
 <html>
 
 <head>
-	<title>Webserv Login</title>
+	<title>Webserv Registration</title>
 	<link rel="stylesheet"
-		href="/cookies_site/register_page.css">
+		href="/cookies_site/style.css">
 </head>
 
 <body>
 	<div class="main">
 		<h1>Webserv Registration</h1>
 		<h3>Enter your credentials</h3>
-		<form action="" method="get">
+		<!-- slash infront = starts from root url (localhost:8080/) -->
+		<!-- no slash infront = will append to localhost:8080/cookies_site/ -->
+		<form action="/cookies_site/user_authentication.py" method="post">
 			<label for="username">
 				Username:
 			</label>
@@ -36,15 +38,23 @@
 				</div>
 			</div>
 			<div class="wrap">
-				<button type="submit"
-						onclick="solve()">
-					Submit
+				<button type="submit">
+					Register
 				</button>
 			</div>
 		</form>
 	</div>
 
-	<script src="utils.js"></script>
+	<script>
+		function showPassword() {
+			var x = document.getElementById("password");
+			if (x.type === "password") {
+				x.type = "text";
+			} else {
+				x.type = "password";
+			}
+		}
+	</script>
 </body>
 
 </html>

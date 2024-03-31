@@ -14,6 +14,8 @@
 #define POST 1
 #define DELETE 2
 
+#define MAX_URL_LENGTH 2048
+#define MAX_CONTENT_LENGTH 1000000
 class WebServer;
 
 class MethodIO;
@@ -61,6 +63,7 @@ public:
 		std::string path;
 		std::string queryPath;
 		std::string query;
+		bool exist;
 	};
 	MethodIO(void);
 	~MethodIO(void);

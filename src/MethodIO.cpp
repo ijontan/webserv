@@ -1,6 +1,7 @@
 #include "MethodIO.hpp"
 #include "ABlock.hpp"
 #include "AutoIndex.hpp"
+#include "LocationBlock.hpp"
 #include "Cgi.hpp"
 #include "RequestException.hpp"
 #include "ServerBlock.hpp"
@@ -41,10 +42,12 @@ std::map<int, std::string> MethodIO::initErrCodeMessages()
 	m[200] = "OK";
 	m[201] = "Created";
 	m[204] = "No Content";
+	m[303] = "See Other";
 	m[400] = "Bad Request";
 	m[403] = "Forbidden Error";
 	m[404] = "Not Found";
 	m[409] = "Conflict";
+	m[415] = "Unsupported Media Type";
 	m[500] = "Internal Server Error";
 	return m;
 }
@@ -86,6 +89,9 @@ std::string MethodIO::getMethod(ServerBlock &block, MethodIO::rInfo &rqi, Method
 {
 	rsi.body = readFile(rqi, rsi, block);
 	rsi.headers["Content-Length"] = utils::to_string(rsi.body.size());
+	std::string ext = rqi.path.substr(rqi.path.find_last_of(".") + 1);
+	if (rqi.exist == true && (ext == "py" || ext == "cgi"))
+		return rsi.body;
 	return (generateResponse(200, rsi));
 }
 
@@ -108,12 +114,41 @@ std::string MethodIO::delMethod(ServerBlock &block, MethodIO::rInfo &rqi, Method
 std::string MethodIO::postMethod(ServerBlock &block, MethodIO::rInfo &rqi, MethodIO::rInfo &rsi)
 {
 	writeFile(rqi, block, true);
-	return generateResponse(204, rsi);
+	if (rqi.exist == true)
+	{
+		std::ostringstream oss;
+		size_t dirPos = rqi.path.find_first_of("/");
+		std::string ext = rqi.path.substr(rqi.path.find_last_of(".") + 1);
+		std::string input;
+		rsi.headers["Content-Type"] = getType(rqi.path);
+		rsi.headers["Content-Length"] = utils::to_string(rqi.query.size());
+		// std::cout << "SIZE: " << rsi.headers["Content-Length"] << std::endl;
+		if ((dirPos != std::string::npos) && (ext == "py"))
+		{
+			// if (rsi.headers["Content-Type"] != "application/x-www-form-urlencoded" && rsi.headers["Content-Type"] != "multipart/form-data" && rsi.headers["Content-Type"] != "text/plain")
+			// 	return generateResponse(415, rsi);
+			Cgi cgi(rqi.request, rqi.headers, rqi.path, rqi.body, rqi.query);
+			if (cgi.runCgi() == 200)
+			{
+				rqi.exist = true;
+				rsi.body = cgi.getBody();
+				return rsi.body;
+			}
+			else
+				throw RequestException("Internal Server Error", 500);
+		}
+		else {
+			return generateResponse(409, rsi);
+		}
+	}
+	return generateResponse(200, rsi);
 }
 
 std::string MethodIO::putMethod(ServerBlock &block, MethodIO::rInfo &rqi, MethodIO::rInfo &rsi)
 {
 	writeFile(rqi, block, false);
+	rsi.headers["Content-Type"] = getType(rqi.path);
+	rsi.headers["Content-Length"] = utils::to_string(rqi.body.size());
 	return generateResponse(204, rsi);
 }
 
@@ -135,22 +170,23 @@ std::string MethodIO::getMessageToSend(WebServer &ws, std::string port)
 		// path = requestInfo.path;
 		// std::string test = path.substr(path.find_last_of(".") + 1);
 
-		// std::cout << requestInfo.request[1] << std::endl;
-		// std::cout << "	Path: " << path << std::endl;
-		// std::cout << "	Test: " << test << std::endl;
 		// check if extension is python (if possible change this so it detects if script is from cgi folder)
-		// if (test.compare("py") == 0)
+		// size_t dirPos = requestInfo.queryPath.find_first_of("/");
+		// std::string ext = requestInfo.queryPath.substr(requestInfo.queryPath.find_last_of(".") + 1);
+		// if ((dirPos != std::string::npos) && (ext == "py" || ext == "cgi"))
 		// {
-		// 	std::cout << "test" << std::endl;
-		// 	// Cgi constructor
-		// 	Cgi cgi(requestInfo.request, requestInfo.headers, requestInfo.body);
-		// 	// adds output (runCgi returns a string which is the python script output) into body
+		// 	Cgi cgi(requestInfo.request, requestInfo.headers, requestInfo.queryPath, requestInfo.body, requestInfo.query);
 		// 	if (cgi.runCgi() == 200)
+		// 	{
+		// 		std::cout << cgi.getBody() << std::endl;
 		// 		responseInfo.body.append(cgi.getBody());
+		// 	}
 		// 	else
 		// 		generateResponse(500, responseInfo);
 
 		// }
+		// else
+		// 	generateResponse(500, responseInfo);
 		std::string method = requestInfo.request[0];
 		responseInfo.headers["Date"] = getDate();
 		std::map<std::string, MethodPointer>::const_iterator it = methods.find(method);
@@ -218,7 +254,9 @@ std::string MethodIO::generateResponse(int code, MethodIO::rInfo &rsi)
 	ss << "HTTP/1.1 " << code << " " << getMessage(code) << "\r\n";
 	for (it = rsi.headers.begin(); it != rsi.headers.end(); it++)
 		ss << it->first << ": " << it->second << "\r\n";
+	// if (rsi.request[1] == "GET")
 	ss << "\r\n" << rsi.body;
+	std::cout << "RESULT:  " << ss.str() << std::endl;
 	return (ss.str());
 }
 
@@ -282,6 +320,19 @@ std::string MethodIO::readFile(MethodIO::rInfo &rqi, MethodIO::rInfo &rsi, Serve
 			throw RequestException("File doesn't exist", 404);
 		if (access(path.c_str(), R_OK))
 			throw RequestException("File read forbidden", 403);
+		// size_t dirPos = rqi.path.find_first_of("/");
+		std::string ext = rqi.path.substr(rqi.path.find_last_of(".") + 1);
+		if (access(path.c_str(), R_OK) == 0 && (ext == "py" || ext == "cgi"))
+		{
+			Cgi cgi(rqi.request, rqi.headers, rqi.path, rqi.body, rqi.query);
+			if (cgi.runCgi() == 200)
+			{
+				rqi.exist = true;
+				return(cgi.getBody());
+			}
+			else
+				throw RequestException("Internal Server Error", 500);
+		}
 		file.open(path.c_str());
 	}
 	if (!file.is_open())
@@ -292,7 +343,6 @@ std::string MethodIO::readFile(MethodIO::rInfo &rqi, MethodIO::rInfo &rsi, Serve
 			std::stringstream ss;
 			ss << root << "/" << index[i];
 			rqi.path = ss.str();
-			std::cout << "path2 : " << rqi.path << std::endl;
 			if (!access(ss.str().c_str(), F_OK) && access(ss.str().c_str(), R_OK))
 				throw RequestException("File read forbidden", 403);
 			file.open(ss.str().c_str());
@@ -304,21 +354,24 @@ std::string MethodIO::readFile(MethodIO::rInfo &rqi, MethodIO::rInfo &rsi, Serve
 			throw RequestException("File doesn't exist", 404);
 	}
 	std::ostringstream oss;
-	rsi.headers["Content-Type"] = getType(rqi.path);
 
+	rsi.headers["Content-Type"] = getType(rqi.path);
 	// NOTE: Tmp fix for cgi issue, please remove this code if new solution is found!
-	size_t dirPos = rqi.path.find_first_of("/");
-	std::string ext = rqi.path.substr(rqi.path.find_last_of(".") + 1);
-	if ((dirPos != std::string::npos) && (ext == "py" || ext == "cgi"))
-	{
-		Cgi cgi(rqi.request, rqi.headers, rqi.path, rqi.body, rqi.query);
-		if (cgi.runCgi() == 200)
-			oss << cgi.getBody();
-		else
-			throw RequestException("Internal Server Error", 500);
-	}
-	else
-		oss << file.rdbuf();
+	// size_t dirPos = rqi.path.find_first_of("/");
+	// std::string ext = rqi.path.substr(rqi.path.find_last_of(".") + 1);
+	// if ((dirPos != std::string::npos) && (ext == "py" || ext == "cgi"))
+	// {
+	// 	Cgi cgi(rqi.request, rqi.headers, rqi.path, rqi.body, rqi.query);
+	// 	if (cgi.runCgi() == 200)
+	// 	{
+	// 		rqi.exist = true;
+	// 		return(cgi.getBody());
+	// 	}
+	// 	else
+	// 		throw RequestException("Internal Server Error", 500);
+	// }
+	// else
+	oss << file.rdbuf();
 	// NOTE: Tmp fix for cgi issue, please remove this code if new solution is found!
 
 	return oss.str();
@@ -327,20 +380,28 @@ std::string MethodIO::readFile(MethodIO::rInfo &rqi, MethodIO::rInfo &rsi, Serve
 void MethodIO::writeFile(MethodIO::rInfo &rqi, ServerBlock &block, bool createNew)
 {
 	// try all indexes in the config
-	std::pair<std::string, ABlock> blockPair = block.getLocationBlockPair(rqi.request[1]);
+	std::pair<std::string, ABlock> blockPair = block.getLocationBlockPair(rqi.queryPath);
 	std::vector<std::string> index = blockPair.second.getIndex();
-	std::string root = blockPair.second.getRootDirectory() + blockPair.first;
+	std::string root = blockPair.second.getRootDirectory();
 	std::ofstream file;
 	size_t i;
-
+	std::stringstream ss;
+	rqi.exist = false;
 	if (rqi.request[1] != blockPair.first)
 	{
-		std::stringstream ss;
-		ss << root << rqi.request[1];
+		std::pair<std::string, std::string> pair = utils::splitPair(rqi.queryPath, blockPair.first);
+
+		ss << "./" << root << "/" << pair.second;
 		rqi.path = ss.str();
 		if (access(ss.str().c_str(), F_OK) && !createNew)
 			throw RequestException("File doesn't exist", 404);
-		std::cout << "path: " << rqi.path << std::endl;
+		if (access(ss.str().c_str(), W_OK))
+			throw RequestException("File write forbidden", 403);
+		if (access(ss.str().c_str(), F_OK) == 0 && createNew)
+		{
+			rqi.exist = true;
+			return;
+		}
 		file.open(ss.str().c_str());
 		ss.clear();
 	}
@@ -379,11 +440,34 @@ void MethodIO::tokenize(std::string s, MethodIO::rInfo &rsi) const
 	rsi.request = utils::split(requestHeader[0], ' ');
 	for (size_t i = 1; i < requestHeader.size(); i++)
 		rsi.headers.insert(utils::splitPair(requestHeader[i], ": "));
-	rsi.body = headerBody.second;
+	
 	if (!rsi.request.size())
 		throw RequestException("bad request", 400);
-	std::pair<std::string, std::string> pair = utils::splitPair(rsi.request[1], "?");
-	rsi.query = pair.second;
-	rsi.queryPath = pair.first;
-	std::cout << rsi.queryPath << std::endl;
+	
+	if (rsi.request[0] == "GET")
+	{
+		size_t q = rsi.request[1].find_first_of("?");
+		if (q != std::string::npos)
+		{
+			rsi.query = rsi.request[1].substr(q + 1);
+			rsi.queryPath = rsi.request[1].substr(0, q);
+		}
+		else 
+			rsi.queryPath = rsi.request[1];
+	}
+	else if (rsi.request[0] == "POST")
+	{
+		std::vector<std::string> queryBody = utils::split(s, "\r\n");
+		rsi.body = headerBody.first;
+		rsi.query = queryBody.back();
+		rsi.queryPath = rsi.request[1];
+	}
+	else 
+		rsi.queryPath = rsi.request[1];
+	
+	rsi.body = headerBody.second;
+	// std::pair<std::string, std::string> pair = utils::splitPair(rsi.request[1], "?");
+	// rsi.query = pair.second;
+	// rsi.queryPath = pair.first;
+	// std::cout << rsi.queryPath << std::endl;
 }
