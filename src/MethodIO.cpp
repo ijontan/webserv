@@ -47,8 +47,6 @@ std::map<int, std::string> MethodIO::initErrCodeMessages()
 	m[403] = "Forbidden Error";
 	m[404] = "Not Found";
 	m[409] = "Conflict";
-	m[413] = "Request Too Large";
-	m[414] = "Request-URI Too Long";
 	m[415] = "Unsupported Media Type";
 	m[500] = "Internal Server Error";
 	return m;
@@ -87,31 +85,20 @@ MethodIO::~MethodIO(void)
 
 std::string MethodIO::getMethod(ServerBlock &block, MethodIO::rInfo &rqi, MethodIO::rInfo &rsi)
 {
-	std::stringstream s;
-
-	if (rqi.path.size() > MAX_URL_LENGTH)
-		return (generateResponse(414, rsi));
 	rsi.body = readFile(rqi, block);
-	std::stringstream ss(rsi.body.size());
-	int size;
-	ss >> size;
-	if (static_cast<int>(size) > block.getClientMaxBodySize())
-		return (generateResponse(413, rsi));
 	rsi.headers["Content-Type"] = getType(rqi.path);
 	rsi.headers["Content-Length"] = utils::to_string(rsi.body.size());
+	std::string ext = rqi.path.substr(rqi.path.find_last_of(".") + 1);
+	if (rqi.exist == true && (ext == "py" || ext == "cgi"))
+		return rsi.body;
 	return (generateResponse(200, rsi));
 }
 
 std::string MethodIO::headMethod(ServerBlock &block, MethodIO::rInfo &rqi, MethodIO::rInfo &rsi)
 {
 	std::string body = readFile(rqi, block);
-	std::stringstream ss(rsi.body.size());
-	int size;
-	ss >> size;
-	if (static_cast<int>(size) > block.getClientMaxBodySize())
-		return (generateResponse(413, rsi));
 	rsi.headers["Content-Type"] = getType(rqi.path);
-	rsi.headers["Content-Length"] = utils::to_string(body.length());
+	rsi.headers["Content-Length"] = utils::to_string(body.size());
 	return (generateResponse(200, rsi));
 }
 
@@ -134,6 +121,7 @@ std::string MethodIO::postMethod(ServerBlock &block, MethodIO::rInfo &rqi, Metho
 		std::string input;
 		rsi.headers["Content-Type"] = getType(rqi.path);
 		rsi.headers["Content-Length"] = utils::to_string(rqi.query.size());
+		// std::cout << "SIZE: " << rsi.headers["Content-Length"] << std::endl;
 		if ((dirPos != std::string::npos) && (ext == "py"))
 		{
 			// if (rsi.headers["Content-Type"] != "application/x-www-form-urlencoded" && rsi.headers["Content-Type"] != "multipart/form-data" && rsi.headers["Content-Type"] != "text/plain")
@@ -141,23 +129,17 @@ std::string MethodIO::postMethod(ServerBlock &block, MethodIO::rInfo &rqi, Metho
 			Cgi cgi(rqi.request, rqi.headers, rqi.path, rqi.body, rqi.query);
 			if (cgi.runCgi() == 200)
 			{
+				rqi.exist = true;
 				rsi.body = cgi.getBody();
-				std::stringstream ss(rsi.body.size());
-				int size;
-				ss >> size;
-				if (static_cast<int>(size) > block.getClientMaxBodySize())
-					return (generateResponse(413, rsi));
 				return rsi.body;
 			}
 			else
 				throw RequestException("Internal Server Error", 500);
 		}
 		else {
-			rsi.body = rqi.query;
 			return generateResponse(409, rsi);
 		}
 	}
-	rsi.body = rqi.query;
 	return generateResponse(200, rsi);
 }
 
@@ -283,8 +265,9 @@ std::string MethodIO::generateResponse(int code, MethodIO::rInfo &rsi)
 	ss << "HTTP/1.1 " << code << " " << getMessage(code) << "\r\n";
 	for (it = rsi.headers.begin(); it != rsi.headers.end(); it++)
 		ss << it->first << ": " << it->second << "\r\n";
-	// if (rsi.request[0] == "GET" || rsi.request[0] == "POST")
+	// if (rsi.request[1] == "GET")
 	ss << "\r\n" << rsi.body;
+	std::cout << "RESULT:  " << ss.str() << std::endl;
 	return (ss.str());
 }
 
@@ -457,17 +440,15 @@ void MethodIO::writeFile(MethodIO::rInfo &rqi, ServerBlock &block, bool createNe
 	size_t i;
 	std::stringstream ss;
 	rqi.exist = false;
-
 	if (rqi.request[1] != blockPair.first)
 	{
 		std::pair<std::string, std::string> pair = utils::splitPair(rqi.queryPath, blockPair.first);
 
 		ss << "./" << root << "/" << pair.second;
 		rqi.path = ss.str();
-		std::cout << rqi.path << std::endl;
 		if (access(ss.str().c_str(), F_OK) && !createNew)
 			throw RequestException("File doesn't exist", 404);
-		if (access(ss.str().c_str(), W_OK) && !createNew)
+		if (access(ss.str().c_str(), W_OK))
 			throw RequestException("File write forbidden", 403);
 		if (access(ss.str().c_str(), F_OK) == 0 && createNew)
 		{
@@ -498,13 +479,10 @@ void MethodIO::writeFile(MethodIO::rInfo &rqi, ServerBlock &block, bool createNe
 			throw RequestException("File doesn't exist", 404);
 	}
 	// try relative path from request
-	if (file.is_open())
-	{
-		file.write(rqi.query.c_str(), rqi.query.length());
-		file.close();
-	}
-	else
+	if (!file.is_open())
 		throw RequestException("Failed to create file.", 403);
+
+	file << rqi.body;
 }
 
 void MethodIO::tokenize(std::string s, MethodIO::rInfo &rsi) const
