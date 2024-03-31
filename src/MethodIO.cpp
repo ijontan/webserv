@@ -260,66 +260,27 @@ std::string MethodIO::generateResponse(int code, MethodIO::rInfo &rsi)
 	return (ss.str());
 }
 
-std::string MethodIO::getPath(std::string basePath, WebServer &ws, std::string &port)
-{
-	std::vector<ServerBlock> servers = ws.getServers();
-	std::string root = "www";
-
-	for (std::vector<ServerBlock>::iterator it = servers.begin(); it != servers.end(); it++)
-	{
-		std::vector<std::string> ports = it->getPortsListeningOn();
-		bool found = false;
-		for (size_t i = 0; i < ports.size(); i++)
-		{
-			if (ports[i] == port)
-				found = true;
-		}
-		if (!found)
-			continue;
-		root = it->getRootDirectory();
-		break;
-	}
-	return root + "/" + (basePath == "/" ? "index.html" : basePath);
-}
-
-// std::ifstream *MethodIO::getFile(MethodIO::rInfo &rqi, WebServer &ws)
+// std::string MethodIO::getPath(std::string basePath, WebServer &ws, std::string &port)
 // {
 // 	std::vector<ServerBlock> servers = ws.getServers();
 // 	std::string root = "www";
-// 	std::vector<std::string> index;
-// 	LocationBlock block;
-// 	std::string host = utils::splitPair(rqi.headers["Host"], ":").first;
-// 	// loop through all server to check if it's listening on the port requested
+//
 // 	for (std::vector<ServerBlock>::iterator it = servers.begin(); it != servers.end(); it++)
 // 	{
-// 		if (!utils::find(it->getPortsListeningOn(), rqi.port) || !utils::find(it->getServerName(), host))
+// 		std::vector<std::string> ports = it->getPortsListeningOn();
+// 		bool found = false;
+// 		for (size_t i = 0; i < ports.size(); i++)
+// 		{
+// 			if (ports[i] == port)
+// 				found = true;
+// 		}
+// 		if (!found)
 // 			continue;
 // 		root = it->getRootDirectory();
-// 		index = block.getIndex();
 // 		break;
 // 	}
-// 	// try all indexes in the config
-// 	std::ifstream *file = new std::ifstream();
-// 	size_t i;
-// 	for (i = 0; i < index.size(); i++)
-// 	{
-// 		std::stringstream ss;
-// 		ss << root << "/" << index[i];
-// 		file->open(ss.str().c_str());
-// 		if (!file->fail())
-// 			break;
-// 		file->close();
-// 	}
-// 	// try relative path from request
-// 	if (i == index.size())
-// 	{
-// 		std::stringstream ss;
-// 		ss << root << rqi.request[1];
-// 		file->open(ss.str().c_str());
-// 	}
-
-// 	// return the pointer to opened file
-// 	return file;
+// 	// std::cout << root << std::endl;
+// 	return root + "/" + (basePath == "/" ? "index.html" : basePath);
 // }
 
 ServerBlock MethodIO::getServerBlock(MethodIO::rInfo &rqi, WebServer &ws)
@@ -341,7 +302,7 @@ std::string MethodIO::readFile(MethodIO::rInfo &rqi, MethodIO::rInfo &rsi, Serve
 	std::vector<std::string> index = blockPair.second.getIndex();
 	std::string root = blockPair.second.getRootDirectory();
 	std::ifstream file;
-	std::string path = root +"/"+ utils::splitPair(rqi.queryPath, blockPair.first).second;
+	std::string path = root + "/" + utils::splitPair(rqi.queryPath, blockPair.first).second;
 	std::cout << "block path: " << blockPair.first << std::endl;
 	size_t i;
 
