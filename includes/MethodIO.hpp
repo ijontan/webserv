@@ -56,6 +56,7 @@ private:
 public:
 	struct rInfo
 	{
+		int code;
 		std::vector<std::string> request;
 		std::map<std::string, std::string> headers;
 		std::string body;

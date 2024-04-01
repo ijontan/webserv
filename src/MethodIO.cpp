@@ -92,7 +92,7 @@ std::string MethodIO::getMethod(ServerBlock &block, MethodIO::rInfo &rqi, Method
 	std::string ext = rqi.path.substr(rqi.path.find_last_of(".") + 1);
 	if (rqi.exist == true && (ext == "py" || ext == "cgi"))
 		return rsi.body;
-	return (generateResponse(200, rsi));
+	return (generateResponse(rsi.code, rsi));
 }
 
 std::string MethodIO::headMethod(ServerBlock &block, MethodIO::rInfo &rqi, MethodIO::rInfo &rsi)
@@ -200,7 +200,7 @@ std::string MethodIO::getMessageToSend(WebServer &ws, std::string port)
 				  << "Error Code: " << code << " " << errCodeMessages.find(code)->second << RESET << std::endl;
 		if (block.getRootDirectory() == "")
 			return generateResponse(code, responseInfo);
-		std::string path = block.getRootDirectory() + "/" + block.getErrorPages()[404];
+		std::string path = block.getRootDirectory() + "/" + block.getErrorPages()[code];
 		std::ifstream file(path.c_str());
 		std::ostringstream oss;
 		oss << file.rdbuf();
@@ -256,7 +256,7 @@ std::string MethodIO::generateResponse(int code, MethodIO::rInfo &rsi)
 		ss << it->first << ": " << it->second << "\r\n";
 	// if (rsi.request[1] == "GET")
 	ss << "\r\n" << rsi.body;
-	std::cout << "RESULT:  " << ss.str() << std::endl;
+	// std::cout << "RESULT:  " << ss.str() << std::endl;
 	return (ss.str());
 }
 
@@ -306,7 +306,16 @@ std::string MethodIO::readFile(MethodIO::rInfo &rqi, MethodIO::rInfo &rsi, Serve
 	std::cout << "block path: " << blockPair.first << std::endl;
 	size_t i;
 
-	if (rqi.queryPath.at(rqi.queryPath.length() - 1) == '/' && rqi.queryPath.length() > 1)
+	rsi.code = 200;
+    std::pair<int, std::string> redir = blockPair.second.getRedirection();
+    std::cout << "code: " << redir.first << ", path:" << redir.second << std::endl;
+	if (redir.first)
+	{
+		rsi.headers["Location"] = redir.second;
+		rsi.code = redir.first;
+		return "";
+	}
+	else if (rqi.queryPath.at(rqi.queryPath.length() - 1) == '/' && rqi.queryPath.length() > 1)
 	{
 		AutoIndex indexes(path, rqi.queryPath);
 		rsi.headers["Content-Type"] = "text/html";
