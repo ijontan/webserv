@@ -67,7 +67,9 @@ void Parser::parseServerBlocks(std::vector<ServerBlock> &serverBlocks)
 
 			this->_tempServerBlock = ServerBlock();
 
+			initServerDirectiveCount();
 			parseServerBlockDirectives(this->_tempServerBlock);
+			checkServerDirectiveCount();
 
 			// checks if the server block has directives
 			if (this->_hasDirectives == false)
@@ -119,7 +121,9 @@ void Parser::parseLocationBlocks(std::istringstream &iss)
 		this->_locationBlockNum++;
 		this->_bracketPairing++;
 
+		initLocationDirectiveCount();
 		parseLocationBlockDirectives(this->_tempLocationBlock);
+		checkLocationDirectiveCount();
 
 		this->_tempServerBlock.addLocationBlock(path, this->_tempLocationBlock);
 	}
@@ -172,36 +176,43 @@ void Parser::parseServerBlockDirectives(ServerBlock &block)
 		if (directive == "listen")
 		{
 			parsePortsListeningOn(iss);
+			this->_serverDirectiveCount["listen"]++;
 		}
 		else if (directive == "server_name")
 		{
 			parseServerName(iss);
+			this->_serverDirectiveCount["server_name"]++;
 		}
 		else if (directive == "root")
 		{
 			parseRoot(block, iss);
+			this->_serverDirectiveCount["root"]++;
 		}
 		else if (directive == "index")
 		{
 			parseIndex(block, iss);
+			this->_serverDirectiveCount["index"]++;
 		}
 		else if (directive == "client_max_body_size")
 		{
 			parseClientMaxBodySize(block, iss);
+			this->_serverDirectiveCount["client_max_body_size"]++;
 		}
 		else if (directive == "error_page")
 		{
 			parseErrorPages(block, iss);
+			this->_serverDirectiveCount["error_page"]++;
 		}
 		else if (directive == "return")
 		{
 			parseRedirection(block, iss);
+			this->_serverDirectiveCount["return"]++;
 		}
 		else if (directive == "location")
 		{
 			parseLocationBlocks(iss);
 		}
-		else if (directive == "autoindex" || directive == "limit_except" || directive == "cgi_pass")
+		else if (directive == "autoindex" || directive == "limit_except")
 		{
 			std::stringstream ss;
 			ss << "Error (line " << this->_lineNum
@@ -276,38 +287,37 @@ void Parser::parseLocationBlockDirectives(LocationBlock &block)
 		if (directive == "root")
 		{
 			parseRoot(block, iss);
+			this->_locationDirectiveCount["root"]++;
 		}
 		else if (directive == "index")
 		{
 			parseIndex(block, iss);
+			this->_locationDirectiveCount["index"]++;
 		}
 		else if (directive == "client_max_body_size")
 		{
 			parseClientMaxBodySize(block, iss);
+			this->_locationDirectiveCount["client_max_body_size"]++;
 		}
 		else if (directive == "error_page")
 		{
 			parseErrorPages(block, iss);
+			this->_locationDirectiveCount["error_page"]++;
 		}
 		else if (directive == "return")
 		{
 			parseRedirection(block, iss);
-		}
-		else if (directive == "location")
-		{
-			parseLocationBlocks(iss);
+			this->_locationDirectiveCount["return"]++;
 		}
 		else if (directive == "autoindex")
 		{
 			parseAutoindexStatus(iss);
+			this->_locationDirectiveCount["autoindex"]++;
 		}
 		else if (directive == "limit_except")
 		{
 			parseAllowedMethods(iss);
-		}
-		else if (directive == "cgi_pass")
-		{
-			parseCgiPassPath(iss);
+			this->_locationDirectiveCount["limit_except"]++;
 		}
 		else
 		{
@@ -490,7 +500,7 @@ void Parser::parseErrorPages(T &block, std::istringstream &iss)
 	{
 		std::stringstream ss;
 		ss << "Error (line " << this->_lineNum
-			<< "): error_page [errorStatusCode] [filePath] (needs one status code (400, 401, 404, 409) \
+			<< "): error_page [errorStatusCode] [filePath] (needs one status code (400, 403, 404, 408, 409, 415, 500) \
 and one path)";
 		throw CustomException(ss.str());
 	}
@@ -566,15 +576,6 @@ void Parser::parseAllowedMethods(std::istringstream &iss)
 	}
 }
 
-void Parser::parseCgiPassPath(std::istringstream &iss)
-{
-	std::string path;
-
-	iss >> path;
-	this->_tempLocationBlock.setCgiPassPath(path);
-	std::cout << CYAN "cgi pass path: " << path << RESET << std::endl;
-}
-
 bool Parser::isSkippableLine(std::string &line)
 {
 	std::istringstream iss(line);
@@ -627,9 +628,9 @@ bool Parser::isClosedCurlyBracket(std::string &line)
 
 bool Parser::isValidErrorStatusCode(int statusCode)
 {
-	int validStatusCodes[4] = {400, 401, 404, 409};
+	int validStatusCodes[7] = {400, 403, 404, 408, 409, 415, 500};
 	
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < 7; i++)
 	{
 		if (statusCode == validStatusCodes[i])
 		{
@@ -673,4 +674,90 @@ bool Parser::isUniqueServerName(std::string &serverName)
 			return false;
 	}
 	return true;
+}
+
+void Parser::initServerDirectiveCount()
+{
+	this->_serverDirectiveCount["listen"] = 0;
+	this->_serverDirectiveCount["server_name"] = 0;
+	this->_serverDirectiveCount["root"] = 0;
+	this->_serverDirectiveCount["index"] = 0;
+	this->_serverDirectiveCount["client_max_body_size"] = 0;
+	this->_serverDirectiveCount["error_page"] = 0;
+	this->_serverDirectiveCount["return"] = 0;
+}
+
+void Parser::initLocationDirectiveCount()
+{
+	this->_locationDirectiveCount["root"] = 0;
+	this->_locationDirectiveCount["index"] = 0;
+	this->_locationDirectiveCount["client_max_body_size"] = 0;
+	this->_locationDirectiveCount["return"] = 0;
+	this->_locationDirectiveCount["error_page"] = 0;
+	this->_locationDirectiveCount["autoindex"] = 0;
+	this->_locationDirectiveCount["limit_except"] = 0;
+}
+
+void Parser::checkServerDirectiveCount()
+{
+	std::stringstream ss;
+	std::vector<std::string> directives;
+	directives.push_back("listen");
+	directives.push_back("server_name");
+	directives.push_back("root");
+	directives.push_back("index");
+	directives.push_back("client_max_body_size");
+
+	// check if 5 directives only have one of each
+	for (int i = 0; i < 5; i++)
+	{
+		int count = _serverDirectiveCount[directives[i]];
+		// std::cout << "directive: " << directives[i] << std::endl;
+		// std::cout << "count: " << count << std::endl << std::endl;
+		if (count == 0) {	
+			ss << "Error (server block " << _serverBlockNum - 1 << "): The directive " << directives[i] << " is missing";
+			throw CustomException(ss.str());
+		} else if (count > 1) {
+			ss << "Error (server block " << _serverBlockNum - 1 << "): The directive " << directives[i] << " can only be used once";
+			throw CustomException(ss.str());
+		}
+	}
+
+	// check if there's at least one error_page directive
+	if (_serverDirectiveCount["error_page"] < 1)
+	{
+		ss << "Error (server block " << _serverBlockNum - 1 << "): There must be at least one error_page directive";
+		throw CustomException(ss.str());
+	}
+
+	// check if there's no more than one return directive
+	if (_serverDirectiveCount["return"] > 1)
+	{
+		ss << "Error (server block " << _serverBlockNum - 1 << "): There can only be one return directive";
+		throw CustomException(ss.str());
+	}
+}
+
+void Parser::checkLocationDirectiveCount()
+{
+	std::stringstream ss;
+	std::vector<std::string> directives;
+	directives.push_back("root");
+	directives.push_back("index");
+	directives.push_back("client_max_body_size");
+	directives.push_back("autoindex");
+	directives.push_back("limit_except");
+	directives.push_back("return");
+
+	// check if the 6 directives have no more than one
+	for (int i = 0; i < 6; i++)
+	{
+		int count = _locationDirectiveCount[directives[i]];
+		// std::cout << "directive: " << directives[i] << std::endl;
+		// std::cout << "count: " << count << std::endl << std::endl;
+		if (count > 1) {
+			ss << "Error (location block " << _locationBlockNum - 1 << "): The directive " << directives[i] << " can only be used once";
+			throw CustomException(ss.str());
+		}
+	}
 }

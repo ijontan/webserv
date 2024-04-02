@@ -34,7 +34,6 @@ public:
 
 	void parseAutoindexStatus(std::istringstream &iss);
 	void parseAllowedMethods(std::istringstream &iss);
-	void parseCgiPassPath(std::istringstream &iss);
 
 	// parsing the location block
 	void parseLocationBlocks(std::istringstream &iss);
@@ -51,6 +50,12 @@ public:
 	bool isValidMethod(std::string &method);
 	bool isValidNumber(std::string &num);
 	bool isUniqueServerName(std::string &serverName);
+
+	void initServerDirectiveCount();
+	void initLocationDirectiveCount();
+
+	void checkServerDirectiveCount();
+	void checkLocationDirectiveCount();
 
 private:
 	Parser(const Parser &other);
@@ -69,5 +74,7 @@ private:
 	std::vector<std::string> _serverNames;
 	ServerBlock _tempServerBlock;
 	LocationBlock _tempLocationBlock;
+	std::map<std::string, int> _serverDirectiveCount;
+	std::map<std::string, int> _locationDirectiveCount;
 };
 
