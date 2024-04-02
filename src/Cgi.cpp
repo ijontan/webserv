@@ -37,8 +37,8 @@ Cgi::Cgi(const Cgi &src)
 // set env variables for execvpe
 void Cgi::setEnv()
 {
-	std::stringstream convert;
-	convert << this->query.size();
+	// std::stringstream convert;
+	// convert << this->query.size();
 
 	this->envVariables["PATH_INFO"] = getPath();
 	this->envVariables["REQUEST_METHOD"] = this->request[0];
@@ -51,14 +51,13 @@ void Cgi::setEnv()
 	
 	if (this->envVariables["REQUEST_METHOD"] == "POST")
 	{
-		this->envVariables["CONTENT_LENGTH"] = convert.str();
+		this->envVariables["CONTENT_LENGTH"] = this->header["Content-Length"];
+		// std::cout << this->envVariables["CONTENT_LENGTH"] << std::endl;
 		this->envVariables["CONTENT_TYPE"] = this->header["Content-Type"];
 		this->envVariables["HTTP_COOKIE"] = this->header["Cookie"];
 	}
 
-	// std::cout << "	content length: " << this->envVariables["CONTENT_LENGTH"] << std::endl;
-	// std::cout << "	content type: " << this->envVariables["CONTENT_TYPE"] << std::endl;
-	// std::cout << "	query: " << this->envVariables["QUERY_STRING"] << std::endl;
+	std::cout << "	content length: " << this->envVariables["CONTENT_LENGTH"] << std::endl;
 	
 	this->envV = (char **)calloc(sizeof(char *), this->envVariables.size() + 1);
 	std::map<std::string, std::string>::const_iterator it = this->envVariables.begin();
@@ -78,10 +77,11 @@ Cgi &Cgi::operator=(const Cgi &rhs)
 int Cgi::runCgi()
 {
 	pid_t pid;
-	int fd[2];
+	// int fd[2];
+	int input[2];
+	int	output[2];
 	int status;
 	std::string outputString;
-	char buf[2048] = {0};
 
 	setEnv();
 	// dir = file directory
@@ -89,51 +89,51 @@ int Cgi::runCgi()
 	this->path = getPath();
 	char *av[3] = {(char *)this->path.c_str(), (char *)dir.c_str(), NULL};
 
-	if (pipe(fd) == -1)
+	// if (pipe(fd) == -1)
+	if (pipe(input) == -1 || pipe(output) == -1)
 		return (500);
 	pid = fork();
 	if (pid == 0)
 	{
-		// if (close(fd[0]) == -1)
-		// 	return (500);
-		// std::cout << "test1" << std::endl;
-		dup2(fd[1], STDOUT_FILENO);
-		// std::cout << "test2" << std::endl;
-		close(fd[1]);
-		dup2(fd[0], STDIN_FILENO);
-		close(fd[0]);
-		// dup2(fd[1], STDERR_FILENO);
+
+		// dup2(fd[0], STDIN_FILENO);
+		// dup2(fd[1], STDOUT_FILENO);
+		// close(fd[0]);
+		// close(fd[1]);
+		// execve(this->path.c_str(), av, this->envV);
+		// exit(-1);
+		close(output[0]);
+		close(input[1]);
+		dup2(output[1], STDOUT_FILENO);
+		close(output[1]);
+		dup2(input[0], STDIN_FILENO);
+		close(input[0]);
 		execve(this->path.c_str(), av, this->envV);
-		// std::cerr << "error: " << errno << std::endl;
-		exit(-1);
+		exit(127);
 	}
 	else
 	{
-		if (this->request[0] == "POST")
-		{
-			if (write(fd[1], this->query.c_str() ,this->query.size()) == -1)
-				return (500);
-		}
+		close(input[0]);
+		if (write(input[1], this->query.c_str() ,this->query.size()) == -1)
+			return (500);
+		close(input[1]);
+		close(output[1]);
 		waitpid(pid, &status, 0);
-		close(fd[1]);
 		int read_bytes;
 
 		if (!WIFEXITED(status))
 			return (500);
 		read_bytes = 1;
+		char buf[1024];
 		while (read_bytes > 0)
 		{
-			memset(buf, 0, 2048);
-			read_bytes = read(fd[0], buf, 2048);
+			memset(buf, 0, 1024);
+			read_bytes = read(output[0], buf, 1024);
 			outputString += buf;
 		}
-		close(fd[0]);
+		close(output[0]);
 	}
-	// if (close(fd[0]) == -1)
-	// 	return (500);
 	setBody(outputString);
-	// close(fd[0]);
-	// close(fd[1]);
 	return (200);
 }
 

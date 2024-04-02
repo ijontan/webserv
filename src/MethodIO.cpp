@@ -47,7 +47,9 @@ std::map<int, std::string> MethodIO::initErrCodeMessages()
 	m[400] = "Bad Request";
 	m[403] = "Forbidden Error";
 	m[404] = "Not Found";
+	m[408] = "Request Timeout";
 	m[409] = "Conflict";
+	m[413] = "Content Too Large";
 	m[415] = "Unsupported Media Type";
 	m[500] = "Internal Server Error";
 	return m;
@@ -166,6 +168,8 @@ std::string MethodIO::getMessageToSend(WebServer &ws, std::string port)
 			return generateResponse(400, responseInfo);
 		requestInfo.port = port;
 		block = getServerBlock(requestInfo, ws);
+		if (block.getClientMaxBodySize() < (int)requestInfo.body.size() && block.getClientMaxBodySize() != 0)
+			throw RequestException("Content Too Large", 413);
 		// std::cout << getRaw() << requestInfo.request[1] << std::endl;
 		// std::string path = getPath(requestInfo.request[1], ws, port);
 		// requestInfo.path = path;
@@ -451,7 +455,7 @@ void MethodIO::tokenize(std::string s, MethodIO::rInfo &rsi) const
 	for (size_t i = 1; i < requestHeader.size(); i++)
 		rsi.headers.insert(utils::splitPair(requestHeader[i], ": "));
 	if (!rsi.request.size())
-		throw RequestException("Bad Request", 400);
+		throw RequestException("Bad Request (Empty)", 400);
 	if (rsi.request[0] == "GET")
 	{
 		size_t q = rsi.request[1].find_first_of("?");
