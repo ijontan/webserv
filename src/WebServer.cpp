@@ -276,7 +276,7 @@ std::vector<ServerBlock> &WebServer::getServers()
 MethodIO::rInfo WebServer::parseHeader(std::string str)
 {
 	MethodIO::rInfo info;
-	std::pair<std::string, std::string> headerBody = utils::splitPair(str, "\r\n\n");
+	std::pair<std::string, std::string> headerBody = utils::splitPair(str, "\r\n\r\n");
 	std::vector<std::string> requestHeader = utils::split(headerBody.first, "\r\n");
 
 	info.request = utils::split(requestHeader[0], ' ');

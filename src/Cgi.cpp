@@ -79,7 +79,7 @@ void Cgi::setEnv()
 	std::cout << "content length: " << this->envVariables["CONTENT_LENGTH"] << std::endl;
 	
 	this->envV = (char **)calloc(sizeof(char *), this->envVariables.size() + 1);
-	it = this->envVariables.begin();
+	it = this->envVariables.begin(); 
 	for (int i = 0; it != this->envVariables.end(); i++, it++)
 	{
 		std::string tmp = replace(it->first, '-', '_') + "=" + it->second;

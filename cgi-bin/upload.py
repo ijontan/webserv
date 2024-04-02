@@ -2,7 +2,7 @@
 import cgi, os, sys
 
 if ("multipart/form-data" in os.environ["CONTENT_TYPE"]):
-	print("TEST", file=sys.stderr)
+	print("content type", file=sys.stderr)
 
 form = cgi.FieldStorage()
 

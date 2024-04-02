@@ -130,6 +130,11 @@ std::string MethodIO::postMethod(ServerBlock &block, MethodIO::rInfo &rqi, Metho
 		{
 			// if (rsi.headers["Content-Type"] != "application/x-www-form-urlencoded" && rsi.headers["Content-Type"] != "multipart/form-data" && rsi.headers["Content-Type"] != "text/plain")
 			// 	return generateResponse(415, rsi);
+			for (std::map<std::string, std::string>::const_iterator it = rqi.headers.begin(); it != rqi.headers.end(); it++)
+			{
+				std::cout << "head: " << it->first << ": " << it->second << std::endl;
+			}
+			
 			Cgi cgi(rqi.request, rqi.headers, rqi.path, rqi.body, rqi.query);
 			if (cgi.runCgi() == 200)
 			{
@@ -448,7 +453,7 @@ void MethodIO::writeFile(MethodIO::rInfo &rqi, ServerBlock &block, bool createNe
 
 void MethodIO::tokenize(std::string s, MethodIO::rInfo &rsi) const
 {
-	std::pair<std::string, std::string> headerBody = utils::splitPair(s, "\r\n\n");
+	std::pair<std::string, std::string> headerBody = utils::splitPair(s, "\r\n\r\n");
 	std::vector<std::string> requestHeader = utils::split(headerBody.first, "\r\n");
 
 	rsi.request = utils::split(requestHeader[0], ' ');
