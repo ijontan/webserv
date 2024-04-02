@@ -10,7 +10,7 @@
 	<body>
 		<h2 class="capitalize">Hello, please enter your name!</h2>
 		<div class="row">
-			<form action="cgi-bin/test.py" method="post">
+			<form action="cgi-bin/test.py" method="get">
 				First Name: <input type="text" id="fname" name="fname"><br>
 				Last Name: <input type="text" id="lname" name="lname"><br>
 				<input type="submit">	
@@ -18,7 +18,7 @@
 		</div>
 		<div class="row">
 			<form action="cgi-bin/upload.py" method="post" enctype="multipart/form-data">
-				Upload: <input type="file" name="file">
+				Upload: <input type="file" name="filename" id="filename">
 				<input type="submit" value="Upload File">	
 			</form>
 		</div>

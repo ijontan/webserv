@@ -134,7 +134,7 @@ int Cgi::runCgi()
 	else
 	{
 		close(input[0]);
-		if (write(input[1], this->query.c_str() ,this->query.size()) == -1)
+		if (write(input[1], this->body.c_str() ,this->body.size()) == -1)
 			return (500);
 		close(input[1]);
 		close(output[1]);
