@@ -1,16 +1,21 @@
 #!/usr/bin/python3
 import cgi, os, sys
 
+if ("multipart/form-data" in os.environ["CONTENT_TYPE"]):
+	print("TEST", file=sys.stderr)
+
 form = cgi.FieldStorage()
 
-for line in sys.stdin:
-    if 'Exit' == line.rstrip():
-        break
-    print(f'Processing Message from sys.stdin: {line}', file=sys.stderr)
-print("Done", file=sys.stderr)
 print("TEST", file=sys.stderr)
+print(os.environ, file=sys.stderr)
 print(form.keys(), file=sys.stderr)
 print("TEST", file=sys.stderr)
+
+# for line in sys.stdin:
+#     if 'Exit' == line.rstrip():
+#         break
+#     print(f'Processing Message from sys.stdin: {line}', file=sys.stderr)
+# print("Done", file=sys.stderr)
 # Get filename here
 # fileitem = form['file']
 
