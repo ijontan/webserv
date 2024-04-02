@@ -22,13 +22,13 @@ WebServer::WebServer(const std::string &filePath, IOAdaptor &io) : _io(io)
 	parser.parseServerBlocks(this->_serverBlocks);
 	std::cout << GREEN "Server blocks created" RESET << std::endl << std::endl;
 
-	printServerBlocksInfo();
+	// printServerBlocksInfo();
 	initSockets();
 }
 
 WebServer::~WebServer()
 {
-	for (size_t i = 0; i < _pfds.size(); i++)
+	for (size_t i = 0; i < _pfds.size(); i++)	
 	{
 		close(_pfds[i].fd);
 	}
@@ -157,8 +157,8 @@ void WebServer::loop()
 {
 	std::map<int, std::string> buffMap;
 
-	for (size_t j = 0; j < _serverBlocks.size(); j++)
-		std::cout << _serverBlocks[j];
+	// for (size_t j = 0; j < _serverBlocks.size(); j++)
+	// 	std::cout << _serverBlocks[j];
 
 	for (;;)
 	{

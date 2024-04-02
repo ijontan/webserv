@@ -48,11 +48,8 @@ private:
 	static std::string getType(std::string path);
 	static std::string getPath(std::string basePath, WebServer &ws, std::string &port);
 	static ServerBlock getServerBlock(MethodIO::rInfo &rqi, WebServer &ws);
-	static std::string readFile(MethodIO::rInfo &rqi, ServerBlock &block);
+	static std::string readFile(MethodIO::rInfo &rqi, MethodIO::rInfo &rsi, ServerBlock &block);
 	static void writeFile(MethodIO::rInfo &rqi, ServerBlock &block, bool createNew);
-	static std::ifstream *getFile(MethodIO::rInfo &rqi, WebServer &ws);
-
-	// void setCode(int code) const;
 	static std::string getMessage(int code);
 
 	std::string getUpdatedContent(int fd);
@@ -60,6 +57,7 @@ private:
 public:
 	struct rInfo
 	{
+		int code;
 		std::vector<std::string> request;
 		std::map<std::string, std::string> headers;
 		std::string body;

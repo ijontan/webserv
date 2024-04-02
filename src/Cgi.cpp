@@ -44,12 +44,16 @@ void Cgi::setEnv()
 	this->envVariables["REQUEST_METHOD"] = this->request[0];
 
 	if (this->envVariables["REQUEST_METHOD"] == "GET")
+	{
 		this->envVariables["QUERY_STRING"] = this->query;
+		this->envVariables["HTTP_COOKIE"] = this->header["Cookie"];
+	}
 	
 	if (this->envVariables["REQUEST_METHOD"] == "POST")
 	{
 		this->envVariables["CONTENT_LENGTH"] = convert.str();
 		this->envVariables["CONTENT_TYPE"] = this->header["Content-Type"];
+		this->envVariables["HTTP_COOKIE"] = this->header["Cookie"];
 	}
 
 	// std::cout << "	content length: " << this->envVariables["CONTENT_LENGTH"] << std::endl;
@@ -100,6 +104,7 @@ int Cgi::runCgi()
 		close(fd[0]);
 		// dup2(fd[1], STDERR_FILENO);
 		execve(this->path.c_str(), av, this->envV);
+		// std::cerr << "error: " << errno << std::endl;
 		exit(-1);
 	}
 	else

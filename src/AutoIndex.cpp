@@ -16,6 +16,7 @@ AutoIndex::AutoIndex(void)
 AutoIndex::AutoIndex(std::string path, std::string queryPath)
 {
 	_dir = opendir(path.c_str());
+	std::cout << path << std::endl;
 	if (!_dir)
 		throw RequestException("Failed to open Dir", 301);
 	_path = path;
