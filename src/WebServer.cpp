@@ -28,7 +28,7 @@ WebServer::WebServer(const std::string &filePath, IOAdaptor &io) : _io(io)
 
 WebServer::~WebServer()
 {
-	for (size_t i = 0; i < _pfds.size(); i++)	
+	for (size_t i = 0; i < _pfds.size(); i++)
 	{
 		close(_pfds[i].fd);
 	}
@@ -203,9 +203,11 @@ void WebServer::acceptConnection(int index, std::map<int, std::string> &buffMap,
 	addPfd(newFd);
 }
 
+#define BUFFSIZE 4096
+
 void WebServer::handleIO(int index, std::map<int, std::string> &buffMap)
 {
-	char buff[4096] = {0};
+	char buff[BUFFSIZE] = {0};
 	int fd = _pfds[index].fd;
 	MethodIO::rInfo info = parseHeader(buffMap[fd]);
 
@@ -218,7 +220,7 @@ void WebServer::handleIO(int index, std::map<int, std::string> &buffMap)
 			if (bytes < 0)
 				std::cerr << "recv error" << std::endl;
 			buffMap[fd] += buff;
-			if (bytes == 0)
+			if (bytes > 0)
 				return;
 		}
 		_pfds[index].events = POLLOUT;
