@@ -53,6 +53,7 @@ public:
 
 	void initServerDirectiveCount();
 	void initLocationDirectiveCount();
+	void initErrorPageCount();
 
 	void checkServerDirectiveCount();
 	void checkLocationDirectiveCount();
@@ -76,5 +77,7 @@ private:
 	LocationBlock _tempLocationBlock;
 	std::map<std::string, int> _serverDirectiveCount;
 	std::map<std::string, int> _locationDirectiveCount;
+	std::vector<int> _validStatusCodes;
+	std::map<int, int> _errorPageCount;
 };
 
