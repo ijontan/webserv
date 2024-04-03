@@ -23,7 +23,7 @@ bool find(std::vector<T> arr, T value)
 	return false;
 }
 
-int stoi(std::string s);
+int stoi(std::string s, int lineNum);
 std::string to_string(int value);
 std::string join(std::vector<std::string> strs, std::string sep, size_t n);
 } // namespace utils

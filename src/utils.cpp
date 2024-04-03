@@ -1,4 +1,5 @@
 #include "utils.hpp"
+#include "CustomException.hpp"
 #include <cstddef>
 #include <sstream>
 #include <string>
@@ -40,14 +41,19 @@ std::pair<std::string, std::string> utils::splitPair(std::string s, std::string 
 	return pair;
 }
 
-int utils::stoi(std::string s)
+int utils::stoi(std::string s, int lineNum)
 {
 	std::stringstream ss(s);
 	int value;
 
 	ss >> value;
-	if (ss.fail())
-		throw "Not and integer";
+	if (ss.fail() && lineNum != -1)
+	{
+		std::stringstream ss;
+		ss << "Error (line " << lineNum
+		<< "): int out of range (0 to 2147483647)";
+		throw CustomException(ss.str());
+	}
 	return value;
 }
 

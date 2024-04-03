@@ -467,18 +467,24 @@ void Parser::parseClientMaxBodySize(T &block, std::istringstream &iss)
 	std::string clientMaxBodySize;
 	std::string temp;
 	int num;
+	std::stringstream ss;
 
 	iss >> clientMaxBodySize >> temp;
 	if (clientMaxBodySize.empty() || !isValidNumber(clientMaxBodySize) || !temp.empty())
 	{
-		std::stringstream ss;
 		ss << "Error (line " << this->_lineNum
-			<< "): client_body_max_size [int] (needs only one integer)";
+			<< "): client_max_body_size [int] (needs only one integer)";
 		throw CustomException(ss.str());
 	}
-	num = utils::stoi(clientMaxBodySize);
+	num = utils::stoi(clientMaxBodySize, this->_lineNum);
+	// if (num < 0 || num > 2147483647)
+	// {
+	// 	ss << "Error (line " << this->_lineNum
+	// 		<< "): client_max_body_size out of range (0 to 2147483647)";
+	// 	throw CustomException(ss.str());
+	// }
 	block.setClientMaxBodySize(num);
-	std::cout << MAGENTA "set limit client body size: " << num
+	std::cout << MAGENTA "set client max body size: " << num
 			  << RESET << std::endl;
 }
 
@@ -607,7 +613,7 @@ bool Parser::isValidPort(std::string &port)
 		return (false);
 	}
 
-	int portNum = utils::stoi(port);
+	int portNum = utils::stoi(port, this->_lineNum);
 
 	if (portNum < 0 || portNum > 65536)
 		return (false);
@@ -656,10 +662,16 @@ bool Parser::isValidMethod(std::string &method)
 
 bool Parser::isValidNumber(std::string &num)
 {
-	for (unsigned int i = 0; i < num.length(); i++)
+	unsigned int i = 0;
+
+	if (num[0] == '-')
+		i++;
+	while (i < num.length())
 	{
+		std::cout << num[i] << std::endl;
 		if (isdigit(num[i]) == false)
 			return (false);
+		i++;
 	}
 	return (true);
 }
