@@ -43,6 +43,8 @@ std::map<int, std::string> MethodIO::initErrCodeMessages()
 	m[200] = "OK";
 	m[201] = "Created";
 	m[204] = "No Content";
+	m[301] = "Moved Permanently";
+	m[302] = "Found";
 	m[303] = "See Other";
 	m[400] = "Bad Request";
 	m[403] = "Forbidden Error";

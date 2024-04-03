@@ -4,13 +4,12 @@
 #include <ostream>
 
 LocationBlock::LocationBlock()
-	: ABlock(), _autoindexStatus(false), _allowedMethods(), _cgiPass("")
+	: ABlock(), _autoindexStatus(false), _allowedMethods()
 {
 }
 
 LocationBlock::LocationBlock(ServerBlock &serverBlock)
-	: ABlock(serverBlock), _autoindexStatus(false), _allowedMethods(),
-	  _cgiPass("")
+	: ABlock(serverBlock), _autoindexStatus(false), _allowedMethods()
 {
 }
 
@@ -32,7 +31,6 @@ LocationBlock &LocationBlock::operator=(const LocationBlock &other)
 
 		this->_autoindexStatus = other._autoindexStatus;
 		this->_allowedMethods = other._allowedMethods;
-		this->_cgiPass = other._cgiPass;
 	}
 	return *this;
 }
@@ -47,11 +45,6 @@ void LocationBlock::addAllowedMethods(std::string method)
 	this->_allowedMethods.push_back(method);
 }
 
-void LocationBlock::setCgiPassPath(std::string path)
-{
-	this->_cgiPass = path;
-}
-
 bool LocationBlock::getAutoindexStatus() const
 {
 	return this->_autoindexStatus;
@@ -60,9 +53,4 @@ bool LocationBlock::getAutoindexStatus() const
 std::vector<std::string> LocationBlock::getAllowedMethods() const
 {
 	return this->_allowedMethods;
-}
-
-std::string LocationBlock::getCgiPass() const
-{
-	return this->_cgiPass;
 }
