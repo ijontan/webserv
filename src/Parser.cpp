@@ -7,9 +7,9 @@ Parser::Parser(const std::string &filePath)
 	  _isFileEmpty(true), _hasDirectives(false), _serverNames(), 
 	  _tempServerBlock(), _tempLocationBlock(this->_tempServerBlock)
 {
-	int validStatusCodes[7] = {400, 403, 404, 408, 409, 415, 500};
+	int validStatusCodes[8] = {400, 403, 404, 405, 408, 409, 415, 500};
 
-	for (int i = 0; i < 7; i++) {
+	for (int i = 0; i < 8; i++) {
 		this->_validStatusCodes.push_back(validStatusCodes[i]);
 	}
 }

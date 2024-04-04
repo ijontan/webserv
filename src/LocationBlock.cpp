@@ -13,6 +13,11 @@ LocationBlock::LocationBlock(ServerBlock &serverBlock)
 {
 }
 
+LocationBlock::LocationBlock(const ServerBlock &serverBlock)
+	: ABlock(serverBlock), _autoindexStatus(false), _allowedMethods()
+{
+}
+
 LocationBlock::~LocationBlock()
 {
 }
