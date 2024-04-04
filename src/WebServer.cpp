@@ -234,17 +234,20 @@ void WebServer::handleIO(int index, std::map<int, std::string> &buffMap)
 				std::cerr << BRED << "connection closed" << RESET << std::endl;
 				return;
 			}
+			bool isFirst = false;
 			if (it == info.headers.end())
 			{
 				info = parseHeader(buffMap[fd]);
 				it = info.headers.find("Content-Length");
+				isFirst = true;
 			}
-			// if (it != info.headers.end())
-			// 	std::cout << "read: " << bytes << ", found: " << info.body.size()
-			// 			  << ", total: " << utils::stoi(it->second, -1) << std::endl;
+			std::cout << it->second << std::endl;
+			if (it != info.headers.end())
+				std::cout << "read: " << bytes << ", found: " << info.body.size()
+						  << ", total: " << utils::stoi(it->second, -1) << std::endl;
 			info.exist = -1ul != buffMap[fd].find("\r\n\r\n");
-			if (info.exist &&
-				(it == info.headers.end() || (int)info.body.size() + bytes == utils::stoi(it->second, -1)))
+			if (info.exist && (it == info.headers.end() ||
+							   (int)info.body.size() + (isFirst ? 0 : bytes) == utils::stoi(it->second, -1)))
 			{
 				_pfds[index].events = POLLOUT;
 				_io.receiveMessage(buffMap[fd]);
