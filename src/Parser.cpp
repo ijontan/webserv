@@ -493,23 +493,22 @@ template <typename T>
 void Parser::parseErrorPages(T &block, std::istringstream &iss)
 {
 	int statusCode;
-	std::string uri;
+	std::string filePath;
 	std::string temp;
 
-	iss >> statusCode >> uri >> temp;
-	if (isValidErrorStatusCode(statusCode) && !uri.empty() && temp.empty())
+	iss >> statusCode >> filePath >> temp;
+	if (isValidErrorStatusCode(statusCode) && !filePath.empty() && temp.empty())
 	{
-		block.addErrorPage(statusCode, uri);
+		block.addErrorPage(statusCode, filePath);
 		this->_errorPageCount[statusCode]++;
-		std::cout << MAGENTA "added error page: " << statusCode << " " << uri
+		std::cout << MAGENTA "added error page: " << statusCode << " " << filePath
 				<< RESET << std::endl;
 	}
 	else
 	{
 		std::stringstream ss;
 		ss << "Error (line " << this->_lineNum
-			<< "): error_page [errorStatusCode] [filePath] (needs one status code (400, 403, 404, 408, 409, 415, 500) \
-and one path)";
+			<< "): error_page [errorStatusCode: 400 / 403 / 404 / 408 / 409 / 415 / 500] [filePath]";
 		throw CustomException(ss.str());
 	}
 }
@@ -523,12 +522,11 @@ void Parser::parseRedirection(T &block, std::istringstream &iss)
 
 	statusCode = 0;
 	iss >> statusCode >> path >> temp;
-	// statusCode checking subject to change
-	if (!statusCode || path.empty() || !temp.empty())
+	if ((statusCode != 301 && statusCode != 302) || path.empty() || !temp.empty())
 	{
 		std::stringstream ss;
 		ss << "Error (line " << this->_lineNum
-			<< "): return [statusCode] [url]";
+			<< "): return [redirectionStatusCode: 301 / 302] [filePath]";
 		throw CustomException(ss.str());
 	}
 	block.setRedirection(statusCode, path);
