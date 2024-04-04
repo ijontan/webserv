@@ -8,6 +8,8 @@
 #include <map>
 #include <vector>
 
+#define TIMEOUT 30
+
 class Cgi
 {
 private:

@@ -218,6 +218,7 @@ void WebServer::handleIO(int index, std::map<int, std::string> &buffMap)
 		if (it == info.headers.end() || info.body.size() < (size_t)utils::stoi(it->second, -1))
 		{
 			int bytes = recv(fd, buff, sizeof(buff), MSG_DONTWAIT);
+			std::cout << bytes << std::endl;
 			if (bytes < 0)
 				std::cerr << "recv error" << std::endl;
 			buffMap[fd].append(buff, bytes);

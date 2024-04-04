@@ -21,7 +21,8 @@ fileitem = form['filename']
 
 # # Test if the file was uploaded
 if fileitem.filename:
-   open(os.getcwd() + '/cgi-bin/uploads/' + fileitem.filename, 'wb').write(fileitem.file.read())
+   with open(os.getcwd() + '/cgi-bin/uploads/' + fileitem.filename, 'wb') as file:
+      file.write(fileitem.file.read())
    message = 'The file "' + fileitem.filename + '" was uploaded to ' + os.getcwd() + '/cgi-bin/uploads'
 else:
    message = 'Uploading Failed'
