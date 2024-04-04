@@ -204,6 +204,7 @@ void WebServer::acceptConnection(int index, std::map<int, std::string> &buffMap,
 }
 
 #define BUFFSIZE 4096
+// #define BUFFSIZE 512
 
 void WebServer::handleIO(int index, std::map<int, std::string> &buffMap)
 {
@@ -214,19 +215,43 @@ void WebServer::handleIO(int index, std::map<int, std::string> &buffMap)
 	if (_pfds[index].revents & POLLIN)
 	{
 		std::map<std::string, std::string>::iterator it = info.headers.find("Content-Length");
-		if (it == info.headers.end() || info.body.length() < (size_t)utils::stoi(it->second, -1))
+		if (it == info.headers.end() || info.body.size() < (size_t)utils::stoi(it->second, -1))
 		{
-			int bytes = recv(fd, buff, sizeof(buff) - 1, 0);
+			int bytes = recv(fd, buff, sizeof(buff), MSG_DONTWAIT);
 			if (bytes < 0)
 				std::cerr << "recv error" << std::endl;
-			buffMap[fd] += buff;
-			if (bytes > 0)
+			buffMap[fd].append(buff, bytes);
+			// std::cout << bytes << std::endl;
+			// if (bytes >= 0)
+			// 	return;
+			// if (bytes > 0 && (it != info.headers.end() && info.body.size() < (size_t)utils::stoi(it->second, -1)))
+			// 	return;
+			// if (bytes == sizeof(buff))
+			// 	return;
+			if (bytes == 0)
+			{
+				removePfd(index);
+				std::cerr << BRED << "connection closed" << RESET << std::endl;
 				return;
+			}
+			if (it == info.headers.end())
+			{
+				info = parseHeader(buffMap[fd]);
+				it = info.headers.find("Content-Length");
+			}
+			// if (it != info.headers.end())
+			// 	std::cout << "read: " << bytes << ", found: " << info.body.size()
+			// 			  << ", total: " << utils::stoi(it->second, -1) << std::endl;
+			info.exist = -1ul != buffMap[fd].find("\r\n\r\n");
+			if (info.exist &&
+				(it == info.headers.end() || (int)info.body.size() + bytes == utils::stoi(it->second, -1)))
+			{
+				_pfds[index].events = POLLOUT;
+				_io.receiveMessage(buffMap[fd]);
+				// std::cout << _io;
+				buffMap[fd] = _io.getMessageToSend(*this, _connectionsPortMap[fd]);
+			}
 		}
-		_pfds[index].events = POLLOUT;
-		_io.receiveMessage(buffMap[fd]);
-		std::cout << _io;
-		buffMap[fd] = _io.getMessageToSend(*this, _connectionsPortMap[fd]);
 	}
 	else if (_pfds[index].revents & POLLOUT)
 	{
