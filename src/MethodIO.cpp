@@ -1,11 +1,10 @@
 #include "MethodIO.hpp"
 #include "ABlock.hpp"
 #include "AutoIndex.hpp"
-#include "LocationBlock.hpp"
 #include "Cgi.hpp"
+#include "LocationBlock.hpp"
 #include "RequestException.hpp"
 #include "ServerBlock.hpp"
-#include "LocationBlock.hpp"
 #include "WebServer.hpp"
 #include "colors.h"
 #include "utils.hpp"
@@ -18,6 +17,7 @@
 #include <ostream>
 #include <sstream>
 #include <string>
+#include <typeinfo>
 #include <unistd.h>
 #include <utility>
 #include <vector>
@@ -49,6 +49,7 @@ std::map<int, std::string> MethodIO::initErrCodeMessages()
 	m[400] = "Bad Request";
 	m[403] = "Forbidden Error";
 	m[404] = "Not Found";
+	m[405] = "Not Allowed";
 	m[408] = "Request Timeout";
 	m[409] = "Conflict";
 	m[413] = "Content Too Large";
@@ -130,13 +131,15 @@ std::string MethodIO::postMethod(ServerBlock &block, MethodIO::rInfo &rqi, Metho
 		// std::cout << "SIZE: " << rsi.headers["Content-Length"] << std::endl;
 		if ((dirPos != std::string::npos) && (ext == "py"))
 		{
-			// if (rsi.headers["Content-Type"] != "application/x-www-form-urlencoded" && rsi.headers["Content-Type"] != "multipart/form-data" && rsi.headers["Content-Type"] != "text/plain")
-			// 	return generateResponse(415, rsi);
-			for (std::map<std::string, std::string>::const_iterator it = rqi.headers.begin(); it != rqi.headers.end(); it++)
+			// if (rsi.headers["Content-Type"] != "application/x-www-form-urlencoded" && rsi.headers["Content-Type"] !=
+			// "multipart/form-data" && rsi.headers["Content-Type"] != "text/plain") 	return generateResponse(415,
+			// rsi);
+			for (std::map<std::string, std::string>::const_iterator it = rqi.headers.begin(); it != rqi.headers.end();
+				 it++)
 			{
 				std::cout << "head: " << it->first << ": " << it->second << std::endl;
 			}
-			
+
 			Cgi cgi(rqi.request, rqi.headers, rqi.path, rqi.body, rqi.query);
 			if (cgi.runCgi() == 200)
 			{
@@ -147,7 +150,8 @@ std::string MethodIO::postMethod(ServerBlock &block, MethodIO::rInfo &rqi, Metho
 			else
 				throw RequestException("Internal Server Error", 500);
 		}
-		else {
+		else
+		{
 			return generateResponse(409, rsi);
 		}
 	}
@@ -187,8 +191,8 @@ std::string MethodIO::getMessageToSend(WebServer &ws, std::string port)
 		// std::string ext = requestInfo.queryPath.substr(requestInfo.queryPath.find_last_of(".") + 1);
 		// if ((dirPos != std::string::npos) && (ext == "py" || ext == "cgi"))
 		// {
-		// 	Cgi cgi(requestInfo.request, requestInfo.headers, requestInfo.queryPath, requestInfo.body, requestInfo.query);
-		// 	if (cgi.runCgi() == 200)
+		// 	Cgi cgi(requestInfo.request, requestInfo.headers, requestInfo.queryPath, requestInfo.body,
+		// requestInfo.query); 	if (cgi.runCgi() == 200)
 		// 	{
 		// 		std::cout << cgi.getBody() << std::endl;
 		// 		responseInfo.body.append(cgi.getBody());
@@ -310,17 +314,24 @@ ServerBlock MethodIO::getServerBlock(MethodIO::rInfo &rqi, WebServer &ws)
 std::string MethodIO::readFile(MethodIO::rInfo &rqi, MethodIO::rInfo &rsi, ServerBlock &block)
 {
 	// try all indexes in the config
-	std::pair<std::string, ABlock> blockPair = block.getLocationBlockPair(rqi.queryPath);
+	std::pair<std::string, LocationBlock> blockPair = block.getLocationBlockPair(rqi.queryPath);
+	ABlock *ablock = &blockPair.second;
+	std::cout << "a:" << ablock << std::endl;
+	LocationBlock *locationBLock = dynamic_cast<LocationBlock *>(ablock);
+	ServerBlock *serverBLock = dynamic_cast<ServerBlock *>(ablock);
+	std::cout << "a:" << locationBLock << std::endl;
+	std::cout << "a:" << serverBLock << std::endl;
+	if (locationBLock)
+		if (!utils::find(locationBLock->getAllowedMethods(), rqi.request[0]))
+			throw RequestException("Invalid Methods", 405);
 	std::vector<std::string> index = blockPair.second.getIndex();
 	std::string root = blockPair.second.getRootDirectory();
 	std::ifstream file;
 	std::string path = root + "/" + utils::splitPair(rqi.queryPath, blockPair.first).second;
-	std::cout << "block path: " << blockPair.first << std::endl;
 	size_t i;
 
 	rsi.code = 200;
-    std::pair<int, std::string> redir = blockPair.second.getRedirection();
-    std::cout << "code: " << redir.first << ", path:" << redir.second << std::endl;
+	std::pair<int, std::string> redir = blockPair.second.getRedirection();
 	if (redir.first)
 	{
 		rsi.headers["Location"] = redir.second;
@@ -349,7 +360,7 @@ std::string MethodIO::readFile(MethodIO::rInfo &rqi, MethodIO::rInfo &rsi, Serve
 			if (cgi.runCgi() == 200)
 			{
 				rqi.exist = true;
-				return(cgi.getBody());
+				return (cgi.getBody());
 			}
 			else
 				throw RequestException("Internal Server Error", 500);
@@ -401,7 +412,9 @@ std::string MethodIO::readFile(MethodIO::rInfo &rqi, MethodIO::rInfo &rsi, Serve
 void MethodIO::writeFile(MethodIO::rInfo &rqi, ServerBlock &block, bool createNew)
 {
 	// try all indexes in the config
-	std::pair<std::string, ABlock> blockPair = block.getLocationBlockPair(rqi.queryPath);
+	std::pair<std::string, LocationBlock> blockPair = block.getLocationBlockPair(rqi.queryPath);
+		if (!utils::find(blockPair.second.getAllowedMethods(), rqi.request[0]))
+			throw RequestException("Invalid Methods", 405);
 	std::vector<std::string> index = blockPair.second.getIndex();
 	std::string root = blockPair.second.getRootDirectory();
 	std::ofstream file;
@@ -471,7 +484,7 @@ void MethodIO::tokenize(std::string s, MethodIO::rInfo &rsi) const
 			rsi.query = rsi.request[1].substr(q + 1);
 			rsi.queryPath = rsi.request[1].substr(0, q);
 		}
-		else 
+		else
 			rsi.queryPath = rsi.request[1];
 	}
 	else if (rsi.request[0] == "POST")
@@ -481,9 +494,9 @@ void MethodIO::tokenize(std::string s, MethodIO::rInfo &rsi) const
 		rsi.query = queryBody.back();
 		rsi.queryPath = rsi.request[1];
 	}
-	else 
+	else
 		rsi.queryPath = rsi.request[1];
-	
+
 	rsi.body = headerBody.second;
 	// std::pair<std::string, std::string> pair = utils::splitPair(rsi.request[1], "?");
 	// rsi.query = pair.second;

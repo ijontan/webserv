@@ -17,7 +17,7 @@ public:
 	void addServerName(std::string serverName);
 
 	void addLocationBlock(std::string path, LocationBlock locationBlock);
-	std::pair<std::string, ABlock> getLocationBlockPair(std::string basePath) const;
+	std::pair<std::string, LocationBlock> getLocationBlockPair(std::string basePath) const;
 
 private:
 	std::map<std::string, LocationBlock> _locationBlocks;

@@ -8,6 +8,7 @@ class LocationBlock : public ABlock
 public:
 	LocationBlock();
 	LocationBlock(ServerBlock &serverBlock);
+	LocationBlock(const ServerBlock &serverBlock);
 	LocationBlock(const LocationBlock &other);
 	LocationBlock &operator=(const LocationBlock &other);
 	~LocationBlock();

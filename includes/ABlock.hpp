@@ -23,7 +23,7 @@ public:
 	void addIndex(std::string index);
 	void setClientMaxBodySize(int clientMaxBodySize);
 	void addErrorPage(int statusCode, std::string uri);
-	void setRedirection(int statusCode, std::string path);
+	virtual void setRedirection(int statusCode, std::string path);
 
 	// getters
 	std::vector<std::string> 	getPortsListeningOn() const;
