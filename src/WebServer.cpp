@@ -241,7 +241,6 @@ void WebServer::handleIO(int index, std::map<int, std::string> &buffMap)
 				it = info.headers.find("Content-Length");
 				isFirst = true;
 			}
-			std::cout << it->second << std::endl;
 			if (it != info.headers.end())
 				std::cout << "read: " << bytes << ", found: " << info.body.size()
 						  << ", total: " << utils::stoi(it->second, -1) << std::endl;
