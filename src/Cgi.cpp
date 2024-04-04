@@ -34,6 +34,19 @@ Cgi::Cgi(const Cgi &src)
 	*this = src;
 }
 
+static std::string replace(std::string str, char from, char to)
+{
+    int l = str.length();
+ 
+    for (int i = 0; i < l; i++) 
+    {
+        if (str[i] == from)
+            str[i] = to;
+		str[i] = toupper(str[i]);
+    }
+    return str;
+}
+
 // set env variables for execvpe
 void Cgi::setEnv()
 {
@@ -51,19 +64,26 @@ void Cgi::setEnv()
 	
 	if (this->envVariables["REQUEST_METHOD"] == "POST")
 	{
-		this->envVariables["CONTENT_LENGTH"] = this->header["Content-Length"];
+		// this->envVariables["CONTENT_LENGTH"] = this->header["Content-Length"];
 		// std::cout << this->envVariables["CONTENT_LENGTH"] << std::endl;
-		this->envVariables["CONTENT_TYPE"] = this->header["Content-Type"];
+		// this->envVariables["CONTENT_TYPE"] = this->header["Content-Type"];
 		this->envVariables["HTTP_COOKIE"] = this->header["Cookie"];
 	}
 
-	std::cout << "	content length: " << this->envVariables["CONTENT_LENGTH"] << std::endl;
+	std::map<std::string, std::string>::const_iterator it;
+	for (it = this->header.begin(); it != this->header.end(); it++)
+	{
+		this->envVariables[replace(it->first, '-', '_')] = it->second;
+	}
+
+	std::cout << "content length: " << this->envVariables["CONTENT_LENGTH"] << std::endl;
 	
 	this->envV = (char **)calloc(sizeof(char *), this->envVariables.size() + 1);
-	std::map<std::string, std::string>::const_iterator it = this->envVariables.begin();
+	it = this->envVariables.begin(); 
 	for (int i = 0; it != this->envVariables.end(); i++, it++)
 	{
-		std::string tmp = it->first + "=" + it->second;
+		std::string tmp = replace(it->first, '-', '_') + "=" + it->second;
+		std::cout << "ENV: " << tmp << std::endl;
 		this->envV[i] = strdup(tmp.c_str());
 	}
 }
@@ -114,7 +134,7 @@ int Cgi::runCgi()
 	else
 	{
 		close(input[0]);
-		if (write(input[1], this->query.c_str() ,this->query.size()) == -1)
+		if (write(input[1], this->body.c_str() ,this->body.size()) == -1)
 			return (500);
 		close(input[1]);
 		close(output[1]);
