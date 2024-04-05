@@ -33,7 +33,7 @@ std::map<std::string, MethodIO::MethodPointer> MethodIO::initMethodsMap()
 	m["POST"] = &MethodIO::postMethod;
 	m["HEAD"] = &MethodIO::headMethod;
 	m["DELETE"] = &MethodIO::delMethod;
-	m["PUT"] = &MethodIO::putMethod;
+	// m["PUT"] = &MethodIO::putMethod;
 	return m;
 }
 
@@ -158,13 +158,13 @@ std::string MethodIO::postMethod(ServerBlock &block, MethodIO::rInfo &rqi, Metho
 	return generateResponse(200, rsi);
 }
 
-std::string MethodIO::putMethod(ServerBlock &block, MethodIO::rInfo &rqi, MethodIO::rInfo &rsi)
-{
-	writeFile(rqi, block, false);
-	rsi.headers["Content-Type"] = getType(rqi.path);
-	rsi.headers["Content-Length"] = utils::to_string(rqi.body.size());
-	return generateResponse(204, rsi);
-}
+// std::string MethodIO::putMethod(ServerBlock &block, MethodIO::rInfo &rqi, MethodIO::rInfo &rsi)
+// {
+// 	writeFile(rqi, block, false);
+// 	rsi.headers["Content-Type"] = getType(rqi.path);
+// 	rsi.headers["Content-Length"] = utils::to_string(rqi.body.size());
+// 	return generateResponse(204, rsi);
+// }
 
 std::string MethodIO::getMessageToSend(WebServer &ws, std::string port)
 {
