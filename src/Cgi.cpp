@@ -5,9 +5,11 @@
 #include <cstring>
 #include <sstream>
 #include <stdlib.h>
+#include <signal.h>
 #include <sys/wait.h>
 #include <unistd.h>
 #include <stdio.h>
+#include "RequestException.hpp"
 
 Cgi::Cgi()
 {
@@ -83,7 +85,7 @@ void Cgi::setEnv()
 	for (int i = 0; it != this->envVariables.end(); i++, it++)
 	{
 		std::string tmp = replace(it->first, '-', '_') + "=" + it->second;
-		std::cout << "ENV: " << tmp << std::endl;
+		// std::cout << "ENV: " << tmp << std::endl;
 		this->envV[i] = strdup(tmp.c_str());
 	}
 }
@@ -110,6 +112,8 @@ int Cgi::runCgi()
 	char *av[3] = {(char *)this->path.c_str(), (char *)dir.c_str(), NULL};
 
 	// if (pipe(fd) == -1)
+	if (access(this->path.c_str(), X_OK))
+		throw RequestException("File read forbidden", 403);
 	if (pipe(input) == -1 || pipe(output) == -1)
 		return (500);
 	pid = fork();
@@ -134,22 +138,37 @@ int Cgi::runCgi()
 	else
 	{
 		close(input[0]);
+		// std::cout << this->body << std::endl;
 		if (write(input[1], this->body.c_str() ,this->body.size()) == -1)
 			return (500);
 		close(input[1]);
 		close(output[1]);
-		waitpid(pid, &status, 0);
+
+		int limit = 0;
+		while (limit < TIMEOUT)
+		{
+			sleep(1);
+			int lim = waitpid(pid, &status, WNOHANG);
+			if (lim < 0)
+				throw RequestException("Internal Server Error",  500);
+			if (WIFEXITED(status))
+				break;
+			limit++;
+		}
+		if (limit == TIMEOUT)
+		{
+			kill(pid, 9);
+			throw RequestException("Request Timeout",  408);
+		}
 		int read_bytes;
 
-		if (!WIFEXITED(status))
-			return (500);
 		read_bytes = 1;
 		char buf[1024];
 		while (read_bytes > 0)
 		{
 			memset(buf, 0, 1024);
 			read_bytes = read(output[0], buf, 1024);
-			outputString += buf;
+			outputString.append(buf, read_bytes);
 		}
 		close(output[0]);
 	}

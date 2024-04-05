@@ -8,7 +8,7 @@
 			"name": "webserv",
 			"type": "cppdbg",
 			"request": "launch",
-			"program": "${workspaceFolder}/webserv",
+			"program": "${workspaceFolder}/d.out",
 			"args": [],
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}",
