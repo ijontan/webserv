@@ -65,27 +65,19 @@ void Cgi::setEnv()
 	}
 	
 	if (this->envVariables["REQUEST_METHOD"] == "POST")
-	{
-		// this->envVariables["CONTENT_LENGTH"] = this->header["Content-Length"];
-		// std::cout << this->envVariables["CONTENT_LENGTH"] << std::endl;
-		// this->envVariables["CONTENT_TYPE"] = this->header["Content-Type"];
 		this->envVariables["HTTP_COOKIE"] = this->header["Cookie"];
-	}
 
 	std::map<std::string, std::string>::const_iterator it;
 	for (it = this->header.begin(); it != this->header.end(); it++)
 	{
 		this->envVariables[replace(it->first, '-', '_')] = it->second;
 	}
-
-	std::cout << "content length: " << this->envVariables["CONTENT_LENGTH"] << std::endl;
 	
 	this->envV = (char **)calloc(sizeof(char *), this->envVariables.size() + 1);
 	it = this->envVariables.begin(); 
 	for (int i = 0; it != this->envVariables.end(); i++, it++)
 	{
 		std::string tmp = replace(it->first, '-', '_') + "=" + it->second;
-		// std::cout << "ENV: " << tmp << std::endl;
 		this->envV[i] = strdup(tmp.c_str());
 	}
 }
@@ -119,13 +111,6 @@ int Cgi::runCgi()
 	pid = fork();
 	if (pid == 0)
 	{
-
-		// dup2(fd[0], STDIN_FILENO);
-		// dup2(fd[1], STDOUT_FILENO);
-		// close(fd[0]);
-		// close(fd[1]);
-		// execve(this->path.c_str(), av, this->envV);
-		// exit(-1);
 		close(output[0]);
 		close(input[1]);
 		dup2(output[1], STDOUT_FILENO);
@@ -138,7 +123,6 @@ int Cgi::runCgi()
 	else
 	{
 		close(input[0]);
-		// std::cout << this->body << std::endl;
 		if (write(input[1], this->body.c_str() ,this->body.size()) == -1)
 			return (500);
 		close(input[1]);

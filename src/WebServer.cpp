@@ -157,9 +157,6 @@ void WebServer::loop()
 {
 	std::map<int, std::string> buffMap;
 
-	// for (size_t j = 0; j < _serverBlocks.size(); j++)
-	// 	std::cout << _serverBlocks[j];
-
 	for (;;)
 	{
 		int pollCount = poll(&_pfds[0], _pfds.size(), -1);
@@ -222,13 +219,6 @@ void WebServer::handleIO(int index, std::map<int, std::string> &buffMap)
 			if (bytes < 0)
 				std::cerr << "recv error" << std::endl;
 			buffMap[fd].append(buff, bytes);
-			// std::cout << bytes << std::endl;
-			// if (bytes >= 0)
-			// 	return;
-			// if (bytes > 0 && (it != info.headers.end() && info.body.size() < (size_t)utils::stoi(it->second, -1)))
-			// 	return;
-			// if (bytes == sizeof(buff))
-			// 	return;
 			if (bytes == 0)
 			{
 				removePfd(index);
@@ -251,7 +241,6 @@ void WebServer::handleIO(int index, std::map<int, std::string> &buffMap)
 			{
 				_pfds[index].events = POLLOUT;
 				_io.receiveMessage(buffMap[fd]);
-				// std::cout << _io;
 				buffMap[fd] = _io.getMessageToSend(*this, _connectionsPortMap[fd]);
 			}
 		}

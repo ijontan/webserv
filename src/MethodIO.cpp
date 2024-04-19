@@ -33,7 +33,6 @@ std::map<std::string, MethodIO::MethodPointer> MethodIO::initMethodsMap()
 	m["POST"] = &MethodIO::postMethod;
 	m["HEAD"] = &MethodIO::headMethod;
 	m["DELETE"] = &MethodIO::delMethod;
-	// m["PUT"] = &MethodIO::putMethod;
 	return m;
 }
 
@@ -47,12 +46,12 @@ std::map<int, std::string> MethodIO::initErrCodeMessages()
 	m[302] = "Found";
 	m[303] = "See Other";
 	m[400] = "Bad Request";
-	m[403] = "Forbidden Error";
+	m[403] = "Forbidden";
 	m[404] = "Not Found";
-	m[405] = "Not Allowed";
+	m[405] = "Method Not Allowed";
 	m[408] = "Request Timeout";
 	m[409] = "Conflict";
-	m[413] = "Content Too Large";
+	m[413] = "Payload Too Large";
 	m[415] = "Unsupported Media Type";
 	m[500] = "Internal Server Error";
 	return m;
@@ -128,12 +127,8 @@ std::string MethodIO::postMethod(ServerBlock &block, MethodIO::rInfo &rqi, Metho
 		std::string input;
 		rsi.headers["Content-Type"] = getType(rqi.path);
 		rsi.headers["Content-Length"] = utils::to_string(rqi.query.size());
-		// std::cout << "SIZE: " << rsi.headers["Content-Length"] << std::endl;
 		if ((dirPos != std::string::npos) && (ext == "py"))
 		{
-			// if (rsi.headers["Content-Type"] != "application/x-www-form-urlencoded" && rsi.headers["Content-Type"] !=
-			// "multipart/form-data" && rsi.headers["Content-Type"] != "text/plain") 	return generateResponse(415,
-			// rsi);
 			for (std::map<std::string, std::string>::const_iterator it = rqi.headers.begin(); it != rqi.headers.end();
 				 it++)
 			{
@@ -158,13 +153,6 @@ std::string MethodIO::postMethod(ServerBlock &block, MethodIO::rInfo &rqi, Metho
 	return generateResponse(200, rsi);
 }
 
-// std::string MethodIO::putMethod(ServerBlock &block, MethodIO::rInfo &rqi, MethodIO::rInfo &rsi)
-// {
-// 	writeFile(rqi, block, false);
-// 	rsi.headers["Content-Type"] = getType(rqi.path);
-// 	rsi.headers["Content-Length"] = utils::to_string(rqi.body.size());
-// 	return generateResponse(204, rsi);
-// }
 
 std::string MethodIO::getMessageToSend(WebServer &ws, std::string port)
 {
@@ -180,34 +168,13 @@ std::string MethodIO::getMessageToSend(WebServer &ws, std::string port)
 		requestInfo.port = port;
 		block = getServerBlock(requestInfo, ws);
 		if (block.getClientMaxBodySize() < (int)requestInfo.body.size() && block.getClientMaxBodySize() != 0)
-			throw RequestException("Content Too Large", 413);
-		// std::cout << getRaw() << requestInfo.request[1] << std::endl;
-		// std::string path = getPath(requestInfo.request[1], ws, port);
-		// requestInfo.path = path;
-		// std::string test = path.substr(path.find_last_of(".") + 1);
-
-		// check if extension is python (if possible change this so it detects if script is from cgi folder)
-		// size_t dirPos = requestInfo.queryPath.find_first_of("/");
-		// std::string ext = requestInfo.queryPath.substr(requestInfo.queryPath.find_last_of(".") + 1);
-		// if ((dirPos != std::string::npos) && (ext == "py" || ext == "cgi"))
-		// {
-		// 	Cgi cgi(requestInfo.request, requestInfo.headers, requestInfo.queryPath, requestInfo.body,
-		// requestInfo.query); 	if (cgi.runCgi() == 200)
-		// 	{
-		// 		std::cout << cgi.getBody() << std::endl;
-		// 		responseInfo.body.append(cgi.getBody());
-		// 	}
-		// 	else
-		// 		generateResponse(500, responseInfo);
-
-		// }
-		// else
-		// 	generateResponse(500, responseInfo);
+			throw RequestException("Payload Too Large", 413);
 		std::string method = requestInfo.request[0];
 		responseInfo.headers["Date"] = getDate();
 		std::map<std::string, MethodPointer>::const_iterator it = methods.find(method);
 		if (it != methods.end())
 			return (it->second)(block, requestInfo, responseInfo);
+		throw RequestException("Method Not Allowed", 405);
 	}
 	catch (RequestException &e)
 	{
@@ -225,8 +192,6 @@ std::string MethodIO::getMessageToSend(WebServer &ws, std::string port)
 		responseInfo.headers["Content-Length"] = utils::to_string(responseInfo.body.size());
 		return generateResponse(code, responseInfo);
 	}
-	std::cerr << "methods not found" << std::endl;
-	return "bruh";
 }
 
 std::string MethodIO::getMessage(int code)
@@ -270,34 +235,9 @@ std::string MethodIO::generateResponse(int code, MethodIO::rInfo &rsi)
 	ss << "HTTP/1.1 " << code << " " << getMessage(code) << "\r\n";
 	for (it = rsi.headers.begin(); it != rsi.headers.end(); it++)
 		ss << it->first << ": " << it->second << "\r\n";
-	// if (rsi.request[1] == "GET")
 	ss << "\r\n" << rsi.body;
-	// std::cout << "RESULT:  " << ss.str() << std::endl;
 	return (ss.str());
 }
-
-// std::string MethodIO::getPath(std::string basePath, WebServer &ws, std::string &port)
-// {
-// 	std::vector<ServerBlock> servers = ws.getServers();
-// 	std::string root = "www";
-//
-// 	for (std::vector<ServerBlock>::iterator it = servers.begin(); it != servers.end(); it++)
-// 	{
-// 		std::vector<std::string> ports = it->getPortsListeningOn();
-// 		bool found = false;
-// 		for (size_t i = 0; i < ports.size(); i++)
-// 		{
-// 			if (ports[i] == port)
-// 				found = true;
-// 		}
-// 		if (!found)
-// 			continue;
-// 		root = it->getRootDirectory();
-// 		break;
-// 	}
-// 	// std::cout << root << std::endl;
-// 	return root + "/" + (basePath == "/" ? "index.html" : basePath);
-// }
 
 ServerBlock MethodIO::getServerBlock(MethodIO::rInfo &rqi, WebServer &ws)
 {
@@ -323,7 +263,7 @@ std::string MethodIO::readFile(MethodIO::rInfo &rqi, MethodIO::rInfo &rsi, Serve
 	std::cout << "a:" << serverBLock << std::endl;
 	if (locationBLock)
 		if (!utils::find(locationBLock->getAllowedMethods(), rqi.request[0]))
-			throw RequestException("Invalid Methods", 405);
+			throw RequestException("Method Not Allowed", 405);
 	std::vector<std::string> index = blockPair.second.getIndex();
 	std::string root = blockPair.second.getRootDirectory();
 	std::ifstream file;
@@ -388,23 +328,7 @@ std::string MethodIO::readFile(MethodIO::rInfo &rqi, MethodIO::rInfo &rsi, Serve
 	std::ostringstream oss;
 
 	rsi.headers["Content-Type"] = getType(rqi.path);
-	// NOTE: Tmp fix for cgi issue, please remove this code if new solution is found!
-	// size_t dirPos = rqi.path.find_first_of("/");
-	// std::string ext = rqi.path.substr(rqi.path.find_last_of(".") + 1);
-	// if ((dirPos != std::string::npos) && (ext == "py" || ext == "cgi"))
-	// {
-	// 	Cgi cgi(rqi.request, rqi.headers, rqi.path, rqi.body, rqi.query);
-	// 	if (cgi.runCgi() == 200)
-	// 	{
-	// 		rqi.exist = true;
-	// 		return(cgi.getBody());
-	// 	}
-	// 	else
-	// 		throw RequestException("Internal Server Error", 500);
-	// }
-	// else
 	oss << file.rdbuf();
-	// NOTE: Tmp fix for cgi issue, please remove this code if new solution is found!
 
 	return oss.str();
 }
@@ -414,7 +338,7 @@ void MethodIO::writeFile(MethodIO::rInfo &rqi, ServerBlock &block, bool createNe
 	// try all indexes in the config
 	std::pair<std::string, LocationBlock> blockPair = block.getLocationBlockPair(rqi.queryPath);
 		if (!utils::find(blockPair.second.getAllowedMethods(), rqi.request[0]))
-			throw RequestException("Invalid Methods", 405);
+			throw RequestException("Method Not Allowed", 405);
 	std::vector<std::string> index = blockPair.second.getIndex();
 	std::string root = blockPair.second.getRootDirectory();
 	std::ofstream file;
@@ -498,8 +422,4 @@ void MethodIO::tokenize(std::string s, MethodIO::rInfo &rsi) const
 		rsi.queryPath = rsi.request[1];
 
 	rsi.body = headerBody.second;
-	// std::pair<std::string, std::string> pair = utils::splitPair(rsi.request[1], "?");
-	// rsi.query = pair.second;
-	// rsi.queryPath = pair.first;
-	// std::cout << rsi.queryPath << std::endl;
 }

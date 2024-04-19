@@ -508,7 +508,7 @@ void Parser::parseErrorPages(T &block, std::istringstream &iss)
 	{
 		std::stringstream ss;
 		ss << "Error (line " << this->_lineNum
-			<< "): error_page [errorStatusCode: 400 / 403 / 404 / 408 / 409 / 415 / 500] [filePath]";
+			<< "): error_page [errorStatusCode: 400 / 403 / 404 / 405 / 408 / 409 / 415 / 500] [filePath]";
 		throw CustomException(ss.str());
 	}
 }
@@ -749,7 +749,7 @@ void Parser::checkServerDirectiveCount()
 	{
 		if (_errorPageCount[_validStatusCodes[i]] != 1)
 		{
-			ss << "Error (server block " << _serverBlockNum - 1 << "): There has to be only one error_page directive for each error status code (400, 403, 404, 408, 409, 415, 500)";
+			ss << "Error (server block " << _serverBlockNum - 1 << "): There has to be only one error_page directive for each error status code (400, 403, 404, 405, 408, 409, 415, 500)";
 			throw CustomException(ss.str());
 		}
 	}
