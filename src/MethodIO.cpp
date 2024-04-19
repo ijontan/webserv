@@ -46,12 +46,12 @@ std::map<int, std::string> MethodIO::initErrCodeMessages()
 	m[302] = "Found";
 	m[303] = "See Other";
 	m[400] = "Bad Request";
-	m[403] = "Forbidden Error";
+	m[403] = "Forbidden";
 	m[404] = "Not Found";
-	m[405] = "Not Allowed";
+	m[405] = "Method Not Allowed";
 	m[408] = "Request Timeout";
 	m[409] = "Conflict";
-	m[413] = "Content Too Large";
+	m[413] = "Payload Too Large";
 	m[415] = "Unsupported Media Type";
 	m[500] = "Internal Server Error";
 	return m;
@@ -168,12 +168,13 @@ std::string MethodIO::getMessageToSend(WebServer &ws, std::string port)
 		requestInfo.port = port;
 		block = getServerBlock(requestInfo, ws);
 		if (block.getClientMaxBodySize() < (int)requestInfo.body.size() && block.getClientMaxBodySize() != 0)
-			throw RequestException("Content Too Large", 413);
+			throw RequestException("Payload Too Large", 413);
 		std::string method = requestInfo.request[0];
 		responseInfo.headers["Date"] = getDate();
 		std::map<std::string, MethodPointer>::const_iterator it = methods.find(method);
 		if (it != methods.end())
 			return (it->second)(block, requestInfo, responseInfo);
+		throw RequestException("Method Not Allowed", 405);
 	}
 	catch (RequestException &e)
 	{
@@ -191,8 +192,6 @@ std::string MethodIO::getMessageToSend(WebServer &ws, std::string port)
 		responseInfo.headers["Content-Length"] = utils::to_string(responseInfo.body.size());
 		return generateResponse(code, responseInfo);
 	}
-	std::cerr << "methods not found" << std::endl;
-	return "bruh";
 }
 
 std::string MethodIO::getMessage(int code)
@@ -264,7 +263,7 @@ std::string MethodIO::readFile(MethodIO::rInfo &rqi, MethodIO::rInfo &rsi, Serve
 	std::cout << "a:" << serverBLock << std::endl;
 	if (locationBLock)
 		if (!utils::find(locationBLock->getAllowedMethods(), rqi.request[0]))
-			throw RequestException("Invalid Methods", 405);
+			throw RequestException("Method Not Allowed", 405);
 	std::vector<std::string> index = blockPair.second.getIndex();
 	std::string root = blockPair.second.getRootDirectory();
 	std::ifstream file;
@@ -339,7 +338,7 @@ void MethodIO::writeFile(MethodIO::rInfo &rqi, ServerBlock &block, bool createNe
 	// try all indexes in the config
 	std::pair<std::string, LocationBlock> blockPair = block.getLocationBlockPair(rqi.queryPath);
 		if (!utils::find(blockPair.second.getAllowedMethods(), rqi.request[0]))
-			throw RequestException("Invalid Methods", 405);
+			throw RequestException("Method Not Allowed", 405);
 	std::vector<std::string> index = blockPair.second.getIndex();
 	std::string root = blockPair.second.getRootDirectory();
 	std::ofstream file;
