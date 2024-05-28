@@ -73,7 +73,7 @@ void Cgi::setEnv()
 		this->envVariables[replace(it->first, '-', '_')] = it->second;
 	}
 	
-	this->envV = (char **)calloc(sizeof(char *), this->envVariables.size() + 1);
+	this->envV = (char **)calloc(this->envVariables.size() + 1, sizeof(char *));
 	it = this->envVariables.begin(); 
 	for (int i = 0; it != this->envVariables.end(); i++, it++)
 	{
